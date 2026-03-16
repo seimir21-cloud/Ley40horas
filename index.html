@@ -159,9 +159,9 @@
     </main>
 
     <!-- Modal de Captura de Datos (Compra) -->
-    <div id="modalDatos" class="fixed inset-0 bg-slate-900 bg-opacity-75 flex items-center justify-center z-50 hidden-result">
+    <div id="modalDatos" class="fixed inset-0 bg-slate-900 bg-opacity-75 items-center justify-center z-50 hidden">
         <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4 relative">
-            <button onclick="cerrarModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
+            <button type="button" onclick="cerrarModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
                 <i class="fa-solid fa-xmark text-xl"></i>
             </button>
             <h2 class="text-2xl font-bold text-slate-800 mb-2">Completar Compra</h2>
@@ -313,13 +313,15 @@
             const montoFormateado = monto.toLocaleString('es-CL');
             document.getElementById('btnPagarModal').innerHTML = `<i class="fa-solid fa-credit-card"></i> Ir a Pagar $${montoFormateado}`;
 
-            modal.classList.remove('hidden-result');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
             // Asegurar que el modal esté visible incluso si se hizo scroll
             document.body.style.overflow = 'hidden';
         }
 
         function cerrarModal() {
-            modal.classList.add('hidden-result');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
             document.body.style.overflow = '';
         }
 
