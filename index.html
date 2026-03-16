@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Tailwind CSS (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF para Generación de PDF (CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -44,10 +46,11 @@
 
     <!-- Main Content -->
     <main class="flex-grow flex items-center justify-center p-4 -mt-6">
-        <div class="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6 md:p-8">
+        <div class="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6 md:p-8 relative overflow-hidden" id="mainContainer">
             
-            <!-- Calculadora Form -->
-            <form id="calcForm" class="space-y-6">
+            <!-- Calculadora Form (Vista Inicial) -->
+            <div id="vistaCalculadora">
+                <form id="calcForm" class="space-y-6">
                 <!-- Horario Semanal Interactivo -->
                 <div>
                     <label class="block text-lg font-bold text-slate-800 mb-2 text-center">Horas Efectivas Trabajadas por Día</label>
@@ -104,79 +107,134 @@
                 </button>
             </form>
 
-            <!-- Resultados Section (Oculta por defecto) -->
-            <div id="resultadoSeccion" class="hidden-result mt-8 space-y-6">
-                <hr class="border-slate-200">
+                <!-- Resultados Section (Oculta por defecto) -->
+                <div id="resultadoSeccion" class="hidden-result mt-8 space-y-6">
+                    <hr class="border-slate-200">
+                    
+                    <!-- Mensaje de Validación Legal -->
+                    <div id="mensajeAlerta" class="p-4 rounded-lg flex items-start gap-4 shadow-sm border">
+                        <div id="iconoAlerta" class="text-2xl mt-1"></div>
+                        <div>
+                            <h3 id="tituloAlerta" class="font-bold text-lg mb-1"></h3>
+                            <p id="textoAlerta" class="text-sm"></p>
+                        </div>
+                    </div>
+
+                    <!-- Resumen Numérico -->
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 grid grid-cols-2 gap-4 text-center">
+                        <div>
+                            <p class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Horas Ordinarias / Día</p>
+                            <p id="horasDiarias" class="text-2xl font-bold text-navy">0h</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Total Semanal</p>
+                            <p id="horasSemanales" class="text-2xl font-bold text-navy">0h</p>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Planes de Cumplimiento Legal -->
+                    <div class="mt-8">
+                        <h3 class="text-xl font-bold text-center text-slate-800 mb-2">Selecciona tu Plan de Cumplimiento Legal</h3>
+                        <p class="text-sm text-slate-500 text-center mb-8">Genera los anexos legales para jornadas regulares, part-time o sistemas 4x3.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            
+                            <!-- Tarjeta Básico -->
+                            <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col items-center text-center">
+                                <h4 class="text-lg font-bold text-slate-800 mb-1">Básico</h4>
+                                <p class="text-sm text-slate-500 mb-4">1 Trabajador</p>
+                                <div class="mb-6">
+                                    <span class="text-3xl font-bold text-navy">$9.990</span>
+                                </div>
+                                <p class="text-xs text-slate-600 mb-6 flex-grow">Ideal para microempresas.</p>
+                                <button type="button" onclick="abrirModal('Básico', 9990)" class="w-full border-2 border-navy text-navy hover:bg-navy hover:text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                                    Comprar Plan
+                                </button>
+                            </div>
+
+                            <!-- Tarjeta Destacada -->
+                            <div class="bg-amber-50 border-2 border-premium rounded-xl p-6 shadow-md flex flex-col items-center text-center relative transform md:-translate-y-2">
+                                <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-premium text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Ahorras un 40%</div>
+                                <h4 class="text-lg font-bold text-slate-800 mb-1">Pack Pyme</h4>
+                                <p class="text-sm text-slate-500 mb-4">Hasta 5 Trabajadores</p>
+                                <div class="mb-6">
+                                    <span class="text-3xl font-bold text-premium">$29.990</span>
+                                </div>
+                                <p class="text-xs text-slate-600 mb-6 flex-grow">La opción más popular.</p>
+                                <button type="button" onclick="abrirModal('Pack Pyme', 29990)" class="w-full bg-premium hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors">
+                                    Comprar Plan
+                                </button>
+                            </div>
+
+                            <!-- Tarjeta Avanzado -->
+                            <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col items-center text-center">
+                                <h4 class="text-lg font-bold text-slate-800 mb-1">Pack Avanzado</h4>
+                                <p class="text-sm text-slate-500 mb-4">Hasta 15 Trabajadores</p>
+                                <div class="mb-6">
+                                    <span class="text-3xl font-bold text-navy">$59.990</span>
+                                </div>
+                                <p class="text-xs text-slate-600 mb-6 flex-grow">Para empresas en crecimiento.</p>
+                                <button type="button" onclick="abrirModal('Pack Avanzado', 59990)" class="w-full border-2 border-navy text-navy hover:bg-navy hover:text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                                    Comprar Plan
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista Generador PDF Post-Pago (Oculta Inicialmente) -->
+            <div id="vistaGenerador" class="hidden">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-success text-white rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800">¡Pago Exitoso!</h2>
+                    <p class="text-slate-500">Completa los datos para generar el Anexo Legal.</p>
+                </div>
                 
-                <!-- Mensaje de Validación Legal -->
-                <div id="mensajeAlerta" class="p-4 rounded-lg flex items-start gap-4 shadow-sm border">
-                    <div id="iconoAlerta" class="text-2xl mt-1"></div>
-                    <div>
-                        <h3 id="tituloAlerta" class="font-bold text-lg mb-1"></h3>
-                        <p id="textoAlerta" class="text-sm"></p>
-                    </div>
-                </div>
-
-                <!-- Resumen Numérico -->
-                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 grid grid-cols-2 gap-4 text-center">
-                    <div>
-                        <p class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Horas Ordinarias / Día</p>
-                        <p id="horasDiarias" class="text-2xl font-bold text-navy">0h</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Total Semanal</p>
-                        <p id="horasSemanales" class="text-2xl font-bold text-navy">0h</p>
-                    </div>
-                </div>
-
-                <!-- Sección de Planes de Cumplimiento Legal -->
-                <div class="mt-8">
-                    <h3 class="text-xl font-bold text-center text-slate-800 mb-2">Selecciona tu Plan de Cumplimiento Legal</h3>
-                    <p class="text-sm text-slate-500 text-center mb-8">Genera los anexos legales para jornadas regulares, part-time o sistemas 4x3.</p>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        
-                        <!-- Tarjeta Básico -->
-                        <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col items-center text-center">
-                            <h4 class="text-lg font-bold text-slate-800 mb-1">Básico</h4>
-                            <p class="text-sm text-slate-500 mb-4">1 Trabajador</p>
-                            <div class="mb-6">
-                                <span class="text-3xl font-bold text-navy">$9.990</span>
-                            </div>
-                            <p class="text-xs text-slate-600 mb-6 flex-grow">Ideal para microempresas.</p>
-                            <button onclick="abrirModal('Básico', 9990)" class="w-full border-2 border-navy text-navy hover:bg-navy hover:text-white font-bold py-2 px-4 rounded-lg transition-colors">
-                                Comprar Plan
-                            </button>
+                <form id="formPDF" class="space-y-4">
+                    <h3 class="font-bold text-lg text-slate-700 border-b pb-2 mt-4">Datos del Empleador (Empresa)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Razón Social Empresa</label>
+                            <input type="text" id="pdfEmpresa" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
                         </div>
-
-                        <!-- Tarjeta Destacada -->
-                        <div class="bg-amber-50 border-2 border-premium rounded-xl p-6 shadow-md flex flex-col items-center text-center relative transform md:-translate-y-2">
-                            <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-premium text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Ahorras un 40%</div>
-                            <h4 class="text-lg font-bold text-slate-800 mb-1">Pack Pyme</h4>
-                            <p class="text-sm text-slate-500 mb-4">Hasta 5 Trabajadores</p>
-                            <div class="mb-6">
-                                <span class="text-3xl font-bold text-premium">$29.990</span>
-                            </div>
-                            <p class="text-xs text-slate-600 mb-6 flex-grow">La opción más popular.</p>
-                            <button onclick="abrirModal('Pack Pyme', 29990)" class="w-full bg-premium hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors">
-                                Comprar Plan
-                            </button>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">RUT Empresa</label>
+                            <input type="text" id="pdfRutEmpresa" required placeholder="Ej. 76.123.456-K" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
                         </div>
-
-                        <!-- Tarjeta Avanzado -->
-                        <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col items-center text-center">
-                            <h4 class="text-lg font-bold text-slate-800 mb-1">Pack Avanzado</h4>
-                            <p class="text-sm text-slate-500 mb-4">Hasta 15 Trabajadores</p>
-                            <div class="mb-6">
-                                <span class="text-3xl font-bold text-navy">$59.990</span>
-                            </div>
-                            <p class="text-xs text-slate-600 mb-6 flex-grow">Para empresas en crecimiento.</p>
-                            <button onclick="abrirModal('Pack Avanzado', 59990)" class="w-full border-2 border-navy text-navy hover:bg-navy hover:text-white font-bold py-2 px-4 rounded-lg transition-colors">
-                                Comprar Plan
-                            </button>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Nombre Representante Legal</label>
+                            <input type="text" id="pdfRepName" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
                         </div>
-
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">RUT Representante Legal</label>
+                            <input type="text" id="pdfRepRut" required placeholder="Ej. 12.345.678-9" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Ciudad de Firma</label>
+                            <input type="text" id="pdfCiudad" required placeholder="Ej. Santiago" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
+                        </div>
                     </div>
-                </div>
+
+                    <h3 class="font-bold text-lg text-slate-700 border-b pb-2 mt-6">Datos del Trabajador</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Nombre Trabajador</label>
+                            <input type="text" id="pdfTrabajador" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">RUT Trabajador</label>
+                            <input type="text" id="pdfRutTrabajador" required placeholder="Ej. 15.678.901-2" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
+                        </div>
+                    </div>
+
+                    <button type="button" onclick="generarPDF()" class="w-full bg-success hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg shadow-md transition-all flex items-center justify-center gap-2 text-lg mt-8">
+                        <i class="fa-solid fa-file-pdf"></i> Generar Anexo y Descargar PDF
+                    </button>
+                    <button type="button" onclick="volverCalculadora()" class="w-full text-slate-500 hover:text-slate-700 text-sm mt-2 underline">Volver al Simulador</button>
+                </form>
             </div>
 
         </div>
@@ -369,12 +427,20 @@
             e.preventDefault();
             const empresa = document.getElementById('modalEmpresa').value;
             const plan = document.getElementById('modalPlan').value;
-            const monto = document.getElementById('modalMonto').value;
-            const montoFormateado = parseInt(monto).toLocaleString('es-CL');
             
-            // Simulación pasarela de pago
-            alert(`Conectando a pasarela de pago...\nEmpresa: ${empresa}\nPlan: ${plan}\nRedirigiendo a Flow/Webpay para procesar $${montoFormateado}.`);
+            // Simulación pasarela de pago -> Redirección al formulario PDF
+            alert(`¡Pago procesado exitosamente por Plan ${plan}!`);
             cerrarModal();
+            
+            // Auto-completar nombre de empresa si se proporcionó
+            document.getElementById('pdfEmpresa').value = empresa;
+            
+            // Ocultar calculadora, mostrar generador PDF
+            document.getElementById('vistaCalculadora').classList.add('hidden');
+            document.getElementById('vistaGenerador').classList.remove('hidden');
+            
+            // Scroll top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
         // Cerrar modal al hacer clic fuera del contenido
@@ -383,6 +449,150 @@
                 cerrarModal();
             }
         });
+
+        function volverCalculadora() {
+            document.getElementById('vistaGenerador').classList.add('hidden');
+            document.getElementById('vistaCalculadora').classList.remove('hidden');
+        }
+
+        // Lógica de Generación de PDF (jsPDF)
+        function generarPDF() {
+            const { jsPDF } = window.jspdf;
+            
+            // Validar que se hayan llenado los datos
+            const f_emp = document.getElementById('pdfEmpresa').value;
+            const f_rut_emp = document.getElementById('pdfRutEmpresa').value;
+            const f_rep = document.getElementById('pdfRepName').value;
+            const f_rut_rep = document.getElementById('pdfRepRut').value;
+            const f_ciudad = document.getElementById('pdfCiudad').value;
+            const f_trab = document.getElementById('pdfTrabajador').value;
+            const f_rut_trab = document.getElementById('pdfRutTrabajador').value;
+
+            if(!f_emp || !f_rut_emp || !f_rep || !f_rut_rep || !f_ciudad || !f_trab || !f_rut_trab) {
+                alert("Por favor, completa todos los campos para generar el documento legal.");
+                return;
+            }
+
+            // Crear documento tamaño Carta
+            const doc = new jsPDF({
+                orientation: "portrait",
+                unit: "mm",
+                format: "letter"
+            });
+
+            // Márgenes (1 pulgada = 25.4mm)
+            const margin = 25.4;
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const contentWidth = pageWidth - (margin * 2);
+
+            // Fuente Formal
+            doc.setFont("times", "normal");
+            
+            // ----- PÁGINA 1: ANEXO ----- //
+            
+            // Título
+            doc.setFont("times", "bold");
+            doc.setFontSize(14);
+            doc.text("ANEXO DE CONTRATO DE TRABAJO - ADECUACIÓN JORNADA LABORAL", pageWidth / 2, margin + 10, { align: "center" });
+            
+            // Párrafo Inicial
+            doc.setFont("times", "normal");
+            doc.setFontSize(12);
+            
+            // Fecha de hoy formato largo
+            const opcionesFecha = { year: 'numeric', month: 'long', day: 'numeric' };
+            const fechaActual = new Date().toLocaleDateString('es-CL', opcionesFecha);
+            
+            const p1 = `En ${f_ciudad}, a ${fechaActual}, entre la empresa ${f_emp}, RUT ${f_rut_emp}, debidamente representada por don/doña ${f_rep}, RUT ${f_rut_rep}, en adelante "el Empleador"; y don/doña ${f_trab}, RUT ${f_rut_trab}, en adelante "el Trabajador", se ha convenido el siguiente Anexo de Contrato de Trabajo, para efectos de adecuarse a las normativas de la Ley 21.561 que modifica el Código del Trabajo.`;
+            
+            let yCursor = margin + 30;
+            const p1Lines = doc.splitTextToSize(p1, contentWidth);
+            doc.text(p1Lines, margin, yCursor);
+            
+            yCursor += (p1Lines.length * 7) + 10;
+            
+            // Cláusula de Horarios
+            doc.setFont("times", "bold");
+            doc.text("PRIMERO: Modificación de la Jornada Laboral.", margin, yCursor);
+            doc.setFont("times", "normal");
+            
+            yCursor += 8;
+            const p2 = `A partir de la firma de este documento, la jornada laboral del Trabajador se distribuirá de la siguiente manera (las horas indicadas corresponden a horas efectivas de trabajo y no incluyen el tiempo destinado a colación, que no es imputable a la jornada):`;
+            const p2Lines = doc.splitTextToSize(p2, contentWidth);
+            doc.text(p2Lines, margin, yCursor);
+            
+            yCursor += (p2Lines.length * 7) + 5;
+            
+            // Recuperar horas de la cuadrícula
+            const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+            let totalHoras = 0;
+            
+            dias.forEach(dia => {
+                const idInput = dia.toLowerCase().replace('é', 'e').replace('á', 'a');
+                const horas = parseFloat(document.getElementById(idInput).value) || 0;
+                totalHoras += horas;
+                
+                if (horas > 0) {
+                    doc.text(`• ${dia}: ${horas} horas diarias.`, margin + 10, yCursor);
+                    yCursor += 7;
+                }
+            });
+            
+            yCursor += 5;
+            doc.text(`Totalizando una jornada semanal de ${totalHoras} horas ordinarias.`, margin, yCursor);
+            
+            yCursor += 15;
+            const p3 = `SEGUNDO: En todo lo no modificado por el presente instrumento, rigen inalteradas las cláusulas del contrato original. Para constancia, se firma el presente anexo en dos ejemplares de igual tenor y valor, quedando uno en poder de cada parte.`;
+            const p3Lines = doc.splitTextToSize(p3, contentWidth);
+            doc.text(p3Lines, margin, yCursor);
+            
+            // Firmas al final de la hoja 1
+            const yFirmas = 220; // Hacia la parte inferior de la página
+            
+            // Línea Izquierda (Trabajador)
+            doc.line(margin + 10, yFirmas, margin + 70, yFirmas);
+            doc.text("Firma Trabajador", margin + 25, yFirmas + 7);
+            doc.setFontSize(10);
+            doc.text(f_trab, margin + 10, yFirmas + 13, { maxWidth: 60, align: 'center' });
+            
+            doc.setFontSize(12);
+            // Línea Derecha (Empleador)
+            doc.line(pageWidth - margin - 70, yFirmas, pageWidth - margin - 10, yFirmas);
+            doc.text("Firma Empleador", pageWidth - margin - 55, yFirmas + 7);
+            doc.setFontSize(10);
+            doc.text(f_emp, pageWidth - margin - 70, yFirmas + 13, { maxWidth: 60, align: 'center' });
+            
+            // ----- PÁGINA 2: INSTRUCTIVO ----- //
+            doc.addPage("letter", "portrait");
+            
+            doc.setFontSize(16);
+            doc.setFont("times", "bold");
+            doc.text("Instrucciones de Legalización (Importante)", pageWidth / 2, margin + 10, { align: "center" });
+            
+            doc.setFontSize(12);
+            doc.setFont("times", "normal");
+            
+            const instrucciones = [
+                "Este documento debe imprimirse en duplicado.",
+                "Ambas copias deben ser firmadas físicamente con lápiz (pasta azul o negro) por el Empleador y el Trabajador.",
+                "Es obligación legal del Empleador registrar este anexo en el portal de Mi DT (Registro Electrónico Laboral) de la Dirección del Trabajo."
+            ];
+            
+            let yInst = margin + 30;
+            
+            instrucciones.forEach((inst, index) => {
+                doc.setFont("times", "bold");
+                doc.text(`${index + 1}.`, margin, yInst);
+                doc.setFont("times", "normal");
+                
+                const instLines = doc.splitTextToSize(inst, contentWidth - 10);
+                doc.text(instLines, margin + 10, yInst);
+                yInst += (instLines.length * 8) + 10;
+            });
+            
+            // Descargar PDF
+            doc.save(`Anexo_Ley40H_${f_trab.replace(/\s+/g, '_')}.pdf`);
+        }
     </script>
 </body>
 </html>
