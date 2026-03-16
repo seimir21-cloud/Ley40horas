@@ -48,20 +48,6 @@
             
             <!-- Calculadora Form -->
             <form id="calcForm" class="space-y-6">
-                <!-- Información Personal -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Nombre del Trabajador</label>
-                        <input type="text" id="nombre" required placeholder="Ej. Juan Pérez" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy focus:border-navy outline-none transition-all">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">RUT</label>
-                        <input type="text" id="rut" required placeholder="Ej. 12.345.678-9" pattern="^[0-9]{1,2}\.?[0-9]{3}\.?[0-9]{3}-[0-9Kk]{1}$" title="Ingrese un RUT válido con guión" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy focus:border-navy outline-none transition-all">
-                    </div>
-                </div>
-
-                <hr class="border-slate-200">
-
                 <!-- Horario -->
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Días Trabajados por Semana</label>
@@ -91,7 +77,7 @@
 
                 <!-- Botón de Calcular -->
                 <button type="submit" class="w-full bg-navy hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all flex items-center justify-center gap-2 text-lg">
-                    <i class="fa-solid fa-calculator"></i> Calcular Jornada Legal
+                    <i class="fa-solid fa-calculator"></i> Simular Jornada
                 </button>
             </form>
 
@@ -124,21 +110,54 @@
                 <div class="bg-amber-50 border-2 border-premium rounded-xl p-5 text-center relative overflow-hidden">
                     <div class="absolute top-0 right-0 bg-premium text-white text-xs font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider">Premium</div>
                     <h4 class="text-xl font-bold text-slate-800 mb-2">Anexo de Contrato Legal</h4>
-                    <p class="text-sm text-slate-600 mb-4">Descarga el Anexo de Contrato Legal Obligatorio con los datos de <span id="nombreTrabajadorRes" class="font-semibold">este trabajador</span>, listo para firmar.</p>
+                    <p class="text-sm text-slate-600 mb-4">Descarga el Anexo de Contrato Legal Obligatorio con los datos simulados, listo para firmar.</p>
                     
                     <div class="flex items-center justify-center gap-3 mb-4">
                         <span class="text-slate-400 line-through text-sm">$25.000</span>
                         <span class="text-3xl font-bold text-premium">$4.990 <span class="text-sm text-slate-600 font-normal">CLP</span></span>
                     </div>
 
-                    <button onclick="iniciarPago()" class="w-full bg-premium hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-file-pdf"></i> Pagar y Descargar PDF
+                    <button onclick="abrirModal()" class="w-full bg-premium hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-pdf"></i> Descargar Anexo Legal por $4.990
                     </button>
                 </div>
             </div>
 
         </div>
     </main>
+
+    <!-- Modal de Captura de Datos -->
+    <div id="modalDatos" class="fixed inset-0 bg-slate-900 bg-opacity-75 flex items-center justify-center z-50 hidden-result">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4 relative">
+            <button onclick="cerrarModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">Datos para tu Anexo de Contrato</h2>
+            <p class="text-sm text-slate-500 mb-6">Completa estos datos para personalizar tu documento legal listo para firmar.</p>
+            
+            <form id="formPago" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Nombre Completo del Trabajador</label>
+                    <input type="text" id="modalNombre" required placeholder="Ej. Juan Pérez" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-premium focus:border-premium outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">RUT</label>
+                    <input type="text" id="modalRut" required placeholder="Ej. 12.345.678-9" pattern="^[0-9]{1,2}\.?[0-9]{3}\.?[0-9]{3}-[0-9Kk]{1}$" title="Ingrese un RUT válido con guión" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-premium focus:border-premium outline-none transition-all">
+                </div>
+                
+                <div class="bg-amber-50 p-3 rounded-lg border border-amber-200 mt-4">
+                    <label class="flex items-start cursor-pointer">
+                        <input type="checkbox" required class="mt-1 mr-3 text-premium focus:ring-premium rounded">
+                        <span class="text-xs text-slate-700 leading-snug">Entiendo que esta es una herramienta de autogeneración y asumo la responsabilidad de revisar el documento final.</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="w-full bg-premium hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2 mt-6">
+                    <i class="fa-solid fa-credit-card"></i> Ir a Pagar y Generar PDF
+                </button>
+            </form>
+        </div>
+    </div>
 
     <!-- Footer Legal -->
     <footer class="bg-slate-200 py-6 px-4 mt-auto">
@@ -155,7 +174,6 @@
             e.preventDefault();
 
             // Capturar Valores
-            const nombre = document.getElementById('nombre').value;
             const entradaStr = document.getElementById('entrada').value;
             const salidaStr = document.getElementById('salida').value;
             const diasTrabajados = parseInt(document.querySelector('input[name="dias"]:checked').value);
@@ -221,9 +239,6 @@
             document.getElementById('horasDiarias').innerText = horasDiarias.toFixed(1) + 'h';
             document.getElementById('horasSemanales').innerText = horasSemanales.toFixed(1) + 'h';
 
-            // Actualizar CTA
-            document.getElementById('nombreTrabajadorRes').innerText = nombre;
-
             // Mostrar Sección
             resultadoSeccion.classList.remove('hidden-result');
             // Scroll suave hacia los resultados
@@ -251,10 +266,36 @@
             document.getElementById('textoAlerta').innerText = texto;
         }
 
-        // Simulación pasarela de pago
-        function iniciarPago() {
-            alert("Conectando a pasarela de pago...\nRedirigiendo a Flow/Webpay.");
+        // Funciones del Modal
+        const modal = document.getElementById('modalDatos');
+        
+        function abrirModal() {
+            modal.classList.remove('hidden-result');
+            // Asegurar que el modal esté visible incluso si se hizo scroll
+            document.body.style.overflow = 'hidden';
         }
+
+        function cerrarModal() {
+            modal.classList.add('hidden-result');
+            document.body.style.overflow = '';
+        }
+
+        // Manejar el submit del formulario de pago (Modal)
+        document.getElementById('formPago').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const nombreTrabajador = document.getElementById('modalNombre').value;
+            
+            // Simulación pasarela de pago
+            alert(`Conectando a pasarela de pago para el trabajador: ${nombreTrabajador}...\nRedirigiendo a Flow/Webpay para procesar $4.990.`);
+            cerrarModal();
+        });
+
+        // Cerrar modal al hacer clic fuera del contenido
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                cerrarModal();
+            }
+        });
     </script>
 </body>
 </html>
