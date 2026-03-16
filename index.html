@@ -48,36 +48,59 @@
             
             <!-- Calculadora Form -->
             <form id="calcForm" class="space-y-6">
-                <!-- Horario -->
+                <!-- Horario Semanal Interactivo -->
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Días Trabajados por Semana</label>
-                    <div class="grid grid-cols-2 gap-4">
-                        <label class="flex items-center justify-center p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
-                            <input type="radio" name="dias" value="5" checked class="mr-2 text-navy focus:ring-navy">
-                            Lunes a Viernes (5 días)
-                        </label>
-                        <label class="flex items-center justify-center p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
-                            <input type="radio" name="dias" value="6" class="mr-2 text-navy focus:ring-navy">
-                            Lunes a Sábado (6 días)
-                        </label>
+                    <label class="block text-lg font-bold text-slate-800 mb-2 text-center">Horas Efectivas Trabajadas por Día</label>
+                    <p class="text-xs text-slate-500 italic text-center mb-6"><i class="fa-solid fa-circle-info mr-1"></i>Ingresa solo el tiempo trabajado (No incluyas el tiempo de colación).</p>
+                    
+                    <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 mb-6">
+                        <!-- Lunes -->
+                        <div class="flex flex-col">
+                            <label class="text-xs font-semibold text-slate-600 mb-1 text-center">Lunes</label>
+                            <input type="number" id="lunes" class="dia-input w-full px-3 py-2 text-center border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy focus:border-navy outline-none" min="0" max="24" value="0">
+                        </div>
+                        <!-- Martes -->
+                        <div class="flex flex-col">
+                            <label class="text-xs font-semibold text-slate-600 mb-1 text-center">Martes</label>
+                            <input type="number" id="martes" class="dia-input w-full px-3 py-2 text-center border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy focus:border-navy outline-none" min="0" max="24" value="0">
+                        </div>
+                        <!-- Miércoles -->
+                        <div class="flex flex-col">
+                            <label class="text-xs font-semibold text-slate-600 mb-1 text-center">Miércoles</label>
+                            <input type="number" id="miercoles" class="dia-input w-full px-3 py-2 text-center border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy focus:border-navy outline-none" min="0" max="24" value="0">
+                        </div>
+                        <!-- Jueves -->
+                        <div class="flex flex-col">
+                            <label class="text-xs font-semibold text-slate-600 mb-1 text-center">Jueves</label>
+                            <input type="number" id="jueves" class="dia-input w-full px-3 py-2 text-center border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy focus:border-navy outline-none" min="0" max="24" value="0">
+                        </div>
+                        <!-- Viernes -->
+                        <div class="flex flex-col">
+                            <label class="text-xs font-semibold text-slate-600 mb-1 text-center">Viernes</label>
+                            <input type="number" id="viernes" class="dia-input w-full px-3 py-2 text-center border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy focus:border-navy outline-none" min="0" max="24" value="0">
+                        </div>
+                        <!-- Sábado -->
+                        <div class="flex flex-col">
+                            <label class="text-xs font-semibold text-slate-600 mb-1 text-center">Sábado</label>
+                            <input type="number" id="sabado" class="dia-input w-full px-3 py-2 text-center border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy focus:border-navy outline-none" min="0" max="24" value="0">
+                        </div>
+                        <!-- Domingo -->
+                        <div class="flex flex-col">
+                            <label class="text-xs font-semibold text-slate-600 mb-1 text-center">Domingo</label>
+                            <input type="number" id="domingo" class="dia-input w-full px-3 py-2 text-center border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy focus:border-navy outline-none" min="0" max="24" value="0">
+                        </div>
                     </div>
-                </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Hora de Entrada</label>
-                        <input type="time" id="entrada" required value="09:00" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy focus:border-navy outline-none transition-all">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Hora de Salida</label>
-                        <input type="time" id="salida" required value="18:00" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy focus:border-navy outline-none transition-all">
+                    <!-- Contador Total en Tiempo Real -->
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 text-center">
+                        <p class="text-sm text-slate-500 uppercase font-bold tracking-wider mb-1">Total Calculado</p>
+                        <p class="text-3xl font-bold text-navy"><span id="contadorTotal">0</span> horas semanales</p>
                     </div>
                 </div>
-                <p class="text-xs text-slate-500 italic"><i class="fa-solid fa-circle-info mr-1"></i>Se descontará automáticamente 1 hora de colación por día (no imputable a la jornada).</p>
 
                 <!-- Botón de Calcular -->
                 <button type="submit" class="w-full bg-navy hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all flex items-center justify-center gap-2 text-lg">
-                    <i class="fa-solid fa-calculator"></i> Simular Jornada
+                    <i class="fa-solid fa-calculator"></i> Validar Distribución Legal
                 </button>
             </form>
 
@@ -108,7 +131,8 @@
 
                 <!-- Sección de Planes de Cumplimiento Legal -->
                 <div class="mt-8">
-                    <h3 class="text-xl font-bold text-center text-slate-800 mb-6">Selecciona tu Plan de Cumplimiento Legal</h3>
+                    <h3 class="text-xl font-bold text-center text-slate-800 mb-2">Selecciona tu Plan de Cumplimiento Legal</h3>
+                    <p class="text-sm text-slate-500 text-center mb-8">Genera los anexos legales para jornadas regulares, part-time o sistemas 4x3.</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         
                         <!-- Tarjeta Básico -->
@@ -205,74 +229,87 @@
 
     <!-- Lógica de Negocio (Vanilla JS) -->
     <script>
+        // Actualización en Tiempo Real del Contador Total
+        const diasInputs = document.querySelectorAll('.dia-input');
+        const contadorTotal = document.getElementById('contadorTotal');
+
+        function actualizarContador() {
+            let total = 0;
+            diasInputs.forEach(input => {
+                total += parseFloat(input.value) || 0;
+            });
+            contadorTotal.innerText = total;
+            return total;
+        }
+
+        diasInputs.forEach(input => {
+            input.addEventListener('input', actualizarContador);
+        });
+
+        // Manejo del Submit (Validación de Reglas)
         document.getElementById('calcForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            // Capturar Valores
-            const entradaStr = document.getElementById('entrada').value;
-            const salidaStr = document.getElementById('salida').value;
-            const diasTrabajados = parseInt(document.querySelector('input[name="dias"]:checked').value);
-
-            // Convertir horas a minutos para cálculos precisos
-            const [entH, entM] = entradaStr.split(':').map(Number);
-            const [salH, salM] = salidaStr.split(':').map(Number);
-
-            let minutosEntrada = entH * 60 + entM;
-            let minutosSalida = salH * 60 + salM;
-
-            // Manejo de cruce de medianoche (ej. entrada 22:00, salida 06:00)
-            if (minutosSalida < minutosEntrada) {
-                minutosSalida += 24 * 60;
-            }
-
-            // Calcular tiempo total en el lugar de trabajo (minutos)
-            let minutosBrutosDiarios = minutosSalida - minutosEntrada;
-
-            // Restar 1 hora (60 minutos) de colación
-            let minutosNetosDiarios = minutosBrutosDiarios - 60;
-
-            if(minutosNetosDiarios <= 0) {
-                alert("El horario ingresado es inválido o menor a 1 hora de colación obligatoria.");
-                return;
-            }
-
-            // Convertir a horas decimales para evaluación
-            const horasDiarias = minutosNetosDiarios / 60;
-            const horasSemanales = horasDiarias * diasTrabajados;
-
             // Elementos del DOM para Resultados
             const resultadoSeccion = document.getElementById('resultadoSeccion');
-            const mensajeAlerta = document.getElementById('mensajeAlerta');
-            const iconoAlerta = document.getElementById('iconoAlerta');
-            const tituloAlerta = document.getElementById('tituloAlerta');
-            const textoAlerta = document.getElementById('textoAlerta');
             
-            // Lógica de Reglas
-            // Regla 3: Ningún día puede superar las 10 horas ordinarias
-            if (horasDiarias > 10) {
+            // Recopilar Datos
+            let horasSemanales = 0;
+            let diasTrabajados = 0;
+            let supero10Horas = false;
+
+            diasInputs.forEach(input => {
+                const valor = parseFloat(input.value) || 0;
+                horasSemanales += valor;
+                if (valor > 0) diasTrabajados++;
+                if (valor > 10) supero10Horas = true;
+            });
+
+            // Lógica de Reglas Legales
+
+            // Regla Tope Diario (No permitir > 10 horas por día)
+            if (supero10Horas) {
                 setAlerta('danger', 
                     'fa-circle-exclamation', 
-                    'Exceso de Horas Diarias (Máx 10h)', 
-                    `¡Error Legal! El trabajador está realizando ${horasDiarias.toFixed(1)} horas ordinarias al día. La ley prohíbe exceder las 10 horas diarias (sin contar colación).`);
-            } 
-            // Regla 2: Total mayor a 42 horas
-            else if (horasSemanales > 42) {
-                setAlerta('danger', 
-                    'fa-triangle-exclamation', 
-                    '¡Atención! Exceso de Jornada Semanal', 
-                    `Estás superando el límite de 42 horas semanales. El total calculado es de ${horasSemanales.toFixed(1)} horas. Te arriesgas a multas de la Inspección del Trabajo.`);
-            } 
-            // Regla 1: Cumple la ley (<= 42 horas)
+                    'Error de Tope Diario', 
+                    'Error: La ley no permite trabajar más de 10 horas ordinarias en un solo día.');
+            }
+            // Regla Jornada Part-Time (<= 30 horas)
+            else if (horasSemanales <= 30) {
+                setAlerta('info', 
+                    'fa-circle-info', 
+                    'Jornada Parcial (Part-Time)', 
+                    'Jornada Parcial detectada. Este contrato no requiere reducción de jornada bajo la nueva ley de 42 horas, pero puedes generar un anexo de actualización si lo deseas.');
+            }
+            // Reglas para Jornada Ordinaria (> 30 horas)
             else {
-                setAlerta('success', 
-                    'fa-circle-check', 
-                    '¡Perfecto! Cumple con la Ley', 
-                    `Este horario cumple con la ley de abril 2026. El trabajador realizará ${horasSemanales.toFixed(1)} horas semanales.`);
+                // Total Semanal supera 42 horas (Regla 42 Horas Abril 2026)
+                if (horasSemanales > 42) {
+                    setAlerta('danger', 
+                        'fa-triangle-exclamation', 
+                        '¡Atención! Exceso de Jornada Semanal', 
+                        `Estás superando el límite de 42 horas semanales. El total calculado es de ${horasSemanales} horas. Te arriesgas a multas de la Inspección del Trabajo.`);
+                }
+                // Días Mínimos/Máximos para jornada ordinaria (Entre 4 y 6 días)
+                else if (diasTrabajados < 4 || diasTrabajados > 6) {
+                    setAlerta('danger', 
+                        'fa-calendar-xmark', 
+                        'Error de Distribución Semanal', 
+                        'La jornada ordinaria debe distribuirse en no menos de 4 ni más de 6 días (Ley 40 Horas).');
+                }
+                // Cumple con todo: (30 < x <= 42, 4 <= Días <= 6, Máx 10h/día)
+                else {
+                    setAlerta('success', 
+                        'fa-circle-check', 
+                        '¡Perfecto! Cumple con la Ley', 
+                        'Esta distribución cumple con todas las normativas para abril 2026.');
+                }
             }
 
             // Actualizar Resumen Numérico
-            document.getElementById('horasDiarias').innerText = horasDiarias.toFixed(1) + 'h';
-            document.getElementById('horasSemanales').innerText = horasSemanales.toFixed(1) + 'h';
+            const promedioDiario = diasTrabajados > 0 ? (horasSemanales / diasTrabajados).toFixed(1) : 0;
+            document.getElementById('horasDiarias').innerText = `${promedioDiario}h / día act.`;
+            document.getElementById('horasSemanales').innerText = horasSemanales + 'h';
 
             // Mostrar Sección
             resultadoSeccion.classList.remove('hidden-result');
@@ -289,13 +326,15 @@
             container.className = 'p-4 rounded-lg flex items-start gap-4 shadow-sm border';
             icono.className = 'text-2xl mt-1';
 
-            if(tipo === 'danger') {
+            if (tipo === 'danger') {
                 container.classList.add('bg-red-50', 'border-danger', 'text-danger');
-                icono.classList.add('fa-solid', iconoClase);
+            } else if (tipo === 'info') {
+                container.classList.add('bg-blue-50', 'border-blue-500', 'text-blue-700');
             } else {
                 container.classList.add('bg-green-50', 'border-success', 'text-success');
-                icono.classList.add('fa-solid', iconoClase);
             }
+            
+            icono.classList.add('fa-solid', iconoClase);
 
             document.getElementById('tituloAlerta').innerText = titulo;
             document.getElementById('textoAlerta').innerText = texto;
