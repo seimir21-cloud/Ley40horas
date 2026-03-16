@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Ley 42 Horas Chile (Abril 2026)</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome para íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        navy: '#0f172a', // Azul institucional (Slate 900)
+                        success: '#16a34a', // Verde éxito
+                        danger: '#dc2626', // Rojo alerta
+                        premium: '#f59e0b', // Ambar para CTA premium
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .hidden-result { display: none; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Hero Section -->
+    <header class="bg-navy text-white py-12 px-4 text-center">
+        <div class="max-w-3xl mx-auto">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4">Calculadora Ley 42 Horas Chile (Abril 2026)</h1>
+            <p class="text-lg md:text-xl text-slate-300 font-light">Evita multas de la Dirección del Trabajo. Simula el nuevo horario de tus trabajadores gratis y obtén el Anexo de Contrato obligatorio.</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex items-center justify-center p-4 -mt-6">
+        <div class="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6 md:p-8">
+            
+            <!-- Calculadora Form -->
+            <form id="calcForm" class="space-y-6">
+                <!-- Información Personal -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Nombre del Trabajador</label>
+                        <input type="text" id="nombre" required placeholder="Ej. Juan Pérez" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy focus:border-navy outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">RUT</label>
+                        <input type="text" id="rut" required placeholder="Ej. 12.345.678-9" pattern="^[0-9]{1,2}\.?[0-9]{3}\.?[0-9]{3}-[0-9Kk]{1}$" title="Ingrese un RUT válido con guión" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy focus:border-navy outline-none transition-all">
+                    </div>
+                </div>
+
+                <hr class="border-slate-200">
+
+                <!-- Horario -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Días Trabajados por Semana</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="flex items-center justify-center p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
+                            <input type="radio" name="dias" value="5" checked class="mr-2 text-navy focus:ring-navy">
+                            Lunes a Viernes (5 días)
+                        </label>
+                        <label class="flex items-center justify-center p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
+                            <input type="radio" name="dias" value="6" class="mr-2 text-navy focus:ring-navy">
+                            Lunes a Sábado (6 días)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Hora de Entrada</label>
+                        <input type="time" id="entrada" required value="09:00" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy focus:border-navy outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Hora de Salida</label>
+                        <input type="time" id="salida" required value="18:00" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy focus:border-navy outline-none transition-all">
+                    </div>
+                </div>
+                <p class="text-xs text-slate-500 italic"><i class="fa-solid fa-circle-info mr-1"></i>Se descontará automáticamente 1 hora de colación por día (no imputable a la jornada).</p>
+
+                <!-- Botón de Calcular -->
+                <button type="submit" class="w-full bg-navy hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all flex items-center justify-center gap-2 text-lg">
+                    <i class="fa-solid fa-calculator"></i> Calcular Jornada Legal
+                </button>
+            </form>
+
+            <!-- Resultados Section (Oculta por defecto) -->
+            <div id="resultadoSeccion" class="hidden-result mt-8 space-y-6">
+                <hr class="border-slate-200">
+                
+                <!-- Mensaje de Validación Legal -->
+                <div id="mensajeAlerta" class="p-4 rounded-lg flex items-start gap-4 shadow-sm border">
+                    <div id="iconoAlerta" class="text-2xl mt-1"></div>
+                    <div>
+                        <h3 id="tituloAlerta" class="font-bold text-lg mb-1"></h3>
+                        <p id="textoAlerta" class="text-sm"></p>
+                    </div>
+                </div>
+
+                <!-- Resumen Numérico -->
+                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 grid grid-cols-2 gap-4 text-center">
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Horas Ordinarias / Día</p>
+                        <p id="horasDiarias" class="text-2xl font-bold text-navy">0h</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Total Semanal</p>
+                        <p id="horasSemanales" class="text-2xl font-bold text-navy">0h</p>
+                    </div>
+                </div>
+
+                <!-- Sección Premium / Monetización CTA -->
+                <div class="bg-amber-50 border-2 border-premium rounded-xl p-5 text-center relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-premium text-white text-xs font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider">Premium</div>
+                    <h4 class="text-xl font-bold text-slate-800 mb-2">Anexo de Contrato Legal</h4>
+                    <p class="text-sm text-slate-600 mb-4">Descarga el Anexo de Contrato Legal Obligatorio con los datos de <span id="nombreTrabajadorRes" class="font-semibold">este trabajador</span>, listo para firmar.</p>
+                    
+                    <div class="flex items-center justify-center gap-3 mb-4">
+                        <span class="text-slate-400 line-through text-sm">$25.000</span>
+                        <span class="text-3xl font-bold text-premium">$4.990 <span class="text-sm text-slate-600 font-normal">CLP</span></span>
+                    </div>
+
+                    <button onclick="iniciarPago()" class="w-full bg-premium hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-pdf"></i> Pagar y Descargar PDF
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer Legal -->
+    <footer class="bg-slate-200 py-6 px-4 mt-auto">
+        <div class="max-w-4xl mx-auto text-center">
+            <p class="text-xs text-slate-500 leading-relaxed">
+                <strong>Disclaimer:</strong> Esta herramienta automatiza la redacción de formatos basados en plantillas proforma de la DT. No constituye asesoría legal directa. Es responsabilidad del empleador revisar el documento final.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Lógica de Negocio (Vanilla JS) -->
+    <script>
+        document.getElementById('calcForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Capturar Valores
+            const nombre = document.getElementById('nombre').value;
+            const entradaStr = document.getElementById('entrada').value;
+            const salidaStr = document.getElementById('salida').value;
+            const diasTrabajados = parseInt(document.querySelector('input[name="dias"]:checked').value);
+
+            // Convertir horas a minutos para cálculos precisos
+            const [entH, entM] = entradaStr.split(':').map(Number);
+            const [salH, salM] = salidaStr.split(':').map(Number);
+
+            let minutosEntrada = entH * 60 + entM;
+            let minutosSalida = salH * 60 + salM;
+
+            // Manejo de cruce de medianoche (ej. entrada 22:00, salida 06:00)
+            if (minutosSalida < minutosEntrada) {
+                minutosSalida += 24 * 60;
+            }
+
+            // Calcular tiempo total en el lugar de trabajo (minutos)
+            let minutosBrutosDiarios = minutosSalida - minutosEntrada;
+
+            // Restar 1 hora (60 minutos) de colación
+            let minutosNetosDiarios = minutosBrutosDiarios - 60;
+
+            if(minutosNetosDiarios <= 0) {
+                alert("El horario ingresado es inválido o menor a 1 hora de colación obligatoria.");
+                return;
+            }
+
+            // Convertir a horas decimales para evaluación
+            const horasDiarias = minutosNetosDiarios / 60;
+            const horasSemanales = horasDiarias * diasTrabajados;
+
+            // Elementos del DOM para Resultados
+            const resultadoSeccion = document.getElementById('resultadoSeccion');
+            const mensajeAlerta = document.getElementById('mensajeAlerta');
+            const iconoAlerta = document.getElementById('iconoAlerta');
+            const tituloAlerta = document.getElementById('tituloAlerta');
+            const textoAlerta = document.getElementById('textoAlerta');
+            
+            // Lógica de Reglas
+            // Regla 3: Ningún día puede superar las 10 horas ordinarias
+            if (horasDiarias > 10) {
+                setAlerta('danger', 
+                    'fa-circle-exclamation', 
+                    'Exceso de Horas Diarias (Máx 10h)', 
+                    `¡Error Legal! El trabajador está realizando ${horasDiarias.toFixed(1)} horas ordinarias al día. La ley prohíbe exceder las 10 horas diarias (sin contar colación).`);
+            } 
+            // Regla 2: Total mayor a 42 horas
+            else if (horasSemanales > 42) {
+                setAlerta('danger', 
+                    'fa-triangle-exclamation', 
+                    '¡Atención! Exceso de Jornada Semanal', 
+                    `Estás superando el límite de 42 horas semanales. El total calculado es de ${horasSemanales.toFixed(1)} horas. Te arriesgas a multas de la Inspección del Trabajo.`);
+            } 
+            // Regla 1: Cumple la ley (<= 42 horas)
+            else {
+                setAlerta('success', 
+                    'fa-circle-check', 
+                    '¡Perfecto! Cumple con la Ley', 
+                    `Este horario cumple con la ley de abril 2026. El trabajador realizará ${horasSemanales.toFixed(1)} horas semanales.`);
+            }
+
+            // Actualizar Resumen Numérico
+            document.getElementById('horasDiarias').innerText = horasDiarias.toFixed(1) + 'h';
+            document.getElementById('horasSemanales').innerText = horasSemanales.toFixed(1) + 'h';
+
+            // Actualizar CTA
+            document.getElementById('nombreTrabajadorRes').innerText = nombre;
+
+            // Mostrar Sección
+            resultadoSeccion.classList.remove('hidden-result');
+            // Scroll suave hacia los resultados
+            resultadoSeccion.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+
+        // Helper para establecer colores y textos de la alerta
+        function setAlerta(tipo, iconoClase, titulo, texto) {
+            const container = document.getElementById('mensajeAlerta');
+            const icono = document.getElementById('iconoAlerta');
+            
+            // Resetear clases
+            container.className = 'p-4 rounded-lg flex items-start gap-4 shadow-sm border';
+            icono.className = 'text-2xl mt-1';
+
+            if(tipo === 'danger') {
+                container.classList.add('bg-red-50', 'border-danger', 'text-danger');
+                icono.classList.add('fa-solid', iconoClase);
+            } else {
+                container.classList.add('bg-green-50', 'border-success', 'text-success');
+                icono.classList.add('fa-solid', iconoClase);
+            }
+
+            document.getElementById('tituloAlerta').innerText = titulo;
+            document.getElementById('textoAlerta').innerText = texto;
+        }
+
+        // Simulación pasarela de pago
+        function iniciarPago() {
+            alert("Conectando a pasarela de pago...\nRedirigiendo a Flow/Webpay.");
+        }
+    </script>
+</body>
+</html>
