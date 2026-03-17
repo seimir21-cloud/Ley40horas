@@ -87,61 +87,61 @@
                                 <p class="text-sm text-slate-500 uppercase font-bold tracking-wider mb-1 text-center md:text-left">Total Semanal</p>
                                 <p class="text-4xl font-bold text-navy text-center md:text-left"><span id="contadorTotal">0.0</span> <span class="text-xl font-normal text-slate-600">horas</span></p>
                             </div>
-                            <button type="submit" id="btnContinuarPago" class="bg-navy hover:bg-slate-800 text-white font-bold py-3 px-8 rounded-lg shadow-md transition-all flex items-center justify-center gap-2 text-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                                Validar y Continuar <i class="fa-solid fa-arrow-right"></i>
+                            <button type="submit" id="btnContinuarPago" class="bg-premium hover:bg-amber-600 text-white font-bold py-4 px-8 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2 text-lg md:text-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:bg-premium">
+                                Validar Turno y Obtener Anexo PDF <i class="fa-solid fa-arrow-right"></i>
                             </button>
                         </div>
                     </form>
                 </div>
 
                 <!-- PASO 2: Muro de Pago -->
-                <div id="vistaPago" class="hidden">
+                <div id="vistaPago" class="hidden mt-12 pt-8 border-t-2 border-dashed border-slate-200">
                     <div class="text-center mb-8">
-                        <button type="button" onclick="volverPaso1()" class="text-slate-500 hover:text-navy mb-4 inline-flex items-center text-sm font-medium transition-colors">
-                            <i class="fa-solid fa-arrow-left mr-2"></i> Volver a editar horarios
-                        </button>
-                        <h2 class="text-2xl font-bold text-slate-800">Selecciona tu Plan de Cumplimiento Legal</h2>
-                        <p class="text-sm text-slate-500 mt-2">Genera los anexos legales para jornadas regulares, part-time o sistemas 4x3.</p>
+                        <div class="inline-block bg-green-50 border border-success rounded-full px-4 py-1.5 mb-4">
+                            <p class="text-sm text-success font-bold"><i class="fa-solid fa-check-circle mr-2"></i>¡Tu turno cumple la ley!</p>
+                        </div>
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-800">Ahora, legalízalo ante la Inspección del Trabajo.</h2>
+                        <p class="text-base md:text-lg text-slate-600 mt-3 max-w-2xl mx-auto">Genera el Anexo de Contrato obligatorio en PDF, listo para firmar y subir a la DT. Ahorra en abogados y multas.</p>
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <!-- Tarjeta Básico -->
-                        <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col items-center text-center">
+                        <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-md flex flex-col items-center text-center hover:border-navy transition-colors">
                             <h4 class="text-lg font-bold text-slate-800 mb-1">Básico</h4>
-                            <p class="text-sm text-slate-500 mb-4">1 Trabajador</p>
+                            <p class="text-sm text-slate-500 mb-4">1 Anexo</p>
                             <div class="mb-6">
                                 <span class="text-3xl font-bold text-navy">$9.990</span>
                             </div>
                             <p class="text-xs text-slate-600 mb-6 flex-grow">Ideal para microempresas.</p>
-                            <button type="button" onclick="simularPago('Básico')" class="w-full border-2 border-navy text-navy hover:bg-navy hover:text-white font-bold py-2 px-4 rounded-lg transition-colors btn-comprar">
-                                Comprar Plan
+                            <button type="button" onclick="simularPago('Básico')" class="w-full border-2 border-navy text-navy hover:bg-navy hover:text-white font-bold py-3 px-4 rounded-lg transition-colors btn-comprar">
+                                Comprar y Generar Anexos
                             </button>
                         </div>
 
                         <!-- Tarjeta Destacada -->
-                        <div class="bg-amber-50 border-2 border-premium rounded-xl p-6 shadow-md flex flex-col items-center text-center relative transform md:-translate-y-2">
-                            <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-premium text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Ahorras un 40%</div>
-                            <h4 class="text-lg font-bold text-slate-800 mb-1">Pack Pyme</h4>
-                            <p class="text-sm text-slate-500 mb-4">Hasta 5 Trabajadores</p>
+                        <div class="bg-amber-50 border-2 border-premium rounded-xl p-6 shadow-xl flex flex-col items-center text-center relative transform md:-translate-y-4">
+                            <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-premium text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">Ahorras un 40%</div>
+                            <h4 class="text-xl font-bold text-slate-800 mb-1">Pack Pyme</h4>
+                            <p class="text-sm text-slate-500 mb-4">5 Anexos</p>
                             <div class="mb-6">
-                                <span class="text-3xl font-bold text-premium">$29.990</span>
+                                <span class="text-4xl font-bold text-premium">$29.990</span>
                             </div>
                             <p class="text-xs text-slate-600 mb-6 flex-grow">La opción más popular.</p>
-                            <button type="button" onclick="simularPago('Pack Pyme')" class="w-full bg-premium hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors btn-comprar">
-                                Comprar Plan
+                            <button type="button" onclick="simularPago('Pack Pyme')" class="w-full bg-premium hover:bg-amber-600 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors btn-comprar text-lg">
+                                Comprar y Generar Anexos
                             </button>
                         </div>
 
                         <!-- Tarjeta Avanzado -->
-                        <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col items-center text-center">
+                        <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-md flex flex-col items-center text-center hover:border-navy transition-colors">
                             <h4 class="text-lg font-bold text-slate-800 mb-1">Pack Avanzado</h4>
-                            <p class="text-sm text-slate-500 mb-4">Hasta 15 Trabajadores</p>
+                            <p class="text-sm text-slate-500 mb-4">15 Anexos</p>
                             <div class="mb-6">
                                 <span class="text-3xl font-bold text-navy">$59.990</span>
                             </div>
                             <p class="text-xs text-slate-600 mb-6 flex-grow">Para empresas en crecimiento.</p>
-                            <button type="button" onclick="simularPago('Pack Avanzado')" class="w-full border-2 border-navy text-navy hover:bg-navy hover:text-white font-bold py-2 px-4 rounded-lg transition-colors btn-comprar">
-                                Comprar Plan
+                            <button type="button" onclick="simularPago('Pack Avanzado')" class="w-full border-2 border-navy text-navy hover:bg-navy hover:text-white font-bold py-3 px-4 rounded-lg transition-colors btn-comprar">
+                                Comprar y Generar Anexos
                             </button>
                         </div>
                     </div>
@@ -481,20 +481,19 @@
             calcularJornadaPublica(); // Re-validar
             const btn = document.getElementById('btnContinuarPago');
             if (!btn.disabled) {
-                document.getElementById('vistaCalculadora').classList.add('hidden');
-                document.getElementById('vistaPago').classList.remove('hidden');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                const vistaPago = document.getElementById('vistaPago');
+                
+                // En lugar de ocultar la calculadora, desplegamos la oferta abajo (CRO)
+                vistaPago.classList.remove('hidden');
+                
+                // Efecto de scroll suave hacia la oferta persuasiva
+                vistaPago.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         });
 
         // -----------------------
         // PASO 2: PAGO Y AUTH
         // -----------------------
-        function volverPaso1() {
-            document.getElementById('vistaPago').classList.add('hidden');
-            document.getElementById('vistaCalculadora').classList.remove('hidden');
-        }
-
         function simularPago(plan) {
             document.getElementById('modalPlan').value = plan;
             document.getElementById('modalMonto').value = "Precio Simulado";
