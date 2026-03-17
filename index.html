@@ -38,205 +38,285 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Hero Section -->
-    <header class="bg-navy text-white py-12 px-4 text-center">
-        <div class="max-w-3xl mx-auto">
-            <h1 class="text-3xl md:text-4xl font-bold mb-4">Calculadora Ley 42 Horas Chile (Abril 2026)</h1>
-            <p class="text-lg md:text-xl text-slate-300 font-light">Evita multas de la Dirección del Trabajo. Simula el nuevo horario de tus trabajadores gratis y obtén el Anexo de Contrato obligatorio.</p>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="flex-grow flex items-center justify-center p-4 -mt-6">
-        <div class="w-full max-w-3xl bg-white rounded-xl shadow-lg p-6 md:p-8 relative overflow-hidden" id="mainContainer">
-            
-            <!-- PASO 1: Calculadora Detallada -->
-            <div id="vistaCalculadora">
-                <form id="calcForm" class="space-y-6">
-                    <div class="text-center mb-6">
-                        <h2 class="text-2xl font-bold text-slate-800">Detalle de la Jornada Laboral</h2>
-                        <p class="text-sm text-slate-500 mt-2">Configura los horarios por día. Activa los días que el trabajador asistirá.</p>
-                    </div>
-
-                    <!-- Grilla Interactiva Semanal -->
-                    <div class="space-y-4" id="semanaContainer">
-                        <!-- Generado dinámicamente vía JS -->
-                    </div>
-
-                    <!-- Mensaje de Validación Legal -->
-                    <div id="mensajeAlerta" class="p-4 rounded-lg flex items-start gap-4 shadow-sm border hidden">
-                        <div id="iconoAlerta" class="text-2xl mt-1"></div>
-                        <div>
-                            <h3 id="tituloAlerta" class="font-bold text-lg mb-1"></h3>
-                            <p id="textoAlerta" class="text-sm"></p>
-                        </div>
-                    </div>
-
-                    <!-- Contador Total en Tiempo Real -->
-                    <div class="bg-slate-50 p-6 rounded-lg border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <div>
-                            <p class="text-sm text-slate-500 uppercase font-bold tracking-wider mb-1 text-center md:text-left">Total Semanal</p>
-                            <p class="text-4xl font-bold text-navy text-center md:text-left"><span id="contadorTotal">0.0</span> <span class="text-xl font-normal text-slate-600">horas</span></p>
-                        </div>
-                        <button type="submit" id="btnContinuarPago" class="bg-navy hover:bg-slate-800 text-white font-bold py-3 px-8 rounded-lg shadow-md transition-all flex items-center justify-center gap-2 text-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                            Validar y Continuar <i class="fa-solid fa-arrow-right"></i>
-                        </button>
-                    </div>
-                </form>
+    <!-- ========================================================= -->
+    <!-- CONTENEDOR 1: VISTA PÚBLICA (Calculadora y Muro de Pago) -->
+    <!-- ========================================================= -->
+    <div id="vista-publica" class="flex flex-col flex-grow">
+        <!-- Hero Section -->
+        <header class="bg-navy text-white py-12 px-4 text-center">
+            <div class="max-w-3xl mx-auto">
+                <h1 class="text-3xl md:text-4xl font-bold mb-4">Calculadora Ley 42 Horas Chile (Abril 2026)</h1>
+                <p class="text-lg md:text-xl text-slate-300 font-light">Evita multas de la Dirección del Trabajo. Simula el nuevo horario de tus trabajadores gratis y obtén el Anexo de Contrato obligatorio.</p>
             </div>
+        </header>
 
-            <!-- PASO 2: Muro de Pago -->
-            <div id="vistaPago" class="hidden">
-                <div class="text-center mb-8">
-                    <button type="button" onclick="volverPaso1()" class="text-slate-500 hover:text-navy mb-4 inline-flex items-center text-sm font-medium transition-colors">
-                        <i class="fa-solid fa-arrow-left mr-2"></i> Volver a editar horarios
-                    </button>
-                    <h2 class="text-2xl font-bold text-slate-800">Selecciona tu Plan de Cumplimiento Legal</h2>
-                    <p class="text-sm text-slate-500 mt-2">Genera los anexos legales para jornadas regulares, part-time o sistemas 4x3.</p>
-                </div>
+        <!-- Main Content -->
+        <main class="flex-grow flex items-center justify-center p-4 -mt-6">
+            <div class="w-full max-w-3xl bg-white rounded-xl shadow-lg p-6 md:p-8 relative overflow-hidden" id="mainContainer">
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Tarjeta Básico -->
-                    <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col items-center text-center">
-                        <h4 class="text-lg font-bold text-slate-800 mb-1">Básico</h4>
-                        <p class="text-sm text-slate-500 mb-4">1 Trabajador</p>
-                        <div class="mb-6">
-                            <span class="text-3xl font-bold text-navy">$9.990</span>
+                <!-- PASO 1: Calculadora Detallada -->
+                <div id="vistaCalculadora">
+                    <form id="calcForm" class="space-y-6">
+                        <div class="text-center mb-6">
+                            <h2 class="text-2xl font-bold text-slate-800">Detalle de la Jornada Laboral</h2>
+                            <p class="text-sm text-slate-500 mt-2">Configura los horarios por día. Activa los días que el trabajador asistirá.</p>
                         </div>
-                        <p class="text-xs text-slate-600 mb-6 flex-grow">Ideal para microempresas.</p>
-                        <button type="button" onclick="simularPago('Básico')" class="w-full border-2 border-navy text-navy hover:bg-navy hover:text-white font-bold py-2 px-4 rounded-lg transition-colors btn-comprar">
-                            Comprar Plan
-                        </button>
-                    </div>
 
-                    <!-- Tarjeta Destacada -->
-                    <div class="bg-amber-50 border-2 border-premium rounded-xl p-6 shadow-md flex flex-col items-center text-center relative transform md:-translate-y-2">
-                        <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-premium text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Ahorras un 40%</div>
-                        <h4 class="text-lg font-bold text-slate-800 mb-1">Pack Pyme</h4>
-                        <p class="text-sm text-slate-500 mb-4">Hasta 5 Trabajadores</p>
-                        <div class="mb-6">
-                            <span class="text-3xl font-bold text-premium">$29.990</span>
+                        <!-- Grilla Interactiva Semanal -->
+                        <div class="space-y-4" id="semanaContainer">
+                            <!-- Generado dinámicamente vía JS -->
                         </div>
-                        <p class="text-xs text-slate-600 mb-6 flex-grow">La opción más popular.</p>
-                        <button type="button" onclick="simularPago('Pack Pyme')" class="w-full bg-premium hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors btn-comprar">
-                            Comprar Plan
-                        </button>
-                    </div>
 
-                    <!-- Tarjeta Avanzado -->
-                    <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col items-center text-center">
-                        <h4 class="text-lg font-bold text-slate-800 mb-1">Pack Avanzado</h4>
-                        <p class="text-sm text-slate-500 mb-4">Hasta 15 Trabajadores</p>
-                        <div class="mb-6">
-                            <span class="text-3xl font-bold text-navy">$59.990</span>
+                        <!-- Mensaje de Validación Legal -->
+                        <div id="mensajeAlerta" class="p-4 rounded-lg flex items-start gap-4 shadow-sm border hidden">
+                            <div id="iconoAlerta" class="text-2xl mt-1"></div>
+                            <div>
+                                <h3 id="tituloAlerta" class="font-bold text-lg mb-1"></h3>
+                                <p id="textoAlerta" class="text-sm"></p>
+                            </div>
                         </div>
-                        <p class="text-xs text-slate-600 mb-6 flex-grow">Para empresas en crecimiento.</p>
-                        <button type="button" onclick="simularPago('Pack Avanzado')" class="w-full border-2 border-navy text-navy hover:bg-navy hover:text-white font-bold py-2 px-4 rounded-lg transition-colors btn-comprar">
-                            Comprar Plan
+
+                        <!-- Contador Total en Tiempo Real -->
+                        <div class="bg-slate-50 p-6 rounded-lg border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div>
+                                <p class="text-sm text-slate-500 uppercase font-bold tracking-wider mb-1 text-center md:text-left">Total Semanal</p>
+                                <p class="text-4xl font-bold text-navy text-center md:text-left"><span id="contadorTotal">0.0</span> <span class="text-xl font-normal text-slate-600">horas</span></p>
+                            </div>
+                            <button type="submit" id="btnContinuarPago" class="bg-navy hover:bg-slate-800 text-white font-bold py-3 px-8 rounded-lg shadow-md transition-all flex items-center justify-center gap-2 text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                                Validar y Continuar <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- PASO 2: Muro de Pago -->
+                <div id="vistaPago" class="hidden">
+                    <div class="text-center mb-8">
+                        <button type="button" onclick="volverPaso1()" class="text-slate-500 hover:text-navy mb-4 inline-flex items-center text-sm font-medium transition-colors">
+                            <i class="fa-solid fa-arrow-left mr-2"></i> Volver a editar horarios
                         </button>
+                        <h2 class="text-2xl font-bold text-slate-800">Selecciona tu Plan de Cumplimiento Legal</h2>
+                        <p class="text-sm text-slate-500 mt-2">Genera los anexos legales para jornadas regulares, part-time o sistemas 4x3.</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Tarjeta Básico -->
+                        <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col items-center text-center">
+                            <h4 class="text-lg font-bold text-slate-800 mb-1">Básico</h4>
+                            <p class="text-sm text-slate-500 mb-4">1 Trabajador</p>
+                            <div class="mb-6">
+                                <span class="text-3xl font-bold text-navy">$9.990</span>
+                            </div>
+                            <p class="text-xs text-slate-600 mb-6 flex-grow">Ideal para microempresas.</p>
+                            <button type="button" onclick="simularPago('Básico')" class="w-full border-2 border-navy text-navy hover:bg-navy hover:text-white font-bold py-2 px-4 rounded-lg transition-colors btn-comprar">
+                                Comprar Plan
+                            </button>
+                        </div>
+
+                        <!-- Tarjeta Destacada -->
+                        <div class="bg-amber-50 border-2 border-premium rounded-xl p-6 shadow-md flex flex-col items-center text-center relative transform md:-translate-y-2">
+                            <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-premium text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Ahorras un 40%</div>
+                            <h4 class="text-lg font-bold text-slate-800 mb-1">Pack Pyme</h4>
+                            <p class="text-sm text-slate-500 mb-4">Hasta 5 Trabajadores</p>
+                            <div class="mb-6">
+                                <span class="text-3xl font-bold text-premium">$29.990</span>
+                            </div>
+                            <p class="text-xs text-slate-600 mb-6 flex-grow">La opción más popular.</p>
+                            <button type="button" onclick="simularPago('Pack Pyme')" class="w-full bg-premium hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors btn-comprar">
+                                Comprar Plan
+                            </button>
+                        </div>
+
+                        <!-- Tarjeta Avanzado -->
+                        <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col items-center text-center">
+                            <h4 class="text-lg font-bold text-slate-800 mb-1">Pack Avanzado</h4>
+                            <p class="text-sm text-slate-500 mb-4">Hasta 15 Trabajadores</p>
+                            <div class="mb-6">
+                                <span class="text-3xl font-bold text-navy">$59.990</span>
+                            </div>
+                            <p class="text-xs text-slate-600 mb-6 flex-grow">Para empresas en crecimiento.</p>
+                            <button type="button" onclick="simularPago('Pack Avanzado')" class="w-full border-2 border-navy text-navy hover:bg-navy hover:text-white font-bold py-2 px-4 rounded-lg transition-colors btn-comprar">
+                                Comprar Plan
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Pantalla de carga (overlay) -->
-                <div id="loaderOverlay" class="absolute inset-0 bg-white/90 z-10 hidden flex flex-col items-center justify-center">
-                    <i class="fa-solid fa-circle-notch fa-spin text-5xl text-premium mb-4"></i>
-                    <h3 class="text-xl font-bold text-slate-800">Procesando pago...</h3>
+                <!-- Modal de Captura de Datos (Compra / Auth) -->
+                <div id="modalDatos" class="fixed inset-0 bg-slate-900 bg-opacity-75 items-center justify-center z-50 hidden">
+                    <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4 relative">
+                        <button type="button" onclick="cerrarModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
+                            <i class="fa-solid fa-xmark text-xl"></i>
+                        </button>
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2">Completar Compra</h2>
+                        <p class="text-sm text-slate-500 mb-6">Al completar el pago, recibirás un acceso inmediato a tu portal privado para generar los PDFs automáticamente.</p>
+                        
+                        <form id="formPago" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Correo Electrónico</label>
+                                <input type="email" id="modalEmail" required placeholder="contacto@tuempresa.cl" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-premium focus:border-premium outline-none transition-all">
+                            </div>
+                            
+                            <div class="bg-amber-50 p-3 rounded-lg border border-amber-200 mt-4">
+                                <label class="flex items-start cursor-pointer">
+                                    <input type="checkbox" required class="mt-1 mr-3 text-premium focus:ring-premium rounded">
+                                    <span class="text-xs text-slate-700 leading-snug">Entiendo que esta es una herramienta de autogeneración y asumo la responsabilidad de revisar el documento final.</span>
+                                </label>
+                            </div>
+
+                            <input type="hidden" id="modalMonto" value="">
+                            <input type="hidden" id="modalPlan" value="">
+
+                            <button type="submit" id="btnPagarModal" class="w-full bg-premium hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2 mt-6">
+                                <i class="fa-solid fa-credit-card"></i> Iniciar Sesión Seguro
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
+        </main>
+    </div>
 
-            <!-- PASO 3: Formulario Final y Generador PDF -->
-            <div id="vistaGenerador" class="hidden">
-                <div class="text-center mb-6">
-                    <div class="w-16 h-16 bg-success text-white rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
-                        <i class="fa-solid fa-check"></i>
-                    </div>
-                    <h2 class="text-2xl font-bold text-slate-800">¡Pago Exitoso!</h2>
-                    <p class="text-slate-500">Ingresa los datos de contacto para generar tu anexo legal personalizado.</p>
-                </div>
-                
-                <form id="formPDF" class="space-y-4">
-                    <h3 class="font-bold text-lg text-slate-700 border-b pb-2 mt-4">Datos del Empleador (Empresa)</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Razón Social Empresa</label>
-                            <input type="text" id="pdfEmpresa" required placeholder="Ej. Comercial Los Andes SpA" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">RUT Empresa</label>
-                            <input type="text" id="pdfRutEmpresa" required placeholder="Ej. 76.123.456-K" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Ciudad de Firma</label>
-                            <input type="text" id="pdfCiudad" required placeholder="Ej. Santiago" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Nombre Representante Legal</label>
-                            <input type="text" id="pdfRepName" required placeholder="Ej. Juan Pérez" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">RUT Representante Legal</label>
-                            <input type="text" id="pdfRepRut" required placeholder="Ej. 12.345.678-9" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
-                        </div>
-                    </div>
 
-                    <h3 class="font-bold text-lg text-slate-700 border-b pb-2 mt-6">Datos del Trabajador</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Nombre Trabajador</label>
-                            <input type="text" id="pdfTrabajador" required placeholder="Ej. Pedro Gómez" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">RUT Trabajador</label>
-                            <input type="text" id="pdfRutTrabajador" required placeholder="Ej. 15.678.901-2" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
-                        </div>
-                    </div>
-
-                    <button type="submit" class="w-full bg-success hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg shadow-md transition-all flex items-center justify-center gap-2 text-lg mt-8">
-                        <i class="fa-solid fa-file-pdf"></i> Generar Anexo Legal (PDF)
-                    </button>
-                    <div class="text-center mt-2">
-                        <button type="button" onclick="reiniciarFlujo()" class="text-slate-500 hover:text-slate-700 text-sm underline">Crear nuevo anexo</button>
-                    </div>
-                </form>
+    <!-- ========================================================= -->
+    <!-- CONTENEDOR 2: VISTA PRIVADA (Portal Privado) -->
+    <!-- ========================================================= -->
+    <div id="vista-privada" class="hidden flex-col flex-grow bg-slate-100">
+        
+        <!-- Header Privado -->
+        <header class="bg-white shadow-sm py-4 px-6 flex justify-between items-center sticky top-0 z-10">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-shield-halved text-success text-2xl"></i>
+                <h1 class="text-xl font-bold text-slate-800">Portal Privado</h1>
             </div>
-
-        </div>
-    </main>
-
-    <!-- Modal de Captura de Datos (Compra) -->
-    <div id="modalDatos" class="fixed inset-0 bg-slate-900 bg-opacity-75 items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4 relative">
-            <button type="button" onclick="cerrarModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
-                <i class="fa-solid fa-xmark text-xl"></i>
+            <button onclick="cerrarSesion()" class="text-sm font-semibold text-danger hover:bg-red-50 py-2 px-4 rounded-lg transition-colors border border-danger">
+                Cerrar Sesión <i class="fa-solid fa-right-from-bracket ml-1"></i>
             </button>
-            <h2 class="text-2xl font-bold text-slate-800 mb-2">Completar Compra</h2>
-            <p class="text-sm text-slate-500 mb-6">Al completar el pago, recibirás un acceso inmediato a tu portal privado para ingresar los datos de tus trabajadores y generar los PDFs automáticamente.</p>
-            
-            <form id="formPago" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">Correo Electrónico</label>
-                    <input type="email" id="modalEmail" required placeholder="contacto@tuempresa.cl" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-premium focus:border-premium outline-none transition-all">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">Nombre de la Empresa o Empleador</label>
-                    <input type="text" id="modalEmpresa" required placeholder="Ej. Comercial Los Andes SpA" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-premium focus:border-premium outline-none transition-all">
+        </header>
+
+        <!-- Main Content Privado -->
+        <main class="flex-grow p-4 md:p-8 flex justify-center">
+            <div class="w-full max-w-4xl bg-white rounded-xl shadow-md p-6 md:p-8">
+                
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Generador de Anexos</h2>
+                    <div class="inline-block bg-green-50 border border-success rounded-full px-4 py-1.5">
+                        <p class="text-sm text-success font-medium"><i class="fa-solid fa-user-check mr-2"></i>Sesión iniciada como: <span id="userEmailDisplay" class="font-bold"></span></p>
+                    </div>
                 </div>
                 
-                <div class="bg-amber-50 p-3 rounded-lg border border-amber-200 mt-4">
-                    <label class="flex items-start cursor-pointer">
-                        <input type="checkbox" required class="mt-1 mr-3 text-premium focus:ring-premium rounded">
-                        <span class="text-xs text-slate-700 leading-snug">Entiendo que esta es una herramienta de autogeneración y asumo la responsabilidad de revisar el documento final.</span>
-                    </label>
-                </div>
+                <form id="formPortalPrivado" class="space-y-8">
+                    
+                    <!-- SECCIÓN A: Datos del Empleador -->
+                    <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
+                        <h3 class="font-bold text-lg text-slate-800 border-b border-slate-300 pb-2 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-building text-navy"></i> A) Datos del Empleador
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Razón Social Empresa</label>
+                                <input type="text" id="pdfEmpresa" required placeholder="Ej. Comercial Los Andes SpA" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">RUT Empresa</label>
+                                <input type="text" id="pdfRutEmpresa" required placeholder="Ej. 76.123.456-K" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Ciudad de Firma</label>
+                                <input type="text" id="pdfCiudad" required placeholder="Ej. Santiago" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Nombre Representante Legal</label>
+                                <input type="text" id="pdfRepName" required placeholder="Ej. Juan Pérez" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">RUT Representante Legal</label>
+                                <input type="text" id="pdfRepRut" required placeholder="Ej. 12.345.678-9" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
+                            </div>
+                        </div>
+                    </div>
 
-                <input type="hidden" id="modalMonto" value="">
-                <input type="hidden" id="modalPlan" value="">
+                    <!-- SECCIÓN B: Datos del Trabajador -->
+                    <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
+                        <h3 class="font-bold text-lg text-slate-800 border-b border-slate-300 pb-2 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-user-tie text-navy"></i> B) Datos del Trabajador
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Nombre Completo</label>
+                                <input type="text" id="pdfTrabajador" required placeholder="Ej. Pedro Gómez" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">RUT Trabajador</label>
+                                <input type="text" id="pdfRutTrabajador" required placeholder="Ej. 15.678.901-2" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
+                            </div>
+                        </div>
+                    </div>
 
-                <button type="submit" id="btnPagarModal" class="w-full bg-premium hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2 mt-6">
-                    <i class="fa-solid fa-credit-card"></i> Ir a Pagar
-                </button>
-            </form>
-        </div>
+                    <!-- SECCIÓN C: Horario y Turno -->
+                    <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
+                        <h3 class="font-bold text-lg text-slate-800 border-b border-slate-300 pb-2 mb-4 flex items-center gap-2">
+                            <i class="fa-regular fa-clock text-navy"></i> C) Horario y Turno Diario
+                        </h3>
+                        <div class="mb-6">
+                            <label class="block text-sm font-semibold text-slate-700 mb-3">Días Trabajados en la Semana</label>
+                            <div class="flex flex-wrap gap-3">
+                                <label class="inline-flex items-center bg-white border border-slate-300 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50">
+                                    <input type="checkbox" class="dia-privado mr-2 text-navy focus:ring-navy rounded" value="Lunes" checked> <span class="text-sm font-medium">Lunes</span>
+                                </label>
+                                <label class="inline-flex items-center bg-white border border-slate-300 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50">
+                                    <input type="checkbox" class="dia-privado mr-2 text-navy focus:ring-navy rounded" value="Martes" checked> <span class="text-sm font-medium">Martes</span>
+                                </label>
+                                <label class="inline-flex items-center bg-white border border-slate-300 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50">
+                                    <input type="checkbox" class="dia-privado mr-2 text-navy focus:ring-navy rounded" value="Miércoles" checked> <span class="text-sm font-medium">Miércoles</span>
+                                </label>
+                                <label class="inline-flex items-center bg-white border border-slate-300 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50">
+                                    <input type="checkbox" class="dia-privado mr-2 text-navy focus:ring-navy rounded" value="Jueves" checked> <span class="text-sm font-medium">Jueves</span>
+                                </label>
+                                <label class="inline-flex items-center bg-white border border-slate-300 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50">
+                                    <input type="checkbox" class="dia-privado mr-2 text-navy focus:ring-navy rounded" value="Viernes" checked> <span class="text-sm font-medium">Viernes</span>
+                                </label>
+                                <label class="inline-flex items-center bg-white border border-slate-300 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50">
+                                    <input type="checkbox" class="dia-privado mr-2 text-navy focus:ring-navy rounded" value="Sábado"> <span class="text-sm font-medium">Sábado</span>
+                                </label>
+                                <label class="inline-flex items-center bg-white border border-slate-300 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50">
+                                    <input type="checkbox" class="dia-privado mr-2 text-navy focus:ring-navy rounded" value="Domingo"> <span class="text-sm font-medium">Domingo</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Hora de Entrada</label>
+                                <input type="time" id="privHoraEntrada" required class="block w-full bg-white px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Hora de Salida</label>
+                                <input type="time" id="privHoraSalida" required class="block w-full bg-white px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Minutos Colación</label>
+                                <input type="number" id="privDuracionColacion" required placeholder="Ej. 60" min="0" class="block w-full bg-white px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none">
+                            </div>
+                            <div></div> <!-- Div vacío para el grid -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Rango Colación Inicio</label>
+                                <input type="time" id="privRangoInicio" required class="block w-full bg-white px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Rango Colación Fin</label>
+                                <input type="time" id="privRangoFin" required class="block w-full bg-white px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botón de Generación -->
+                    <button type="submit" class="w-full bg-success hover:bg-green-700 text-white font-bold py-5 px-6 rounded-xl shadow-lg transition-all flex items-center justify-center gap-3 text-xl mt-8 transform hover:scale-[1.01]">
+                        <i class="fa-solid fa-file-pdf text-2xl"></i> Generar Anexo y Descargar PDF
+                    </button>
+                </form>
+            </div>
+        </main>
     </div>
 
     <!-- Footer Legal -->
@@ -251,7 +331,7 @@
     <!-- LÓGICA JAVASCRIPT -->
     <script>
         // -----------------------
-        // INICIALIZACIÓN SUPABASE
+        // INICIALIZACIÓN SUPABASE Y AUTH LISTENER
         // -----------------------
         const SUPABASE_URL = 'https://smodjwbmabffobonywad.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_IqUnREWnwoqasISTUvzKMA_PREAkJFU';
@@ -259,23 +339,44 @@
         let supabaseClient;
         if (window.supabase) {
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            
+            // Listener de Autenticación
+            supabaseClient.auth.onAuthStateChange((event, session) => {
+                const vistaPublica = document.getElementById('vista-publica');
+                const vistaPrivada = document.getElementById('vista-privada');
+                
+                if (session) {
+                    // Hay sesión activa
+                    vistaPublica.classList.add('hidden');
+                    vistaPublica.classList.remove('flex'); // Removemos flex para que hidden funcione
+                    vistaPrivada.classList.remove('hidden');
+                    vistaPrivada.classList.add('flex');
+                    document.getElementById('userEmailDisplay').innerText = session.user.email;
+                } else {
+                    // No hay sesión
+                    vistaPrivada.classList.add('hidden');
+                    vistaPrivada.classList.remove('flex');
+                    vistaPublica.classList.remove('hidden');
+                    vistaPublica.classList.add('flex');
+                }
+            });
+
         } else {
             console.error("Supabase JS SDK no cargó correctamente desde el CDN.");
         }
 
-        // -----------------------
-        // ESTADO GLOBAL
-        // -----------------------
-        const datosJornada = {
-            totalHorasSemanal: 0,
-            dias: {}
-        };
+        async function cerrarSesion() {
+            if(supabaseClient) {
+                await supabaseClient.auth.signOut();
+                window.location.reload();
+            }
+        }
 
+        // -----------------------
+        // PASO 1: CALCULADORA (VISTA PÚBLICA)
+        // -----------------------
         const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
         
-        // -----------------------
-        // PASO 1: CALCULADORA
-        // -----------------------
         function renderizarGrilla() {
             const container = document.getElementById('semanaContainer');
             container.innerHTML = '';
@@ -385,7 +486,6 @@
             let totalSemanal = 0;
             let diasActivos = 0;
             let errorDiario = false;
-            datosJornada.dias = {}; // Reset state
 
             document.querySelectorAll('.dia-checkbox:checked').forEach(chk => {
                 diasActivos++;
@@ -416,19 +516,9 @@
                 
                 totalSemanal += horasDiarias;
 
-                datosJornada.dias[nombreDia] = {
-                    entrada: entrada,
-                    salida: salida,
-                    colacionInicio: colInicio,
-                    colacionFin: colFin,
-                    duracionColacionMin: minutosColacion,
-                    horasEfectivas: horasDiarias
-                };
-
                 if (horasDiarias > 10) errorDiario = true;
             });
 
-            datosJornada.totalHorasSemanal = totalSemanal;
             document.getElementById('contadorTotal').innerText = totalSemanal.toFixed(1);
 
             // Validaciones Legales Obligatorias
@@ -454,7 +544,7 @@
             e.preventDefault();
             calcularJornada(); // Re-validar
             const btn = document.getElementById('btnContinuarPago');
-            if (!btn.disabled && datosJornada.totalHorasSemanal > 0) {
+            if (!btn.disabled) {
                 document.getElementById('vistaCalculadora').classList.add('hidden');
                 document.getElementById('vistaPago').classList.remove('hidden');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -470,12 +560,8 @@
         }
 
         function simularPago(plan) {
-            // El usuario da clic en el plan, el modal (formulario) es el paso natural siguiente en esta simulación simplificada
-            // En un flujo real redirigiría a Flow/MercadoPago, pero para esta prueba, activamos el modal internamente en este flujo
             document.getElementById('modalPlan').value = plan;
             document.getElementById('modalMonto').value = "Precio Simulado";
-            
-            // Ajustamos las vistas mostrando la calculadora, el pago y abriendo el modal para el Auth
             abrirModal(plan, "Precio Simulado");
         }
 
@@ -495,10 +581,7 @@
         document.getElementById('formPago').addEventListener('submit', async function(e) {
             e.preventDefault();
             const correoUsuario = document.getElementById('modalEmail').value;
-            const empresa = document.getElementById('modalEmpresa').value;
-            const plan = document.getElementById('modalPlan').value;
             
-            // Deshabilitar botón durante proceso
             const btnPagar = document.getElementById('btnPagarModal');
             const btnOriginalText = btnPagar.innerHTML;
             btnPagar.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Procesando...';
@@ -527,34 +610,16 @@
                 alert("Simulando proceso: Cliente de Base de Datos no disponible.");
             }
 
-            // Flujo Exitoso
             alert("¡Éxito! Te hemos enviado un enlace seguro a tu correo. Revisa tu bandeja de entrada para acceder a tu Portal Privado y descargar tus anexos.");
             cerrarModal();
             
-            // Auto-completar nombre de empresa para el form PDF final
-            document.getElementById('pdfEmpresa').value = empresa;
-            
-            // Ocultar calculadora y pago, mostrar generador PDF
-            document.getElementById('vistaCalculadora').classList.add('hidden');
-            document.getElementById('vistaPago').classList.add('hidden');
-            document.getElementById('vistaGenerador').classList.remove('hidden');
-            
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            
-            // Restablecer botón para el futuro
             btnPagar.innerHTML = btnOriginalText;
             btnPagar.disabled = false;
         });
 
-        function reiniciarFlujo() {
-            document.getElementById('vistaGenerador').classList.add('hidden');
-            document.getElementById('vistaCalculadora').classList.remove('hidden');
-            document.getElementById('formPDF').reset();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
 
         // -----------------------
-        // PASO 3: PDF (jsPDF)
+        // PORTAL PRIVADO: PDF (jsPDF)
         // -----------------------
         function formatearNombresPropios(texto) {
             if (!texto) return "";
@@ -564,7 +629,7 @@
             }).join(' ');
         }
 
-        document.getElementById('formPDF').addEventListener('submit', function(e) {
+        document.getElementById('formPortalPrivado').addEventListener('submit', function(e) {
             e.preventDefault();
             generarPDF();
         });
@@ -572,7 +637,7 @@
         function generarPDF() {
             const { jsPDF } = window.jspdf;
             
-            // Variables de Contacto (Paso 3)
+            // Recolectar y formatear Datos
             const f_emp = formatearNombresPropios(document.getElementById('pdfEmpresa').value);
             const f_rut_emp = document.getElementById('pdfRutEmpresa').value.toUpperCase();
             const f_rep = formatearNombresPropios(document.getElementById('pdfRepName').value);
@@ -581,11 +646,25 @@
             const f_trab = formatearNombresPropios(document.getElementById('pdfTrabajador').value);
             const f_rut_trab = document.getElementById('pdfRutTrabajador').value.toUpperCase();
 
-            if (Object.keys(datosJornada.dias).length === 0) {
-                alert("Error fatal: No hay configuración de jornada. Volviendo a la calculadora.");
-                reiniciarFlujo();
+            // Horarios del portal privado
+            const checkboxesDias = document.querySelectorAll('.dia-privado:checked');
+            const hEntrada = document.getElementById('privHoraEntrada').value;
+            const hSalida = document.getElementById('privHoraSalida').value;
+            const hDuracionColacion = document.getElementById('privDuracionColacion').value;
+            const hColacionInicio = document.getElementById('privRangoInicio').value;
+            const hColacionFin = document.getElementById('privRangoFin').value;
+
+            if (checkboxesDias.length === 0) {
+                alert("Debes seleccionar al menos un día trabajado.");
                 return;
             }
+
+            // Calcular total de horas para el PDF
+            let minEntrada = timeToMinutes(hEntrada);
+            let minSalida = timeToMinutes(hSalida);
+            if (minSalida < minEntrada) minSalida += 24 * 60;
+            const horasDiarias = (minSalida - minEntrada - parseInt(hDuracionColacion)) / 60;
+            const totalHorasSemanal = (horasDiarias * checkboxesDias.length).toFixed(1);
 
             // Crear documento tamaño Carta
             const doc = new jsPDF({
@@ -594,11 +673,9 @@
                 format: "letter"
             });
 
-            // Márgenes estandarizados (20mm solicitados)
             const margin = 20;
             const pageWidth = doc.internal.pageSize.getWidth();
             const contentWidth = pageWidth - (margin * 2);
-            // Reducción de interlineado por cambio de fuente de 12pt a 11pt
             const lineSpacing = 5.5; 
 
             // ----- PÁGINA 1: ANEXO ----- //
@@ -606,7 +683,6 @@
             doc.setFontSize(14);
             doc.text("ANEXO DE CONTRATO DE TRABAJO - ADECUACIÓN JORNADA LABORAL", pageWidth / 2, margin + 5, { align: "center" });
             
-            // Fuente del cuerpo a 11pt tal cual fue solicitado
             doc.setFont("times", "normal");
             doc.setFontSize(11);
             
@@ -627,19 +703,19 @@
             
             yCursor += lineSpacing + 2;
             
-            const p2 = `A partir de la firma de este documento, la jornada laboral ordinaria del Trabajador será de ${datosJornada.totalHorasSemanal.toFixed(1)} horas semanales, las que se distribuirán en los siguientes días:`;
+            const p2 = `A partir de la firma de este documento, la jornada laboral ordinaria del Trabajador será de ${totalHorasSemanal} horas semanales, las que se distribuirán en los siguientes días:`;
             const p2Lines = doc.splitTextToSize(p2, contentWidth);
             doc.text(p2Lines, margin, yCursor);
             yCursor += (p2Lines.length * lineSpacing) + 5;
             
-            // Días dinámicos desde objeto datosJornada
-            for (const [dia, data] of Object.entries(datosJornada.dias)) {
-                // Nuevo formato de viñeta detallada solicitada
-                const bulletText = `• ${dia}: De ${data.entrada} a ${data.salida} horas. El tiempo destinado a colación será de ${data.duracionColacionMin} minutos, entre las ${data.colacionInicio} y las ${data.colacionFin} horas (no imputable a la jornada).`;
+            // Días dinámicos (Checkboxes del form privado)
+            checkboxesDias.forEach(chk => {
+                const dia = chk.value;
+                const bulletText = `• ${dia}: De ${hEntrada} a ${hSalida} horas. El tiempo destinado a colación será de ${hDuracionColacion} minutos, entre las ${hColacionInicio} y las ${hColacionFin} horas (no imputable a la jornada).`;
                 const bulletLines = doc.splitTextToSize(bulletText, contentWidth - 10);
                 doc.text(bulletLines, margin + 5, yCursor);
                 yCursor += (bulletLines.length * lineSpacing) + 2;
-            }
+            });
             
             yCursor += 8;
             
@@ -649,17 +725,14 @@
             
             doc.text(p3Lines, margin, yCursor);
             
-            // FIRMAS: Posición Y absoluta anclada a la primera página sin importar el bloque superior
-            // Coordenada absoluta estricta (Y = 240)
+            // FIRMAS: Coordenada absoluta estricta (Y = 240)
             const yFirmas = 240; 
             
             doc.setFontSize(10);
-            // Línea Izquierda (Trabajador)
             doc.line(margin + 10, yFirmas, margin + 70, yFirmas);
             doc.text("Firma Trabajador", margin + 25, yFirmas + 7);
             doc.text(f_trab, margin + 10, yFirmas + 13, { maxWidth: 60, align: 'center' });
             
-            // Línea Derecha (Empleador)
             doc.line(pageWidth - margin - 70, yFirmas, pageWidth - margin - 10, yFirmas);
             doc.text("Firma Empleador", pageWidth - margin - 55, yFirmas + 7);
             doc.text(f_emp, pageWidth - margin - 70, yFirmas + 13, { maxWidth: 60, align: 'center' });
@@ -687,18 +760,13 @@
                 yInst += (instLines.length * lineSpacing) + 7;
             });
             
-            // Limpieza robusta del nombre del trabajador para evitar bugs en el navegador/SO
-            let nombreLimpio = f_trab.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Quitar tildes
-            nombreLimpio = nombreLimpio.replace(/[^a-zA-Z0-9]/g, '_'); // Todo no-alfanumérico a guión
-            nombreLimpio = nombreLimpio.replace(/_+/g, '_'); // Quitar guiones duplicados
-            nombreLimpio = nombreLimpio.replace(/^_|_$/g, ''); // Sin guiones en bordes
-            
+            // Limpieza robusta nombre
+            let nombreLimpio = f_trab.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+            nombreLimpio = nombreLimpio.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, ''); 
             if (!nombreLimpio) nombreLimpio = "Trabajador";
 
-            const nombreArchivo = `Anexo_Ley42H_${nombreLimpio}.pdf`;
-            
-            // Forzar descarga con extensión estricta
-            doc.save(nombreArchivo);
+            // Descarga
+            doc.save(`Anexo_Ley42H_${nombreLimpio}.pdf`);
         }
 
         // Ejecutar render inicial
@@ -706,3 +774,7 @@
     </script>
 </body>
 </html>
+</final_file_content>
+
+IMPORTANT: For any future changes to this file, use the final_file_content shown above as your reference. This content reflects the current state of the file, including any auto-formatting (e.g., if you used single quotes but the formatter converted them to double quotes). Always base your SEARCH/REPLACE operations on this final version to ensure accuracy.
+
