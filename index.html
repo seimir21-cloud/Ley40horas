@@ -54,7 +54,7 @@
         <main class="flex-grow flex items-center justify-center p-4 -mt-6">
             <div class="w-full max-w-3xl bg-white rounded-xl shadow-lg p-6 md:p-8 relative overflow-hidden" id="mainContainer">
                 
-                <!-- PASO 1: Calculadora Detallada -->
+                <!-- PASO 1: Calculadora Detallada Anónima -->
                 <div id="vistaCalculadora">
                     <form id="calcForm" class="space-y-6">
                         <div class="text-center mb-6">
@@ -63,8 +63,13 @@
                         </div>
 
                         <!-- Grilla Interactiva Semanal -->
-                        <div class="space-y-4" id="semanaContainer">
-                            <!-- Generado dinámicamente vía JS -->
+                        <div class="space-y-4">
+                            <label class="block text-lg font-bold text-slate-800 mb-2 text-center">Horas Efectivas Trabajadas por Día</label>
+                            <p class="text-xs text-slate-500 italic text-center mb-6"><i class="fa-solid fa-circle-info mr-1"></i>Ingresa solo el tiempo trabajado (No incluyas el tiempo de colación).</p>
+                            
+                            <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 mb-6" id="semanaContainer">
+                                <!-- Generado dinámicamente vía JS -->
+                            </div>
                         </div>
 
                         <!-- Mensaje de Validación Legal -->
@@ -288,24 +293,24 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">Hora de Entrada</label>
-                                <input type="time" id="privHoraEntrada" required class="block w-full bg-white px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none">
+                                <input type="time" id="privHoraEntrada" required class="block w-full bg-white px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none appearance-none min-w-0">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">Hora de Salida</label>
-                                <input type="time" id="privHoraSalida" required class="block w-full bg-white px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none">
+                                <input type="time" id="privHoraSalida" required class="block w-full bg-white px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none appearance-none min-w-0">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">Minutos Colación</label>
-                                <input type="number" id="privDuracionColacion" required placeholder="Ej. 60" min="0" class="block w-full bg-white px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none">
+                                <input type="number" id="privDuracionColacion" required placeholder="Ej. 60" min="0" class="block w-full bg-white px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none min-w-0">
                             </div>
                             <div></div> <!-- Div vacío para el grid -->
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">Rango Colación Inicio</label>
-                                <input type="time" id="privRangoInicio" required class="block w-full bg-white px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none">
+                                <input type="time" id="privRangoInicio" required class="block w-full bg-white px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none appearance-none min-w-0">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">Rango Colación Fin</label>
-                                <input type="time" id="privRangoFin" required class="block w-full bg-white px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none">
+                                <input type="time" id="privRangoFin" required class="block w-full bg-white px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none appearance-none min-w-0">
                             </div>
                         </div>
                     </div>
@@ -386,70 +391,25 @@
                 const isActivo = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'].includes(id); // L-V por defecto
                 
                 const html = `
-                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 transition-all duration-300 ${!isActivo ? 'opacity-50 grayscale' : ''}" id="card-${id}">
-                        <div class="flex items-center mb-3">
-                            <input type="checkbox" id="chk-${id}" class="w-5 h-5 text-navy rounded border-slate-300 cursor-pointer dia-checkbox" data-dia="${dia}" ${isActivo ? 'checked' : ''}>
-                            <label for="chk-${id}" class="ml-3 font-bold text-slate-800 text-lg cursor-pointer flex-grow">${dia}</label>
-                            <span class="text-sm font-semibold text-slate-500"><span id="total-${id}">0.0</span> hrs efectivas</span>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 inputs-container ${!isActivo ? 'hidden' : ''}" id="inputs-${id}">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-500 mb-1">Entrada</label>
-                                <input type="time" id="ent-${id}" value="09:00" class="time-input block w-full bg-white px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none appearance-none text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-500 mb-1">Salida</label>
-                                <input type="time" id="sal-${id}" value="18:00" class="time-input block w-full bg-white px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none appearance-none text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-500 mb-1">Inicio Colación</label>
-                                <input type="time" id="cin-${id}" value="13:00" class="time-input block w-full bg-white px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none appearance-none text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-500 mb-1">Fin Colación</label>
-                                <input type="time" id="cfn-${id}" value="14:00" class="time-input block w-full bg-white px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none appearance-none text-sm">
-                            </div>
-                        </div>
+                    <div class="flex flex-col">
+                        <label class="text-xs font-semibold text-slate-600 mb-1 text-center">${dia}</label>
+                        <input type="number" id="dia-${id}" class="dia-input w-full px-3 py-2 text-center border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy focus:border-navy outline-none" min="0" max="24" value="${isActivo ? '8' : '0'}" step="0.5">
                     </div>
                 `;
                 container.insertAdjacentHTML('beforeend', html);
             });
 
             agregarListenersInputs();
-            calcularJornada();
-        }
-
-        function timeToMinutes(timeStr) {
-            if (!timeStr) return 0;
-            const [h, m] = timeStr.split(':').map(Number);
-            return (h * 60) + m;
+            calcularJornadaPublica();
         }
 
         function agregarListenersInputs() {
-            document.querySelectorAll('.dia-checkbox').forEach(chk => {
-                chk.addEventListener('change', function() {
-                    const id = this.dataset.dia.toLowerCase().replace('é', 'e').replace('á', 'a');
-                    const card = document.getElementById(`card-${id}`);
-                    const inputs = document.getElementById(`inputs-${id}`);
-                    
-                    if (this.checked) {
-                        card.classList.remove('opacity-50', 'grayscale');
-                        inputs.classList.remove('hidden');
-                    } else {
-                        card.classList.add('opacity-50', 'grayscale');
-                        inputs.classList.add('hidden');
-                    }
-                    calcularJornada();
-                });
-            });
-
-            document.querySelectorAll('.time-input').forEach(input => {
-                input.addEventListener('change', calcularJornada);
+            document.querySelectorAll('.dia-input').forEach(input => {
+                input.addEventListener('input', calcularJornadaPublica);
             });
         }
 
-        function setAlerta(mostrar, tipo, titulo, texto) {
+        function setAlertaPublica(mostrar, tipo, titulo, texto) {
             const container = document.getElementById('mensajeAlerta');
             const icono = document.getElementById('iconoAlerta');
             const btnContinuar = document.getElementById('btnContinuarPago');
@@ -482,38 +442,14 @@
             container.classList.remove('hidden');
         }
 
-        function calcularJornada() {
+        function calcularJornadaPublica() {
             let totalSemanal = 0;
             let diasActivos = 0;
             let errorDiario = false;
 
-            document.querySelectorAll('.dia-checkbox:checked').forEach(chk => {
-                diasActivos++;
-                const nombreDia = chk.dataset.dia;
-                const id = nombreDia.toLowerCase().replace('é', 'e').replace('á', 'a');
-                
-                const entrada = document.getElementById(`ent-${id}`).value;
-                const salida = document.getElementById(`sal-${id}`).value;
-                const colInicio = document.getElementById(`cin-${id}`).value;
-                const colFin = document.getElementById(`cfn-${id}`).value;
-
-                let minEntrada = timeToMinutes(entrada);
-                let minSalida = timeToMinutes(salida);
-                let minColInicio = timeToMinutes(colInicio);
-                let minColFin = timeToMinutes(colFin);
-
-                if (minSalida < minEntrada) minSalida += 24 * 60; // Cruce medianoche jornada
-                if (minColFin < minColInicio) minColFin += 24 * 60; // Cruce medianoche colacion
-
-                const minutosJornada = minSalida - minEntrada;
-                const minutosColacion = minColFin - minColInicio;
-
-                let minutosEfectivos = minutosJornada - minutosColacion;
-                if (minutosEfectivos < 0) minutosEfectivos = 0;
-
-                const horasDiarias = minutosEfectivos / 60;
-                document.getElementById(`total-${id}`).innerText = horasDiarias.toFixed(1);
-                
+            document.querySelectorAll('.dia-input').forEach(input => {
+                const horasDiarias = parseFloat(input.value) || 0;
+                if (horasDiarias > 0) diasActivos++;
                 totalSemanal += horasDiarias;
 
                 if (horasDiarias > 10) errorDiario = true;
@@ -521,28 +457,28 @@
 
             document.getElementById('contadorTotal').innerText = totalSemanal.toFixed(1);
 
-            // Validaciones Legales Obligatorias
+            // Validaciones Legales de la Calculadora Pública
             if (diasActivos === 0) {
-                setAlerta(true, 'danger', 'Sin Días', 'Debes habilitar al menos un día de trabajo.');
+                setAlertaPublica(true, 'danger', 'Sin Días', 'Debes configurar al menos un día de trabajo.');
             } else if (errorDiario) {
-                setAlerta(true, 'danger', 'Tope Diario Superado', 'La ley prohíbe trabajar más de 10 horas ordinarias efectivas en un solo día.');
+                setAlertaPublica(true, 'danger', 'Error Legal', 'Error: La ley no permite más de 10 horas ordinarias diarias efectivas.');
             } else if (totalSemanal > 42) {
-                setAlerta(true, 'danger', 'Exceso Semanal', `El total de horas (${totalSemanal.toFixed(1)}h) supera el máximo legal permitido de 42 horas semanales.`);
+                setAlertaPublica(true, 'danger', 'Exceso Semanal', `Error: La jornada ordinaria no puede superar las 42 horas semanales.`);
             } else if (totalSemanal > 30 && (diasActivos < 4 || diasActivos > 6)) {
-                setAlerta(true, 'danger', 'Error de Distribución', 'La jornada ordinaria (>30h) debe distribuirse en no menos de 4 ni más de 6 días según la normativa.');
+                setAlertaPublica(true, 'danger', 'Error de Distribución', 'La jornada ordinaria (más de 30 hrs) debe distribuirse en no menos de 4 ni más de 6 días.');
             } else if (totalSemanal > 0 && totalSemanal <= 30) {
-                setAlerta(true, 'info', 'Jornada Parcial detectada.', 'No requiere reducción legal obligatoria bajo la Ley 40 horas.');
+                setAlertaPublica(true, 'info', 'Jornada Parcial detectada.', 'No requiere reducción legal obligatoria bajo la Ley 40 horas.');
             } else if (totalSemanal > 30 && totalSemanal <= 42) {
-                setAlerta(true, 'success', 'Distribución Legal', '¡Perfecto! Esta distribución cumple con todas las normativas para abril 2026.');
+                setAlertaPublica(true, 'success', 'Distribución Legal', '¡Perfecto! Esta distribución cumple con todas las normativas para abril 2026.');
             } else {
-                setAlerta(false);
+                setAlertaPublica(false);
             }
         }
 
         // Navegación: Paso 1 -> Paso 2
         document.getElementById('calcForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            calcularJornada(); // Re-validar
+            calcularJornadaPublica(); // Re-validar
             const btn = document.getElementById('btnContinuarPago');
             if (!btn.disabled) {
                 document.getElementById('vistaCalculadora').classList.add('hidden');
@@ -617,10 +553,18 @@
             btnPagar.disabled = false;
         });
 
+        // -----------------------
+        // PORTAL PRIVADO: PDF (jsPDF)
+        // -----------------------
+        
+        // Helper para convertir "HH:MM" a minutos totales
+        function timeToMinutes(timeStr) {
+            if (!timeStr) return 0;
+            const [h, m] = timeStr.split(':').map(Number);
+            return (h * 60) + m;
+        }
 
-        // -----------------------
-        // PASO 3: PDF (jsPDF)
-        // -----------------------
+        // Formato Title Case para Nombres Propios
         function formatearNombresPropios(texto) {
             if (!texto) return "";
             return texto.toLowerCase().split(' ').map(palabra => {
@@ -651,7 +595,7 @@
             return /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(texto);
         }
 
-        document.getElementById('formPDF').addEventListener('submit', function(e) {
+        document.getElementById('formPortalPrivado').addEventListener('submit', function(e) {
             e.preventDefault();
             generarPDF();
         });
@@ -774,8 +718,6 @@
             const f_trab = formatearNombresPropios(rawTrab);
             const f_rut_trab = rawRutTrab.toUpperCase();
 
-            const totalSemanalfixed = totalHorasSemanal.toFixed(1);
-
             // Crear documento tamaño Carta
             const doc = new jsPDF({
                 orientation: "portrait",
@@ -813,7 +755,7 @@
             
             yCursor += lineSpacing + 2;
             
-            const p2 = `A partir de la firma de este documento, la jornada laboral ordinaria del Trabajador será de ${totalHorasSemanal} horas semanales, las que se distribuirán en los siguientes días:`;
+            const p2 = `A partir de la firma de este documento, la jornada laboral ordinaria del Trabajador será de ${totalHorasSemanal.toFixed(1)} horas semanales, las que se distribuirán en los siguientes días:`;
             const p2Lines = doc.splitTextToSize(p2, contentWidth);
             doc.text(p2Lines, margin, yCursor);
             yCursor += (p2Lines.length * lineSpacing) + 5;
@@ -821,7 +763,7 @@
             // Días dinámicos (Checkboxes del form privado)
             checkboxesDias.forEach(chk => {
                 const dia = chk.value;
-                const bulletText = `• ${dia}: De ${hEntrada} a ${hSalida} horas. El tiempo destinado a colación será de ${hDuracionColacion} minutos, entre las ${hColacionInicio} y las ${hColacionFin} horas (no imputable a la jornada).`;
+                const bulletText = `• ${dia}: De ${hEntrada} a ${hSalida} horas. El tiempo destinado a colación será de ${hDuracionColacionStr} minutos, entre las ${hColacionInicio} y las ${hColacionFin} horas (no imputable a la jornada).`;
                 const bulletLines = doc.splitTextToSize(bulletText, contentWidth - 10);
                 doc.text(bulletLines, margin + 5, yCursor);
                 yCursor += (bulletLines.length * lineSpacing) + 2;
