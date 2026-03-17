@@ -619,7 +619,7 @@
 
 
         // -----------------------
-        // PORTAL PRIVADO: PDF (jsPDF)
+        // PASO 3: PDF (jsPDF)
         // -----------------------
         function formatearNombresPropios(texto) {
             if (!texto) return "";
@@ -629,42 +629,152 @@
             }).join(' ');
         }
 
-        document.getElementById('formPortalPrivado').addEventListener('submit', function(e) {
+        // Validación Módulo 11 (RUT Chileno)
+        function validarRut(rut) {
+            if (!/^[0-9]+-[0-9kK]{1}$/.test(rut)) return false;
+            let tmp = rut.split('-');
+            let digv = tmp[1]; 
+            let rutNum = tmp[0];
+            if (digv == 'K') digv = 'k';
+            
+            let m = 0, s = 1;
+            for (; rutNum; rutNum = Math.floor(rutNum / 10)) {
+                s = (s + rutNum % 10 * (9 - m++ % 6)) % 11;
+            }
+            const digitoValidado = s ? s - 1 : 'k';
+            
+            return digv.toString().toLowerCase() === digitoValidado.toString().toLowerCase();
+        }
+
+        // Validación Regex (Solo Letras y Espacios)
+        function validarLetras(texto) {
+            return /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(texto);
+        }
+
+        document.getElementById('formPDF').addEventListener('submit', function(e) {
             e.preventDefault();
             generarPDF();
         });
 
         function generarPDF() {
-            const { jsPDF } = window.jspdf;
-            
-            // Recolectar y formatear Datos
-            const f_emp = formatearNombresPropios(document.getElementById('pdfEmpresa').value);
-            const f_rut_emp = document.getElementById('pdfRutEmpresa').value.toUpperCase();
-            const f_rep = formatearNombresPropios(document.getElementById('pdfRepName').value);
-            const f_rut_rep = document.getElementById('pdfRepRut').value.toUpperCase();
-            const f_ciudad = formatearNombresPropios(document.getElementById('pdfCiudad').value);
-            const f_trab = formatearNombresPropios(document.getElementById('pdfTrabajador').value);
-            const f_rut_trab = document.getElementById('pdfRutTrabajador').value.toUpperCase();
+            // Recolectar Datos sin formatear primero para validación
+            const rawEmp = document.getElementById('pdfEmpresa').value.trim();
+            const rawRutEmp = document.getElementById('pdfRutEmpresa').value.trim().replace(/\./g, '');
+            const rawRep = document.getElementById('pdfRepName').value.trim();
+            const rawRutRep = document.getElementById('pdfRepRut').value.trim().replace(/\./g, '');
+            const rawCiudad = document.getElementById('pdfCiudad').value.trim();
+            const rawTrab = document.getElementById('pdfTrabajador').value.trim();
+            const rawRutTrab = document.getElementById('pdfRutTrabajador').value.trim().replace(/\./g, '');
 
-            // Horarios del portal privado
+            // 1. VALIDACIONES DE FORMATO
+            if (!validarLetras(rawRep)) {
+                alert("Error: El Nombre del Representante Legal solo debe contener letras y espacios.");
+                return;
+            }
+            if (!validarLetras(rawTrab)) {
+                alert("Error: El Nombre del Trabajador solo debe contener letras y espacios.");
+                return;
+            }
+            if (!validarLetras(rawCiudad)) {
+                alert("Error: La Ciudad solo debe contener letras y espacios.");
+                return;
+            }
+
+            if (!validarRut(rawRutEmp)) {
+                alert("Error: El RUT de la Empresa es inválido.");
+                return;
+            }
+            if (!validarRut(rawRutRep)) {
+                alert("Error: El RUT del Representante Legal es inválido.");
+                return;
+            }
+            if (!validarRut(rawRutTrab)) {
+                alert("Error: El RUT del Trabajador es inválido.");
+                return;
+            }
+
+            // 2. REGLA CONFLICTO DE INTERÉS
+            if (rawRutRep.toLowerCase() === rawRutTrab.toLowerCase()) {
+                alert("Error: El Representante Legal no puede ser el mismo Trabajador.");
+                return;
+            }
+
+            // Recolectar Horarios
             const checkboxesDias = document.querySelectorAll('.dia-privado:checked');
             const hEntrada = document.getElementById('privHoraEntrada').value;
             const hSalida = document.getElementById('privHoraSalida').value;
-            const hDuracionColacion = document.getElementById('privDuracionColacion').value;
+            const hDuracionColacionStr = document.getElementById('privDuracionColacion').value;
             const hColacionInicio = document.getElementById('privRangoInicio').value;
             const hColacionFin = document.getElementById('privRangoFin').value;
 
-            if (checkboxesDias.length === 0) {
+            // 3. MATEMÁTICA Y LEY 42 HORAS
+            const diasTrabajados = checkboxesDias.length;
+
+            if (diasTrabajados === 0) {
                 alert("Debes seleccionar al menos un día trabajado.");
                 return;
             }
 
-            // Calcular total de horas para el PDF
-            let minEntrada = timeToMinutes(hEntrada);
+            const minEntrada = timeToMinutes(hEntrada);
             let minSalida = timeToMinutes(hSalida);
-            if (minSalida < minEntrada) minSalida += 24 * 60;
-            const horasDiarias = (minSalida - minEntrada - parseInt(hDuracionColacion)) / 60;
-            const totalHorasSemanal = (horasDiarias * checkboxesDias.length).toFixed(1);
+            const minutosColacion = parseInt(hDuracionColacionStr) || 0;
+
+            // Regla D: Validación lógica de Entrada vs Salida (Lógica lineal diaria)
+            if (minSalida <= minEntrada) {
+                alert("Error: La Hora de Salida debe ser posterior a la Hora de Entrada (No se soporta turno de trasnoche en este formato).");
+                return;
+            }
+
+            const minutosBrutosDiarios = minSalida - minEntrada;
+            const horasBrutasDiarias = minutosBrutosDiarios / 60;
+
+            // Regla D: Colación > 0 si jornada > 4h
+            if (horasBrutasDiarias > 4 && minutosColacion <= 0) {
+                alert("Error legal: La jornada supera las 4 horas continuas, por lo que debes otorgar tiempo de colación (min. 30 min sugerido).");
+                return;
+            }
+            
+            // Validar que la colación no sea mayor que la jornada bruta
+            if (minutosColacion >= minutosBrutosDiarios) {
+                alert("Error: El tiempo de colación no puede ser igual o mayor al total del turno presencial.");
+                return;
+            }
+
+            const horasEfectivasDiarias = (minutosBrutosDiarios - minutosColacion) / 60;
+            const totalHorasSemanal = horasEfectivasDiarias * diasTrabajados;
+
+            // Regla A: Tope Diario 10 horas
+            if (horasEfectivasDiarias > 10) {
+                alert(`Error legal: La jornada ordinaria no puede superar las 10 horas diarias efectivas (excluyendo colación). El turno configurado es de ${horasEfectivasDiarias.toFixed(1)} hrs.`);
+                return;
+            }
+
+            // Regla B: Tope Semanal 42 horas
+            if (totalHorasSemanal > 42) {
+                alert(`Error legal: La jornada ordinaria no puede superar las 42 horas semanales estipuladas para abril 2026. El total calculado es de ${totalHorasSemanal.toFixed(1)} hrs.`);
+                return;
+            }
+
+            // Regla C: Días Mínimos/Máximos para Jornada Ordinaria (> 30 hrs)
+            if (totalHorasSemanal > 30 && (diasTrabajados < 4 || diasTrabajados > 6)) {
+                alert("Error legal: La jornada ordinaria (más de 30 hrs) debe distribuirse en no menos de 4 ni más de 6 días.");
+                return;
+            }
+
+            // === PASARON LAS VALIDACIONES: PREPARAR PDF ===
+
+            const { jsPDF } = window.jspdf;
+            
+            // Aplicar Formateo Final
+            const f_emp = formatearNombresPropios(rawEmp);
+            const f_rut_emp = rawRutEmp.toUpperCase();
+            const f_rep = formatearNombresPropios(rawRep);
+            const f_rut_rep = rawRutRep.toUpperCase();
+            const f_ciudad = formatearNombresPropios(rawCiudad);
+            const f_trab = formatearNombresPropios(rawTrab);
+            const f_rut_trab = rawRutTrab.toUpperCase();
+
+            const totalSemanalfixed = totalHorasSemanal.toFixed(1);
 
             // Crear documento tamaño Carta
             const doc = new jsPDF({
