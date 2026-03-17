@@ -12,6 +12,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jsPDF para Generación de PDF (CDN) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Supabase (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -31,6 +33,7 @@
     </script>
     <style>
         body { font-family: 'Inter', sans-serif; }
+        .hidden-result { display: none; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
@@ -200,6 +203,42 @@
         </div>
     </main>
 
+    <!-- Modal de Captura de Datos (Compra) -->
+    <div id="modalDatos" class="fixed inset-0 bg-slate-900 bg-opacity-75 items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4 relative">
+            <button type="button" onclick="cerrarModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">Completar Compra</h2>
+            <p class="text-sm text-slate-500 mb-6">Al completar el pago, recibirás un acceso inmediato a tu portal privado para ingresar los datos de tus trabajadores y generar los PDFs automáticamente.</p>
+            
+            <form id="formPago" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Correo Electrónico</label>
+                    <input type="email" id="modalEmail" required placeholder="contacto@tuempresa.cl" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-premium focus:border-premium outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Nombre de la Empresa o Empleador</label>
+                    <input type="text" id="modalEmpresa" required placeholder="Ej. Comercial Los Andes SpA" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-premium focus:border-premium outline-none transition-all">
+                </div>
+                
+                <div class="bg-amber-50 p-3 rounded-lg border border-amber-200 mt-4">
+                    <label class="flex items-start cursor-pointer">
+                        <input type="checkbox" required class="mt-1 mr-3 text-premium focus:ring-premium rounded">
+                        <span class="text-xs text-slate-700 leading-snug">Entiendo que esta es una herramienta de autogeneración y asumo la responsabilidad de revisar el documento final.</span>
+                    </label>
+                </div>
+
+                <input type="hidden" id="modalMonto" value="">
+                <input type="hidden" id="modalPlan" value="">
+
+                <button type="submit" id="btnPagarModal" class="w-full bg-premium hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2 mt-6">
+                    <i class="fa-solid fa-credit-card"></i> Ir a Pagar
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Footer Legal -->
     <footer class="bg-slate-200 py-6 px-4 mt-auto">
         <div class="max-w-4xl mx-auto text-center">
@@ -211,6 +250,13 @@
 
     <!-- LÓGICA JAVASCRIPT -->
     <script>
+        // -----------------------
+        // INICIALIZACIÓN SUPABASE
+        // -----------------------
+        const SUPABASE_URL = 'https://smodjwbmabffobonywad.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_IqUnREWnwoqasISTUvzKMA_PREAkJFU';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         // -----------------------
         // ESTADO GLOBAL
         // -----------------------
@@ -410,7 +456,7 @@
         });
 
         // -----------------------
-        // PASO 2: PAGO
+        // PASO 2: PAGO Y AUTH
         // -----------------------
         function volverPaso1() {
             document.getElementById('vistaPago').classList.add('hidden');
@@ -418,21 +464,67 @@
         }
 
         function simularPago(plan) {
-            const btns = document.querySelectorAll('.btn-comprar');
-            btns.forEach(b => b.disabled = true);
+            // El usuario da clic en el plan, el modal (formulario) es el paso natural siguiente en esta simulación simplificada
+            // En un flujo real redirigiría a Flow/MercadoPago, pero para esta prueba, activamos el modal internamente en este flujo
+            document.getElementById('modalPlan').value = plan;
+            document.getElementById('modalMonto').value = "Precio Simulado";
             
-            const loader = document.getElementById('loaderOverlay');
-            loader.classList.remove('hidden');
-            
-            setTimeout(() => {
-                document.getElementById('vistaPago').classList.add('hidden');
-                loader.classList.add('hidden');
-                btns.forEach(b => b.disabled = false);
-                
-                document.getElementById('vistaGenerador').classList.remove('hidden');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, 2000);
+            // Ajustamos las vistas mostrando la calculadora, el pago y abriendo el modal para el Auth
+            abrirModal(plan, "Precio Simulado");
         }
+
+        function abrirModal(planNombre, monto) {
+            document.getElementById('modalDatos').classList.remove('hidden');
+            document.getElementById('modalDatos').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalDatos').classList.add('hidden');
+            document.getElementById('modalDatos').classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+
+        // MANEJAR FORMULARIO DE PAGO + AUTH SUPABASE
+        document.getElementById('formPago').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const correoUsuario = document.getElementById('modalEmail').value;
+            const empresa = document.getElementById('modalEmpresa').value;
+            const plan = document.getElementById('modalPlan').value;
+            
+            // Deshabilitar botón durante proceso
+            const btnPagar = document.getElementById('btnPagarModal');
+            const btnOriginalText = btnPagar.innerHTML;
+            btnPagar.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Procesando...';
+            btnPagar.disabled = true;
+
+            // Integración Supabase: Envío de Magic Link (OTP)
+            const { data, error } = await supabase.auth.signInWithOtp({ email: correoUsuario });
+
+            if (error) {
+                console.error("Error Supabase:", error);
+                alert("Hubo un error al procesar el acceso. Intenta nuevamente.");
+                btnPagar.innerHTML = btnOriginalText;
+                btnPagar.disabled = false;
+            } else {
+                alert("¡Éxito! Te hemos enviado un enlace seguro a tu correo. Revisa tu bandeja de entrada para acceder a tu Portal Privado y descargar tus anexos.");
+                cerrarModal();
+                
+                // Auto-completar nombre de empresa para el form PDF final
+                document.getElementById('pdfEmpresa').value = empresa;
+                
+                // Ocultar calculadora y pago, mostrar generador PDF
+                document.getElementById('vistaCalculadora').classList.add('hidden');
+                document.getElementById('vistaPago').classList.add('hidden');
+                document.getElementById('vistaGenerador').classList.remove('hidden');
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // Restablecer botón para el futuro
+                btnPagar.innerHTML = btnOriginalText;
+                btnPagar.disabled = false;
+            }
+        });
 
         function reiniciarFlujo() {
             document.getElementById('vistaGenerador').classList.add('hidden');
