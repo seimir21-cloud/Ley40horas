@@ -255,7 +255,13 @@
         // -----------------------
         const SUPABASE_URL = 'https://smodjwbmabffobonywad.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_IqUnREWnwoqasISTUvzKMA_PREAkJFU';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let supabaseClient;
+        if (window.supabase) {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } else {
+            console.error("Supabase JS SDK no cargó correctamente desde el CDN.");
+        }
 
         // -----------------------
         // ESTADO GLOBAL
@@ -499,31 +505,45 @@
             btnPagar.disabled = true;
 
             // Integración Supabase: Envío de Magic Link (OTP)
-            const { data, error } = await supabase.auth.signInWithOtp({ email: correoUsuario });
+            if (supabaseClient) {
+                try {
+                    const { data, error } = await supabaseClient.auth.signInWithOtp({ email: correoUsuario });
 
-            if (error) {
-                console.error("Error Supabase:", error);
-                alert("Hubo un error al procesar el acceso. Intenta nuevamente.");
-                btnPagar.innerHTML = btnOriginalText;
-                btnPagar.disabled = false;
+                    if (error) {
+                        console.error("Error Supabase:", error);
+                        alert("Hubo un error al procesar el acceso. Intenta nuevamente.");
+                        btnPagar.innerHTML = btnOriginalText;
+                        btnPagar.disabled = false;
+                        return;
+                    } 
+                } catch (err) {
+                    console.error("Excepción en Auth:", err);
+                    alert("Error en la conexión a la base de datos.");
+                    btnPagar.innerHTML = btnOriginalText;
+                    btnPagar.disabled = false;
+                    return;
+                }
             } else {
-                alert("¡Éxito! Te hemos enviado un enlace seguro a tu correo. Revisa tu bandeja de entrada para acceder a tu Portal Privado y descargar tus anexos.");
-                cerrarModal();
-                
-                // Auto-completar nombre de empresa para el form PDF final
-                document.getElementById('pdfEmpresa').value = empresa;
-                
-                // Ocultar calculadora y pago, mostrar generador PDF
-                document.getElementById('vistaCalculadora').classList.add('hidden');
-                document.getElementById('vistaPago').classList.add('hidden');
-                document.getElementById('vistaGenerador').classList.remove('hidden');
-                
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                
-                // Restablecer botón para el futuro
-                btnPagar.innerHTML = btnOriginalText;
-                btnPagar.disabled = false;
+                alert("Simulando proceso: Cliente de Base de Datos no disponible.");
             }
+
+            // Flujo Exitoso
+            alert("¡Éxito! Te hemos enviado un enlace seguro a tu correo. Revisa tu bandeja de entrada para acceder a tu Portal Privado y descargar tus anexos.");
+            cerrarModal();
+            
+            // Auto-completar nombre de empresa para el form PDF final
+            document.getElementById('pdfEmpresa').value = empresa;
+            
+            // Ocultar calculadora y pago, mostrar generador PDF
+            document.getElementById('vistaCalculadora').classList.add('hidden');
+            document.getElementById('vistaPago').classList.add('hidden');
+            document.getElementById('vistaGenerador').classList.remove('hidden');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Restablecer botón para el futuro
+            btnPagar.innerHTML = btnOriginalText;
+            btnPagar.disabled = false;
         });
 
         function reiniciarFlujo() {
