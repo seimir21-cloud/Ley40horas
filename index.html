@@ -50,45 +50,40 @@
             </div>
         </header>
 
-        <!-- Main Content -->
+        <!-- Main Content Public -->
         <main class="flex-grow flex items-center justify-center p-4 -mt-6">
-            <div class="w-full max-w-3xl bg-white rounded-xl shadow-lg p-6 md:p-8 relative overflow-hidden" id="mainContainer">
+            <div class="w-full max-w-3xl bg-white rounded-xl shadow-lg p-6 md:p-8 relative overflow-hidden">
                 
-                <!-- PASO 1: Calculadora Detallada Anónima -->
+                <!-- PASO 1: Calculadora Pública -->
                 <div id="vistaCalculadora">
                     <form id="calcForm" class="space-y-6">
                         <div class="text-center mb-6">
                             <h2 class="text-2xl font-bold text-slate-800">Detalle de la Jornada Laboral</h2>
-                            <p class="text-sm text-slate-500 mt-2">Configura los horarios por día. Activa los días que el trabajador asistirá.</p>
+                            <p class="text-sm text-slate-500 mt-2">Configura las horas trabajadas por día (0 a 10 hrs). No incluyas colación.</p>
                         </div>
 
-                        <!-- Grilla Interactiva Semanal -->
-                        <div class="space-y-4">
-                            <label class="block text-lg font-bold text-slate-800 mb-2 text-center">Horas Efectivas Trabajadas por Día</label>
-                            <p class="text-xs text-slate-500 italic text-center mb-6"><i class="fa-solid fa-circle-info mr-1"></i>Ingresa solo el tiempo trabajado (No incluyas el tiempo de colación).</p>
-                            
-                            <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 mb-6" id="semanaContainer">
-                                <!-- Generado dinámicamente vía JS -->
-                            </div>
+                        <!-- Grilla Interactiva Semanal Pública -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 mb-6" id="semanaContainerPublico">
+                            <!-- JS renderiza aquí -->
                         </div>
 
                         <!-- Mensaje de Validación Legal -->
-                        <div id="mensajeAlerta" class="p-4 rounded-lg flex items-start gap-4 shadow-sm border hidden">
-                            <div id="iconoAlerta" class="text-2xl mt-1"></div>
+                        <div id="mensajeAlertaPublico" class="p-4 rounded-lg flex items-start gap-4 shadow-sm border hidden">
+                            <div id="iconoAlertaPublico" class="text-2xl mt-1"></div>
                             <div>
-                                <h3 id="tituloAlerta" class="font-bold text-lg mb-1"></h3>
-                                <p id="textoAlerta" class="text-sm"></p>
+                                <h3 id="tituloAlertaPublico" class="font-bold text-lg mb-1"></h3>
+                                <p id="textoAlertaPublico" class="text-sm"></p>
                             </div>
                         </div>
 
-                        <!-- Contador Total en Tiempo Real -->
+                        <!-- Contador Total Publico -->
                         <div class="bg-slate-50 p-6 rounded-lg border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
                             <div>
                                 <p class="text-sm text-slate-500 uppercase font-bold tracking-wider mb-1 text-center md:text-left">Total Semanal</p>
-                                <p class="text-4xl font-bold text-navy text-center md:text-left"><span id="contadorTotal">0.0</span> <span class="text-xl font-normal text-slate-600">horas</span></p>
+                                <p class="text-4xl font-bold text-navy text-center md:text-left"><span id="contadorTotalPublico">0.0</span> <span class="text-xl font-normal text-slate-600">horas</span></p>
                             </div>
-                            <button type="submit" id="btnContinuarPago" class="bg-premium hover:bg-amber-600 text-white font-bold py-4 px-8 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2 text-lg md:text-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:bg-premium">
-                                Validar Turno y Obtener Anexo PDF <i class="fa-solid fa-arrow-right"></i>
+                            <button type="submit" id="btnContinuarPago" class="bg-premium hover:bg-amber-600 text-white font-bold py-4 px-8 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2 text-lg md:text-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed">
+                                Validar Turno y Obtener Anexo PDF ➔
                             </button>
                         </div>
                     </form>
@@ -101,7 +96,7 @@
                             <p class="text-sm text-success font-bold"><i class="fa-solid fa-check-circle mr-2"></i>¡Tu turno cumple la ley!</p>
                         </div>
                         <h2 class="text-2xl md:text-3xl font-bold text-slate-800">Ahora, legalízalo ante la Inspección del Trabajo.</h2>
-                        <p class="text-base md:text-lg text-slate-600 mt-3 max-w-2xl mx-auto">Genera el Anexo de Contrato obligatorio en PDF, listo para firmar y subir a la DT. Ahorra en abogados y multas.</p>
+                        <p class="text-base md:text-lg text-slate-600 mt-3 max-w-2xl mx-auto">Genera el Anexo de Contrato obligatorio en PDF, listo para firmar. Ahorra en abogados y multas.</p>
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -109,70 +104,41 @@
                         <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-md flex flex-col items-center text-center hover:border-navy transition-colors">
                             <h4 class="text-lg font-bold text-slate-800 mb-1">Básico</h4>
                             <p class="text-sm text-slate-500 mb-4">1 Anexo</p>
-                            <div class="mb-6">
-                                <span class="text-3xl font-bold text-navy">$9.990</span>
-                            </div>
-                            <p class="text-xs text-slate-600 mb-6 flex-grow">Ideal para microempresas.</p>
-                            <button type="button" onclick="simularPago('Básico')" class="w-full border-2 border-navy text-navy hover:bg-navy hover:text-white font-bold py-3 px-4 rounded-lg transition-colors btn-comprar">
-                                Comprar y Generar Anexos
-                            </button>
+                            <div class="mb-6"><span class="text-3xl font-bold text-navy">$9.990</span></div>
+                            <button type="button" onclick="abrirModalAuth('Básico')" class="w-full border-2 border-navy text-navy hover:bg-navy hover:text-white font-bold py-3 px-4 rounded-lg transition-colors">Comprar y Generar</button>
                         </div>
-
                         <!-- Tarjeta Destacada -->
                         <div class="bg-amber-50 border-2 border-premium rounded-xl p-6 shadow-xl flex flex-col items-center text-center relative transform md:-translate-y-4">
-                            <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-premium text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">Ahorras un 40%</div>
-                            <h4 class="text-xl font-bold text-slate-800 mb-1">Pack Pyme</h4>
+                            <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-premium text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">Popular</div>
+                            <h4 class="text-lg font-bold text-slate-800 mb-1">Pack Pyme</h4>
                             <p class="text-sm text-slate-500 mb-4">5 Anexos</p>
-                            <div class="mb-6">
-                                <span class="text-4xl font-bold text-premium">$29.990</span>
-                            </div>
-                            <p class="text-xs text-slate-600 mb-6 flex-grow">La opción más popular.</p>
-                            <button type="button" onclick="simularPago('Pack Pyme')" class="w-full bg-premium hover:bg-amber-600 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors btn-comprar text-lg">
-                                Comprar y Generar Anexos
-                            </button>
+                            <div class="mb-6"><span class="text-4xl font-bold text-premium">$29.990</span></div>
+                            <button type="button" onclick="abrirModalAuth('Pack Pyme')" class="w-full bg-premium hover:bg-amber-600 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors">Comprar y Generar</button>
                         </div>
-
                         <!-- Tarjeta Avanzado -->
                         <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-md flex flex-col items-center text-center hover:border-navy transition-colors">
                             <h4 class="text-lg font-bold text-slate-800 mb-1">Pack Avanzado</h4>
                             <p class="text-sm text-slate-500 mb-4">15 Anexos</p>
-                            <div class="mb-6">
-                                <span class="text-3xl font-bold text-navy">$59.990</span>
-                            </div>
-                            <p class="text-xs text-slate-600 mb-6 flex-grow">Para empresas en crecimiento.</p>
-                            <button type="button" onclick="simularPago('Pack Avanzado')" class="w-full border-2 border-navy text-navy hover:bg-navy hover:text-white font-bold py-3 px-4 rounded-lg transition-colors btn-comprar">
-                                Comprar y Generar Anexos
-                            </button>
+                            <div class="mb-6"><span class="text-3xl font-bold text-navy">$59.990</span></div>
+                            <button type="button" onclick="abrirModalAuth('Pack Avanzado')" class="w-full border-2 border-navy text-navy hover:bg-navy hover:text-white font-bold py-3 px-4 rounded-lg transition-colors">Comprar y Generar</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Modal de Captura de Datos (Compra / Auth) -->
-                <div id="modalDatos" class="fixed inset-0 bg-slate-900 bg-opacity-75 items-center justify-center z-50 hidden">
+                <!-- Modal Auth Magic Link -->
+                <div id="modalAuth" class="fixed inset-0 bg-slate-900 bg-opacity-75 items-center justify-center z-50 hidden">
                     <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4 relative">
-                        <button type="button" onclick="cerrarModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
+                        <button type="button" onclick="cerrarModalAuth()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
                             <i class="fa-solid fa-xmark text-xl"></i>
                         </button>
-                        <h2 class="text-2xl font-bold text-slate-800 mb-2">Completar Compra</h2>
-                        <p class="text-sm text-slate-500 mb-6">Al completar el pago, recibirás un acceso inmediato a tu portal privado para generar los PDFs automáticamente.</p>
-                        
-                        <form id="formPago" class="space-y-4">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2">Completar Acceso</h2>
+                        <p class="text-sm text-slate-500 mb-6">Ingresa tu email para recibir un enlace de acceso seguro a tu portal privado.</p>
+                        <form id="formAuth" class="space-y-4">
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Correo Electrónico</label>
-                                <input type="email" id="modalEmail" required placeholder="contacto@tuempresa.cl" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-premium focus:border-premium outline-none transition-all">
+                                <input type="email" id="authEmail" required placeholder="contacto@tuempresa.cl" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-premium outline-none">
                             </div>
-                            
-                            <div class="bg-amber-50 p-3 rounded-lg border border-amber-200 mt-4">
-                                <label class="flex items-start cursor-pointer">
-                                    <input type="checkbox" required class="mt-1 mr-3 text-premium focus:ring-premium rounded">
-                                    <span class="text-xs text-slate-700 leading-snug">Entiendo que esta es una herramienta de autogeneración y asumo la responsabilidad de revisar el documento final.</span>
-                                </label>
-                            </div>
-
-                            <input type="hidden" id="modalMonto" value="">
-                            <input type="hidden" id="modalPlan" value="">
-
-                            <button type="submit" id="btnPagarModal" class="w-full bg-premium hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2 mt-6">
+                            <button type="submit" id="btnSubmitAuth" class="w-full bg-premium hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2">
                                 <i class="fa-solid fa-credit-card"></i> Iniciar Sesión Seguro
                             </button>
                         </form>
@@ -182,29 +148,24 @@
         </main>
     </div>
 
-
     <!-- ========================================================= -->
     <!-- CONTENEDOR 2: VISTA PRIVADA (Portal Privado) -->
     <!-- ========================================================= -->
     <div id="vista-privada" class="hidden flex-col flex-grow bg-slate-100">
-        
-        <!-- Header Privado -->
         <header class="bg-white shadow-sm py-4 px-6 flex justify-between items-center sticky top-0 z-10">
             <div class="flex items-center gap-3">
                 <i class="fa-solid fa-shield-halved text-success text-2xl"></i>
-                <h1 class="text-xl font-bold text-slate-800">Portal Privado</h1>
+                <h1 class="text-xl font-bold text-slate-800">Portal Privado - Generador de Anexos</h1>
             </div>
-            <button onclick="cerrarSesion()" class="text-sm font-semibold text-danger hover:bg-red-50 py-2 px-4 rounded-lg transition-colors border border-danger">
+            <button onclick="cerrarSesion()" class="text-sm font-semibold text-danger hover:bg-red-50 py-2 px-4 rounded-lg border border-danger transition-colors">
                 Cerrar Sesión <i class="fa-solid fa-right-from-bracket ml-1"></i>
             </button>
         </header>
 
-        <!-- Main Content Privado -->
         <main class="flex-grow p-4 md:p-8 flex justify-center">
-            <div class="w-full max-w-4xl bg-white rounded-xl shadow-md p-6 md:p-8">
+            <div class="w-full max-w-5xl bg-white rounded-xl shadow-md p-6 md:p-8">
                 
                 <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Generador de Anexos</h2>
                     <div class="inline-block bg-green-50 border border-success rounded-full px-4 py-1.5">
                         <p class="text-sm text-success font-medium"><i class="fa-solid fa-user-check mr-2"></i>Sesión iniciada como: <span id="userEmailDisplay" class="font-bold"></span></p>
                     </div>
@@ -212,111 +173,73 @@
                 
                 <form id="formPortalPrivado" class="space-y-8">
                     
-                    <!-- SECCIÓN A: Datos del Empleador -->
+                    <!-- A) Datos Empleador -->
                     <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
-                        <h3 class="font-bold text-lg text-slate-800 border-b border-slate-300 pb-2 mb-4 flex items-center gap-2">
-                            <i class="fa-solid fa-building text-navy"></i> A) Datos del Empleador
-                        </h3>
+                        <h3 class="font-bold text-lg text-slate-800 border-b border-slate-300 pb-2 mb-4">A) Datos del Empleador</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Razón Social Empresa</label>
-                                <input type="text" id="pdfEmpresa" required placeholder="Ej. Comercial Los Andes SpA" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
+                                <input type="text" id="pdfEmpresa" required class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none">
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">RUT Empresa</label>
-                                <input type="text" id="pdfRutEmpresa" required placeholder="Ej. 76.123.456-K" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
+                                <input type="text" id="pdfRutEmpresa" required placeholder="Ej. 76.123.456-K" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none">
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Ciudad de Firma</label>
-                                <input type="text" id="pdfCiudad" required placeholder="Ej. Santiago" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
+                                <input type="text" id="pdfCiudad" required placeholder="Ej. Santiago" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none">
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Nombre Representante Legal</label>
-                                <input type="text" id="pdfRepName" required placeholder="Ej. Juan Pérez" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
+                                <input type="text" id="pdfRepName" required class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none">
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">RUT Representante Legal</label>
-                                <input type="text" id="pdfRepRut" required placeholder="Ej. 12.345.678-9" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
+                                <input type="text" id="pdfRepRut" required placeholder="Ej. 12.345.678-9" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none">
                             </div>
                         </div>
                     </div>
 
-                    <!-- SECCIÓN B: Datos del Trabajador -->
+                    <!-- B) Datos Trabajador -->
                     <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
-                        <h3 class="font-bold text-lg text-slate-800 border-b border-slate-300 pb-2 mb-4 flex items-center gap-2">
-                            <i class="fa-solid fa-user-tie text-navy"></i> B) Datos del Trabajador
-                        </h3>
+                        <h3 class="font-bold text-lg text-slate-800 border-b border-slate-300 pb-2 mb-4">B) Datos del Trabajador</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Nombre Completo</label>
-                                <input type="text" id="pdfTrabajador" required placeholder="Ej. Pedro Gómez" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
+                                <input type="text" id="pdfTrabajador" required class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none">
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">RUT Trabajador</label>
-                                <input type="text" id="pdfRutTrabajador" required placeholder="Ej. 15.678.901-2" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none">
+                                <input type="text" id="pdfRutTrabajador" required placeholder="Ej. 15.678.901-2" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none">
                             </div>
                         </div>
                     </div>
 
-                    <!-- SECCIÓN C: Horario y Turno -->
+                    <!-- C) Matriz de Horarios Detallada -->
                     <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
-                        <h3 class="font-bold text-lg text-slate-800 border-b border-slate-300 pb-2 mb-4 flex items-center gap-2">
-                            <i class="fa-regular fa-clock text-navy"></i> C) Horario y Turno Diario
-                        </h3>
-                        <div class="mb-6">
-                            <label class="block text-sm font-semibold text-slate-700 mb-3">Días Trabajados en la Semana</label>
-                            <div class="flex flex-wrap gap-3">
-                                <label class="inline-flex items-center bg-white border border-slate-300 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50">
-                                    <input type="checkbox" class="dia-privado mr-2 text-navy focus:ring-navy rounded" value="Lunes" checked> <span class="text-sm font-medium">Lunes</span>
-                                </label>
-                                <label class="inline-flex items-center bg-white border border-slate-300 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50">
-                                    <input type="checkbox" class="dia-privado mr-2 text-navy focus:ring-navy rounded" value="Martes" checked> <span class="text-sm font-medium">Martes</span>
-                                </label>
-                                <label class="inline-flex items-center bg-white border border-slate-300 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50">
-                                    <input type="checkbox" class="dia-privado mr-2 text-navy focus:ring-navy rounded" value="Miércoles" checked> <span class="text-sm font-medium">Miércoles</span>
-                                </label>
-                                <label class="inline-flex items-center bg-white border border-slate-300 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50">
-                                    <input type="checkbox" class="dia-privado mr-2 text-navy focus:ring-navy rounded" value="Jueves" checked> <span class="text-sm font-medium">Jueves</span>
-                                </label>
-                                <label class="inline-flex items-center bg-white border border-slate-300 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50">
-                                    <input type="checkbox" class="dia-privado mr-2 text-navy focus:ring-navy rounded" value="Viernes" checked> <span class="text-sm font-medium">Viernes</span>
-                                </label>
-                                <label class="inline-flex items-center bg-white border border-slate-300 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50">
-                                    <input type="checkbox" class="dia-privado mr-2 text-navy focus:ring-navy rounded" value="Sábado"> <span class="text-sm font-medium">Sábado</span>
-                                </label>
-                                <label class="inline-flex items-center bg-white border border-slate-300 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50">
-                                    <input type="checkbox" class="dia-privado mr-2 text-navy focus:ring-navy rounded" value="Domingo"> <span class="text-sm font-medium">Domingo</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">Hora de Entrada</label>
-                                <input type="time" id="privHoraEntrada" required class="block w-full bg-white px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none appearance-none min-w-0">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">Hora de Salida</label>
-                                <input type="time" id="privHoraSalida" required class="block w-full bg-white px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none appearance-none min-w-0">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">Minutos Colación</label>
-                                <input type="number" id="privDuracionColacion" required placeholder="Ej. 60" min="0" class="block w-full bg-white px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none min-w-0">
-                            </div>
-                            <div></div> <!-- Div vacío para el grid -->
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">Rango Colación Inicio</label>
-                                <input type="time" id="privRangoInicio" required class="block w-full bg-white px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none appearance-none min-w-0">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">Rango Colación Fin</label>
-                                <input type="time" id="privRangoFin" required class="block w-full bg-white px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-navy outline-none appearance-none min-w-0">
-                            </div>
+                        <h3 class="font-bold text-lg text-slate-800 border-b border-slate-300 pb-2 mb-4">C) Detalle Exacto del Turno (Para el Anexo Legal)</h3>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse min-w-[700px]">
+                                <thead>
+                                    <tr class="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                        <th class="py-3 px-2">Día</th>
+                                        <th class="py-3 px-2">Activo</th>
+                                        <th class="py-3 px-2">Entrada</th>
+                                        <th class="py-3 px-2">Salida</th>
+                                        <th class="py-3 px-2">Colación (min)</th>
+                                        <th class="py-3 px-2">Inicio Col.</th>
+                                        <th class="py-3 px-2">Fin Col.</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="matrizHorariosBody">
+                                    <!-- JS renderiza filas L-D aquí -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
-                    <!-- Botón de Generación -->
-                    <button type="submit" class="w-full bg-success hover:bg-green-700 text-white font-bold py-5 px-6 rounded-xl shadow-lg transition-all flex items-center justify-center gap-3 text-xl mt-8 transform hover:scale-[1.01]">
+                    <button type="submit" class="w-full bg-success hover:bg-green-700 text-white font-bold py-5 px-6 rounded-xl shadow-lg transition-all flex items-center justify-center gap-3 text-xl mt-8">
                         <i class="fa-solid fa-file-pdf text-2xl"></i> Generar Anexo y Descargar PDF
                     </button>
                 </form>
@@ -324,508 +247,200 @@
         </main>
     </div>
 
-    <!-- Footer Legal -->
-    <footer class="bg-slate-200 py-6 px-4 mt-auto">
-        <div class="max-w-4xl mx-auto text-center">
-            <p class="text-xs text-slate-500 leading-relaxed">
-                <strong>Disclaimer:</strong> Esta herramienta automatiza la redacción de formatos basados en plantillas proforma de la DT. No constituye asesoría legal directa. Es responsabilidad del empleador revisar el documento final.
-            </p>
-        </div>
+    <footer class="bg-slate-200 py-6 px-4 mt-auto text-center">
+        <p class="text-xs text-slate-500 leading-relaxed max-w-4xl mx-auto">
+            <strong>Disclaimer:</strong> Esta herramienta automatiza la redacción de formatos basados en plantillas proforma de la DT. No constituye asesoría legal directa. Es responsabilidad del empleador revisar el documento final.
+        </p>
     </footer>
 
-    <!-- LÓGICA JAVASCRIPT -->
+    <!-- ========================================================= -->
+    <!-- LÓGICA JAVASCRIPT CONSOLIDADA -->
+    <!-- ========================================================= -->
     <script>
-        // -----------------------
-        // INICIALIZACIÓN SUPABASE Y AUTH LISTENER
-        // -----------------------
+        // 1. INICIALIZACIÓN SUPABASE
         const SUPABASE_URL = 'https://smodjwbmabffobonywad.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_IqUnREWnwoqasISTUvzKMA_PREAkJFU';
-        
         let supabaseClient;
         if (window.supabase) {
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            
-            // Listener de Autenticación
             supabaseClient.auth.onAuthStateChange((event, session) => {
                 const vistaPublica = document.getElementById('vista-publica');
                 const vistaPrivada = document.getElementById('vista-privada');
-                
                 if (session) {
-                    // Hay sesión activa
                     vistaPublica.classList.add('hidden');
-                    vistaPublica.classList.remove('flex'); // Removemos flex para que hidden funcione
                     vistaPrivada.classList.remove('hidden');
-                    vistaPrivada.classList.add('flex');
                     document.getElementById('userEmailDisplay').innerText = session.user.email;
                 } else {
-                    // No hay sesión
                     vistaPrivada.classList.add('hidden');
-                    vistaPrivada.classList.remove('flex');
                     vistaPublica.classList.remove('hidden');
-                    vistaPublica.classList.add('flex');
                 }
             });
-
-        } else {
-            console.error("Supabase JS SDK no cargó correctamente desde el CDN.");
         }
 
         async function cerrarSesion() {
-            if(supabaseClient) {
-                await supabaseClient.auth.signOut();
-                window.location.reload();
-            }
+            if(supabaseClient) await supabaseClient.auth.signOut();
+            window.location.reload();
         }
 
-        // -----------------------
-        // PASO 1: CALCULADORA (VISTA PÚBLICA)
-        // -----------------------
-        const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-        
-        function renderizarGrilla() {
-            const container = document.getElementById('semanaContainer');
-            container.innerHTML = '';
-            
-            diasSemana.forEach(dia => {
-                const id = dia.toLowerCase().replace('é', 'e').replace('á', 'a');
-                const isActivo = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'].includes(id); // L-V por defecto
-                
-                const html = `
-                    <div class="flex flex-col">
-                        <label class="text-xs font-semibold text-slate-600 mb-1 text-center">${dia}</label>
-                        <input type="number" id="dia-${id}" class="dia-input w-full px-3 py-2 text-center border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy focus:border-navy outline-none" min="0" max="24" value="${isActivo ? '8' : '0'}" step="0.5">
-                    </div>
-                `;
-                container.insertAdjacentHTML('beforeend', html);
-            });
-
-            agregarListenersInputs();
-            calcularJornadaPublica();
-        }
-
-        function agregarListenersInputs() {
-            document.querySelectorAll('.dia-input').forEach(input => {
-                input.addEventListener('input', calcularJornadaPublica);
-            });
-        }
-
-        function setAlertaPublica(mostrar, tipo, titulo, texto) {
-            const container = document.getElementById('mensajeAlerta');
-            const icono = document.getElementById('iconoAlerta');
-            const btnContinuar = document.getElementById('btnContinuarPago');
-            
-            if (!mostrar) {
-                container.classList.add('hidden');
-                btnContinuar.disabled = false;
-                return;
-            }
-
-            container.className = 'p-4 rounded-lg flex items-start gap-4 shadow-sm border mt-4 mb-4';
-            icono.className = 'text-2xl mt-1';
-
-            if (tipo === 'danger') {
-                container.classList.add('bg-red-50', 'border-danger', 'text-danger');
-                icono.classList.add('fa-solid', 'fa-circle-exclamation');
-                btnContinuar.disabled = true; // Bloquea por error legal
-            } else if (tipo === 'info') {
-                container.classList.add('bg-blue-50', 'border-blue-500', 'text-blue-700');
-                icono.classList.add('fa-solid', 'fa-circle-info');
-                btnContinuar.disabled = false;
-            } else {
-                container.classList.add('bg-green-50', 'border-success', 'text-success');
-                icono.classList.add('fa-solid', 'fa-circle-check');
-                btnContinuar.disabled = false;
-            }
-            
-            document.getElementById('tituloAlerta').innerText = titulo;
-            document.getElementById('textoAlerta').innerText = texto;
-            container.classList.remove('hidden');
-        }
-
-        function calcularJornadaPublica() {
-            let totalSemanal = 0;
-            let diasActivos = 0;
-            let errorDiario = false;
-
-            document.querySelectorAll('.dia-input').forEach(input => {
-                const horasDiarias = parseFloat(input.value) || 0;
-                if (horasDiarias > 0) diasActivos++;
-                totalSemanal += horasDiarias;
-
-                if (horasDiarias > 10) errorDiario = true;
-            });
-
-            document.getElementById('contadorTotal').innerText = totalSemanal.toFixed(1);
-
-            // Validaciones Legales de la Calculadora Pública
-            if (diasActivos === 0) {
-                setAlertaPublica(true, 'danger', 'Sin Días', 'Debes configurar al menos un día de trabajo.');
-            } else if (errorDiario) {
-                setAlertaPublica(true, 'danger', 'Error Legal', 'Error: La ley no permite más de 10 horas ordinarias diarias efectivas.');
-            } else if (totalSemanal > 42) {
-                setAlertaPublica(true, 'danger', 'Exceso Semanal', `Error: La jornada ordinaria no puede superar las 42 horas semanales.`);
-            } else if (totalSemanal > 30 && (diasActivos < 4 || diasActivos > 6)) {
-                setAlertaPublica(true, 'danger', 'Error de Distribución', 'La jornada ordinaria (más de 30 hrs) debe distribuirse en no menos de 4 ni más de 6 días.');
-            } else if (totalSemanal > 0 && totalSemanal <= 30) {
-                setAlertaPublica(true, 'info', 'Jornada Parcial detectada.', 'No requiere reducción legal obligatoria bajo la Ley 40 horas.');
-            } else if (totalSemanal > 30 && totalSemanal <= 42) {
-                setAlertaPublica(true, 'success', 'Distribución Legal', '¡Perfecto! Esta distribución cumple con todas las normativas para abril 2026.');
-            } else {
-                setAlertaPublica(false);
-            }
-        }
-
-        // Navegación: Paso 1 -> Paso 2
-        document.getElementById('calcForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            calcularJornadaPublica(); // Re-validar
-            const btn = document.getElementById('btnContinuarPago');
-            if (!btn.disabled) {
-                const vistaPago = document.getElementById('vistaPago');
-                
-                // En lugar de ocultar la calculadora, desplegamos la oferta abajo (CRO)
-                vistaPago.classList.remove('hidden');
-                
-                // Efecto de scroll suave hacia la oferta persuasiva
-                vistaPago.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        });
-
-        // -----------------------
-        // PASO 2: PAGO Y AUTH
-        // -----------------------
-        function simularPago(plan) {
-            document.getElementById('modalPlan').value = plan;
-            document.getElementById('modalMonto').value = "Precio Simulado";
-            abrirModal(plan, "Precio Simulado");
-        }
-
-        function abrirModal(planNombre, monto) {
-            document.getElementById('modalDatos').classList.remove('hidden');
-            document.getElementById('modalDatos').classList.add('flex');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function cerrarModal() {
-            document.getElementById('modalDatos').classList.add('hidden');
-            document.getElementById('modalDatos').classList.remove('flex');
-            document.body.style.overflow = '';
-        }
-
-        // MANEJAR FORMULARIO DE PAGO + AUTH SUPABASE
-        document.getElementById('formPago').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const correoUsuario = document.getElementById('modalEmail').value;
-            
-            const btnPagar = document.getElementById('btnPagarModal');
-            const btnOriginalText = btnPagar.innerHTML;
-            btnPagar.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Procesando...';
-            btnPagar.disabled = true;
-
-            // Integración Supabase: Envío de Magic Link (OTP)
-            if (supabaseClient) {
-                try {
-                    const { data, error } = await supabaseClient.auth.signInWithOtp({ email: correoUsuario });
-
-                    if (error) {
-                        console.error("Error Supabase:", error);
-                        alert("Hubo un error al procesar el acceso. Intenta nuevamente.");
-                        btnPagar.innerHTML = btnOriginalText;
-                        btnPagar.disabled = false;
-                        return;
-                    } 
-                } catch (err) {
-                    console.error("Excepción en Auth:", err);
-                    alert("Error en la conexión a la base de datos.");
-                    btnPagar.innerHTML = btnOriginalText;
-                    btnPagar.disabled = false;
-                    return;
-                }
-            } else {
-                alert("Simulando proceso: Cliente de Base de Datos no disponible.");
-            }
-
-            alert("¡Éxito! Te hemos enviado un enlace seguro a tu correo. Revisa tu bandeja de entrada para acceder a tu Portal Privado y descargar tus anexos.");
-            cerrarModal();
-            
-            btnPagar.innerHTML = btnOriginalText;
-            btnPagar.disabled = false;
-        });
-
-        // -----------------------
-        // PORTAL PRIVADO: PDF (jsPDF)
-        // -----------------------
-        
-        // Helper para convertir "HH:MM" a minutos totales
-        function timeToMinutes(timeStr) {
-            if (!timeStr) return 0;
-            const [h, m] = timeStr.split(':').map(Number);
-            return (h * 60) + m;
-        }
-
-        // Formato Title Case para Nombres Propios
-        function formatearNombresPropios(texto) {
-            if (!texto) return "";
-            return texto.toLowerCase().split(' ').map(palabra => {
-                if (palabra.length === 0) return "";
-                return palabra.charAt(0).toUpperCase() + palabra.slice(1);
-            }).join(' ');
-        }
-
-        // Validación Módulo 11 (RUT Chileno)
+        // 2. HELPERS
+        const diasSemanaNombres = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+        const formatId = (text) => text.toLowerCase().replace('é', 'e').replace('á', 'a');
+        const timeToMinutes = (t) => { if(!t) return 0; const [h, m] = t.split(':').map(Number); return (h * 60) + m; };
+        const formatearNombresPropios = (t) => t ? t.toLowerCase().split(' ').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ') : "";
+        const validarLetras = (t) => /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(t);
         function validarRut(rut) {
             if (!/^[0-9]+-[0-9kK]{1}$/.test(rut)) return false;
-            let tmp = rut.split('-');
-            let digv = tmp[1]; 
-            let rutNum = tmp[0];
-            if (digv == 'K') digv = 'k';
-            
+            let [num, dv] = rut.split('-');
             let m = 0, s = 1;
-            for (; rutNum; rutNum = Math.floor(rutNum / 10)) {
-                s = (s + rutNum % 10 * (9 - m++ % 6)) % 11;
-            }
-            const digitoValidado = s ? s - 1 : 'k';
-            
-            return digv.toString().toLowerCase() === digitoValidado.toString().toLowerCase();
+            for (; num; num = Math.floor(num / 10)) s = (s + num % 10 * (9 - m++ % 6)) % 11;
+            let dvCalculado = s ? s - 1 : 'k';
+            return dv.toLowerCase() === dvCalculado.toString();
         }
 
-        // Validación Regex (Solo Letras y Espacios)
-        function validarLetras(texto) {
-            return /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(texto);
+        // 3. PASO 1: CALCULADORA PÚBLICA
+        function renderCalculadoraPublica() {
+            const container = document.getElementById('semanaContainerPublico');
+            container.innerHTML = '';
+            diasSemanaNombres.forEach(dia => {
+                const id = formatId(dia);
+                const activo = ['lunes','martes','miercoles','jueves','viernes'].includes(id);
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="flex flex-col">
+                        <label class="text-xs font-semibold text-slate-600 mb-1 text-center">${dia}</label>
+                        <input type="number" id="pub-dia-${id}" class="pub-dia-input w-full px-3 py-2 text-center border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy outline-none" min="0" max="24" value="${activo ? '8' : '0'}" step="0.5">
+                    </div>
+                `);
+            });
+            document.querySelectorAll('.pub-dia-input').forEach(i => i.addEventListener('input', calcularPublico));
+            calcularPublico();
         }
 
-        document.getElementById('formPortalPrivado').addEventListener('submit', function(e) {
+        function calcularPublico() {
+            let total = 0, dias = 0, error10 = false;
+            document.querySelectorAll('.pub-dia-input').forEach(i => {
+                const v = parseFloat(i.value) || 0;
+                if(v > 0) dias++;
+                if(v > 10) error10 = true;
+                total += v;
+            });
+            document.getElementById('contadorTotalPublico').innerText = total.toFixed(1);
+            const msg = document.getElementById('mensajeAlertaPublico');
+            const tit = document.getElementById('tituloAlertaPublico');
+            const txt = document.getElementById('textoAlertaPublico');
+            const btn = document.getElementById('btnContinuarPago');
+            const setA = (show, type, t, x, dis) => {
+                msg.className = `p-4 rounded-lg flex items-start gap-4 border mt-4 ${show ? '' : 'hidden'} ${type==='danger'?'bg-red-50 border-danger text-danger':'bg-green-50 border-success text-success'}`;
+                tit.innerText = t; txt.innerText = x; btn.disabled = dis;
+                msg.classList.toggle('hidden', !show);
+            };
+            if (dias===0) setA(true, 'danger', 'Sin Días', 'Ingresa horas.', true);
+            else if (error10) setA(true, 'danger', 'Error Legal', 'Máximo 10 hrs diarias.', true);
+            else if (total > 42) setA(true, 'danger', 'Exceso', 'Máximo 42 hrs semanales.', true);
+            else if (total > 30 && (dias < 4 || dias > 6)) setA(true, 'danger', 'Distribución', 'Jornada ordinaria entre 4 y 6 días.', true);
+            else setA(true, 'success', 'Legal', 'Cumple con la ley 2026.', false);
+        }
+
+        document.getElementById('calcForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            generarPDF();
+            document.getElementById('vistaPago').classList.remove('hidden');
+            document.getElementById('vistaPago').scrollIntoView({ behavior: 'smooth' });
         });
 
-        function generarPDF() {
-            // Recolectar Datos sin formatear primero para validación
-            const rawEmp = document.getElementById('pdfEmpresa').value.trim();
-            const rawRutEmp = document.getElementById('pdfRutEmpresa').value.trim().replace(/\./g, '');
-            const rawRep = document.getElementById('pdfRepName').value.trim();
-            const rawRutRep = document.getElementById('pdfRepRut').value.trim().replace(/\./g, '');
-            const rawCiudad = document.getElementById('pdfCiudad').value.trim();
-            const rawTrab = document.getElementById('pdfTrabajador').value.trim();
-            const rawRutTrab = document.getElementById('pdfRutTrabajador').value.trim().replace(/\./g, '');
+        // 4. PASO 2: AUTH MODAL
+        function abrirModalAuth(plan) {
+            document.getElementById('modalAuth').classList.remove('hidden');
+            document.getElementById('modalAuth').classList.add('flex');
+        }
+        function cerrarModalAuth() { document.getElementById('modalAuth').classList.add('hidden'); }
+        document.getElementById('formAuth').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('authEmail').value;
+            const btn = document.getElementById('btnSubmitAuth');
+            btn.disabled = true; btn.innerText = "Enviando...";
+            const { error } = await supabaseClient.auth.signInWithOtp({ email });
+            if(error) { alert("Error al enviar Magic Link."); btn.disabled = false; btn.innerText = "Intentar de nuevo"; }
+            else { alert("¡Éxito! Revisa tu correo para el enlace de acceso."); cerrarModalAuth(); }
+        });
 
-            // 1. VALIDACIONES DE FORMATO
-            if (!validarLetras(rawRep)) {
-                alert("Error: El Nombre del Representante Legal solo debe contener letras y espacios.");
-                return;
-            }
-            if (!validarLetras(rawTrab)) {
-                alert("Error: El Nombre del Trabajador solo debe contener letras y espacios.");
-                return;
-            }
-            if (!validarLetras(rawCiudad)) {
-                alert("Error: La Ciudad solo debe contener letras y espacios.");
-                return;
-            }
-
-            if (!validarRut(rawRutEmp)) {
-                alert("Error: El RUT de la Empresa es inválido.");
-                return;
-            }
-            if (!validarRut(rawRutRep)) {
-                alert("Error: El RUT del Representante Legal es inválido.");
-                return;
-            }
-            if (!validarRut(rawRutTrab)) {
-                alert("Error: El RUT del Trabajador es inválido.");
-                return;
-            }
-
-            // 2. REGLA CONFLICTO DE INTERÉS
-            if (rawRutRep.toLowerCase() === rawRutTrab.toLowerCase()) {
-                alert("Error: El Representante Legal no puede ser el mismo Trabajador.");
-                return;
-            }
-
-            // Recolectar Horarios
-            const checkboxesDias = document.querySelectorAll('.dia-privado:checked');
-            const hEntrada = document.getElementById('privHoraEntrada').value;
-            const hSalida = document.getElementById('privHoraSalida').value;
-            const hDuracionColacionStr = document.getElementById('privDuracionColacion').value;
-            const hColacionInicio = document.getElementById('privRangoInicio').value;
-            const hColacionFin = document.getElementById('privRangoFin').value;
-
-            // 3. MATEMÁTICA Y LEY 42 HORAS
-            const diasTrabajados = checkboxesDias.length;
-
-            if (diasTrabajados === 0) {
-                alert("Debes seleccionar al menos un día trabajado.");
-                return;
-            }
-
-            const minEntrada = timeToMinutes(hEntrada);
-            let minSalida = timeToMinutes(hSalida);
-            const minutosColacion = parseInt(hDuracionColacionStr) || 0;
-
-            // Regla D: Validación lógica de Entrada vs Salida (Lógica lineal diaria)
-            if (minSalida <= minEntrada) {
-                alert("Error: La Hora de Salida debe ser posterior a la Hora de Entrada (No se soporta turno de trasnoche en este formato).");
-                return;
-            }
-
-            const minutosBrutosDiarios = minSalida - minEntrada;
-            const horasBrutasDiarias = minutosBrutosDiarios / 60;
-
-            // Regla D: Colación > 0 si jornada > 4h
-            if (horasBrutasDiarias > 4 && minutosColacion <= 0) {
-                alert("Error legal: La jornada supera las 4 horas continuas, por lo que debes otorgar tiempo de colación (min. 30 min sugerido).");
-                return;
-            }
-            
-            // Validar que la colación no sea mayor que la jornada bruta
-            if (minutosColacion >= minutosBrutosDiarios) {
-                alert("Error: El tiempo de colación no puede ser igual o mayor al total del turno presencial.");
-                return;
-            }
-
-            const horasEfectivasDiarias = (minutosBrutosDiarios - minutosColacion) / 60;
-            const totalHorasSemanal = horasEfectivasDiarias * diasTrabajados;
-
-            // Regla A: Tope Diario 10 horas
-            if (horasEfectivasDiarias > 10) {
-                alert(`Error legal: La jornada ordinaria no puede superar las 10 horas diarias efectivas (excluyendo colación). El turno configurado es de ${horasEfectivasDiarias.toFixed(1)} hrs.`);
-                return;
-            }
-
-            // Regla B: Tope Semanal 42 horas
-            if (totalHorasSemanal > 42) {
-                alert(`Error legal: La jornada ordinaria no puede superar las 42 horas semanales estipuladas para abril 2026. El total calculado es de ${totalHorasSemanal.toFixed(1)} hrs.`);
-                return;
-            }
-
-            // Regla C: Días Mínimos/Máximos para Jornada Ordinaria (> 30 hrs)
-            if (totalHorasSemanal > 30 && (diasTrabajados < 4 || diasTrabajados > 6)) {
-                alert("Error legal: La jornada ordinaria (más de 30 hrs) debe distribuirse en no menos de 4 ni más de 6 días.");
-                return;
-            }
-
-            // === PASARON LAS VALIDACIONES: PREPARAR PDF ===
-
-            const { jsPDF } = window.jspdf;
-            
-            // Aplicar Formateo Final
-            const f_emp = formatearNombresPropios(rawEmp);
-            const f_rut_emp = rawRutEmp.toUpperCase();
-            const f_rep = formatearNombresPropios(rawRep);
-            const f_rut_rep = rawRutRep.toUpperCase();
-            const f_ciudad = formatearNombresPropios(rawCiudad);
-            const f_trab = formatearNombresPropios(rawTrab);
-            const f_rut_trab = rawRutTrab.toUpperCase();
-
-            // Crear documento tamaño Carta
-            const doc = new jsPDF({
-                orientation: "portrait",
-                unit: "mm",
-                format: "letter"
+        // 5. PASO 3: PORTAL PRIVADO Y PDF
+        function renderMatrizPrivada() {
+            const body = document.getElementById('matrizHorariosBody');
+            body.innerHTML = '';
+            diasSemanaNombres.forEach(dia => {
+                const id = formatId(dia);
+                const activo = ['lunes','martes','miercoles','jueves','viernes'].includes(id);
+                body.insertAdjacentHTML('beforeend', `
+                    <tr class="border-b border-slate-200 text-sm" id="row-${id}">
+                        <td class="py-3 px-2 font-bold">${dia}</td>
+                        <td class="py-3 px-2"><input type="checkbox" class="priv-chk" data-id="${id}" ${activo?'checked':''}></td>
+                        <td class="py-3 px-2"><input type="time" id="in-${id}" value="09:00" class="border rounded p-1"></td>
+                        <td class="py-3 px-2"><input type="time" id="out-${id}" value="18:00" class="border rounded p-1"></td>
+                        <td class="py-3 px-2"><input type="number" id="col-${id}" value="60" class="border rounded p-1 w-16"></td>
+                        <td class="py-3 px-2"><input type="time" id="csi-${id}" value="13:00" class="border rounded p-1"></td>
+                        <td class="py-3 px-2"><input type="time" id="csf-${id}" value="14:00" class="border rounded p-1"></td>
+                    </tr>
+                `);
             });
-
-            const margin = 20;
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const contentWidth = pageWidth - (margin * 2);
-            const lineSpacing = 5.5; 
-
-            // ----- PÁGINA 1: ANEXO ----- //
-            doc.setFont("times", "bold");
-            doc.setFontSize(14);
-            doc.text("ANEXO DE CONTRATO DE TRABAJO - ADECUACIÓN JORNADA LABORAL", pageWidth / 2, margin + 5, { align: "center" });
-            
-            doc.setFont("times", "normal");
-            doc.setFontSize(11);
-            
-            const opcionesFecha = { year: 'numeric', month: 'long', day: 'numeric' };
-            const fechaActual = new Date().toLocaleDateString('es-CL', opcionesFecha);
-            
-            const p1 = `En ${f_ciudad}, a ${fechaActual}, entre la empresa ${f_emp}, RUT ${f_rut_emp}, debidamente representada por don/doña ${f_rep}, RUT ${f_rut_rep}, en adelante "el Empleador"; y don/doña ${f_trab}, RUT ${f_rut_trab}, en adelante "el Trabajador", se ha convenido el siguiente Anexo de Contrato de Trabajo, para efectos de adecuarse a las normativas de la Ley 21.561 que modifica el Código del Trabajo.`;
-            
-            let yCursor = margin + 20;
-            const p1Lines = doc.splitTextToSize(p1, contentWidth);
-            doc.text(p1Lines, margin, yCursor);
-            yCursor += (p1Lines.length * lineSpacing) + 8;
-            
-            // Cláusula de Horarios
-            doc.setFont("times", "bold");
-            doc.text("PRIMERO: Modificación de la Jornada Laboral.", margin, yCursor);
-            doc.setFont("times", "normal");
-            
-            yCursor += lineSpacing + 2;
-            
-            const p2 = `A partir de la firma de este documento, la jornada laboral ordinaria del Trabajador será de ${totalHorasSemanal.toFixed(1)} horas semanales, las que se distribuirán en los siguientes días:`;
-            const p2Lines = doc.splitTextToSize(p2, contentWidth);
-            doc.text(p2Lines, margin, yCursor);
-            yCursor += (p2Lines.length * lineSpacing) + 5;
-            
-            // Días dinámicos (Checkboxes del form privado)
-            checkboxesDias.forEach(chk => {
-                const dia = chk.value;
-                const bulletText = `• ${dia}: De ${hEntrada} a ${hSalida} horas. El tiempo destinado a colación será de ${hDuracionColacionStr} minutos, entre las ${hColacionInicio} y las ${hColacionFin} horas (no imputable a la jornada).`;
-                const bulletLines = doc.splitTextToSize(bulletText, contentWidth - 10);
-                doc.text(bulletLines, margin + 5, yCursor);
-                yCursor += (bulletLines.length * lineSpacing) + 2;
-            });
-            
-            yCursor += 8;
-            
-            // CLÁUSULA SEGUNDO
-            const p3 = `SEGUNDO: En todo lo no modificado por el presente instrumento, rigen inalteradas las cláusulas del contrato original. Para constancia, se firma el presente anexo en dos ejemplares de igual tenor y valor, quedando uno en poder de cada parte.`;
-            const p3Lines = doc.splitTextToSize(p3, contentWidth);
-            
-            doc.text(p3Lines, margin, yCursor);
-            
-            // FIRMAS: Coordenada absoluta estricta (Y = 240)
-            const yFirmas = 240; 
-            
-            doc.setFontSize(10);
-            doc.line(margin + 10, yFirmas, margin + 70, yFirmas);
-            doc.text("Firma Trabajador", margin + 25, yFirmas + 7);
-            doc.text(f_trab, margin + 10, yFirmas + 13, { maxWidth: 60, align: 'center' });
-            
-            doc.line(pageWidth - margin - 70, yFirmas, pageWidth - margin - 10, yFirmas);
-            doc.text("Firma Empleador", pageWidth - margin - 55, yFirmas + 7);
-            doc.text(f_emp, pageWidth - margin - 70, yFirmas + 13, { maxWidth: 60, align: 'center' });
-            
-            // ----- PÁGINA 2: INSTRUCTIVO ----- //
-            doc.addPage("letter", "portrait");
-            doc.setFontSize(16);
-            doc.setFont("times", "bold");
-            doc.text("Instrucciones de Legalización (Importante)", pageWidth / 2, margin + 10, { align: "center" });
-            
-            doc.setFontSize(11);
-            doc.setFont("times", "normal");
-            
-            const instrucciones = [
-                "Este documento debe imprimirse en duplicado.",
-                "Ambas copias deben ser firmadas físicamente con lápiz (pasta azul o negro) por el Empleador y el Trabajador.",
-                "Es obligación legal del Empleador registrar este anexo en el portal de Mi DT (Registro Electrónico Laboral) de la Dirección del Trabajo."
-            ];
-            
-            let yInst = margin + 30;
-            instrucciones.forEach((inst, index) => {
-                const bulletText = `${index + 1}. ${inst}`;
-                const instLines = doc.splitTextToSize(bulletText, contentWidth);
-                doc.text(instLines, margin, yInst);
-                yInst += (instLines.length * lineSpacing) + 7;
-            });
-            
-            // Limpieza robusta nombre
-            let nombreLimpio = f_trab.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
-            nombreLimpio = nombreLimpio.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, ''); 
-            if (!nombreLimpio) nombreLimpio = "Trabajador";
-
-            // Descarga
-            doc.save(`Anexo_Ley42H_${nombreLimpio}.pdf`);
         }
 
-        // Ejecutar render inicial
-        renderizarGrilla();
+        document.getElementById('formPortalPrivado').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const rawRutEmp = document.getElementById('pdfRutEmpresa').value.replace(/\./g,'');
+            const rawRutRep = document.getElementById('pdfRepRut').value.replace(/\./g,'');
+            const rawRutTrab = document.getElementById('pdfRutTrabajador').value.replace(/\./g,'');
+            if(!validarRut(rawRutEmp) || !validarRut(rawRutRep) || !validarRut(rawRutTrab)) return alert("RUT Inválido.");
+            if(rawRutRep === rawRutTrab) return alert("Conflicto: El Representante y Trabajador son el mismo.");
+
+            let totalSemanal = 0, diasCont = 0;
+            const jData = [];
+            diasSemanaNombres.forEach(dia => {
+                const id = formatId(dia);
+                if(document.querySelector(`#row-${id} .priv-chk`).checked) {
+                    const ent = document.getElementById(`in-${id}`).value, sal = document.getElementById(`out-${id}`).value;
+                    const colM = parseInt(document.getElementById(`col-${id}`).value) || 0;
+                    const csi = document.getElementById(`csi-${id}`).value, csf = document.getElementById(`csf-${id}`).value;
+                    let mE = timeToMinutes(ent), mS = timeToMinutes(sal);
+                    if(mS <= mE) return alert(`Error en ${dia}: Salida debe ser posterior a entrada.`);
+                    const hrsE = (mS - mE - colM) / 60;
+                    if(hrsE > 10) return alert(`Error en ${dia}: Supera 10 hrs.`);
+                    totalSemanal += hrsE; diasCont++;
+                    jData.push({ dia, ent, sal, colM, csi, csf });
+                }
+            });
+            if(totalSemanal > 42) return alert("Exceso semanal > 42 hrs.");
+            if(totalSemanal > 30 && (diasCont < 4 || diasCont > 6)) return alert("Jornada ordinaria debe ser de 4 a 6 días.");
+
+            // GENERAR PDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ format: 'letter' });
+            const margin = 20, cW = doc.internal.pageSize.getWidth() - 40;
+            const f = (id) => formatearNombresPropios(document.getElementById(id).value);
+
+            doc.setFont("times","bold"); doc.setFontSize(14);
+            doc.text("ANEXO DE CONTRATO DE TRABAJO - ADECUACIÓN JORNADA LABORAL", 105, 25, {align:'center'});
+            doc.setFont("times","normal"); doc.setFontSize(11);
+            const fecha = new Date().toLocaleDateString('es-CL', { year:'numeric', month:'long', day:'numeric' });
+            const p1 = `En ${f('pdfCiudad')}, a ${fecha}, entre la empresa ${f('pdfEmpresa')}, RUT ${rawRutEmp.toUpperCase()}, representada por ${f('pdfRepName')}, RUT ${rawRutRep.toUpperCase()}; y ${f('pdfTrabajador')}, RUT ${rawRutTrab.toUpperCase()}, se acuerda lo siguiente:`;
+            doc.text(doc.splitTextToSize(p1, cW), margin, 40);
+            doc.setFont("times","bold"); doc.text("PRIMERO: Jornada Laboral.", margin, 60);
+            doc.setFont("times","normal");
+            doc.text(`La jornada ordinaria será de ${totalSemanal.toFixed(1)} horas semanales, distribuidas así:`, margin, 67);
+            let y = 75;
+            jData.forEach(d => {
+                const txt = `• ${d.dia}: De ${d.ent} a ${d.sal} hrs. Colación de ${d.colM} min, entre ${d.csi} y ${d.csf} hrs (no imputable).`;
+                const lines = doc.splitTextToSize(txt, cW - 5);
+                doc.text(lines, margin + 5, y); y += (lines.length * 6);
+            });
+            doc.text("SEGUNDO: En lo no modificado, rige el contrato original.", margin, y + 10);
+            doc.line(30, 240, 90, 240); doc.text("Firma Trabajador", 40, 245);
+            doc.line(120, 240, 180, 240); doc.text("Firma Empleador", 130, 245);
+            doc.addPage(); doc.setFontSize(16); doc.text("Instrucciones", 105, 30, {align:'center'});
+            doc.setFontSize(12); doc.text("1. Imprimir duplicado. 2. Firmar. 3. Registrar en Mi DT.", margin, 50);
+            doc.save(`Anexo_42H_${f('pdfTrabajador').replace(/\s/g,'_')}.pdf`);
+        });
+
+        renderCalculadoraPublica();
+        renderMatrizPrivada();
     </script>
 </body>
 </html>
-</final_file_content>
-
-IMPORTANT: For any future changes to this file, use the final_file_content shown above as your reference. This content reflects the current state of the file, including any auto-formatting (e.g., if you used single quotes but the formatter converted them to double quotes). Always base your SEARCH/REPLACE operations on this final version to ensure accuracy.
-
