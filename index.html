@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora Ley 42 Horas Chile</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -24,134 +23,115 @@
         <p class="text-lg text-slate-300">Configura tu horario detallado y verifica el cumplimiento de la ley.</p>
     </header>
     <main class="flex-grow p-4">
-        <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6">
-            <form id="calcForm" class="space-y-6">
-                <h2 class="text-xl font-bold text-slate-800">Configura el Turno Semanal</h2>
-                <div class="grid grid-cols-1 gap-4">
-                    <!-- Lunes -->
-                    <div class="grid grid-cols-6 items-center gap-2">
-                        <label for="check-lunes" class="col-span-1 font-bold">Lunes</label>
-                        <input type="checkbox" id="check-lunes" class="col-span-1">
-                        <input type="time" id="in-lunes" class="col-span-1 border rounded" disabled>
-                        <input type="time" id="out-lunes" class="col-span-1 border rounded" disabled>
-                        <input type="number" id="col-lunes" class="col-span-1 border rounded" placeholder="Minutos" disabled>
-                        <div class="col-span-1 flex gap-2">
-                            <input type="time" id="cin-lunes" class="border rounded" disabled>
-                            <input type="time" id="cfn-lunes" class="border rounded" disabled>
+        <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-lg p-8">
+            <form id="calcForm" class="space-y-6" onsubmit="event.preventDefault();">
+                <h2 class="text-2xl font-bold text-slate-800">Configura el Turno Semanal</h2>
+
+                <div class="overflow-x-auto rounded-lg border border-gray-200">
+                    <div class="min-w-full">
+                        <!-- Headers -->
+                        <div class="grid grid-cols-7 gap-4 px-4 py-3 bg-gray-50 text-xs font-semibold text-gray-500 uppercase">
+                            <div class="col-span-1">Día</div>
+                            <div class="col-span-1 text-center">¿Trabaja?</div>
+                            <div class="col-span-1">Entrada</div>
+                            <div class="col-span-1">Salida</div>
+                            <div class="col-span-1">Colación (Min)</div>
+                            <div class="col-span-2">Horario Colación</div>
                         </div>
-                    </div>
-                    <!-- Martes -->
-                    <div class="grid grid-cols-6 items-center gap-2">
-                        <label for="check-martes" class="col-span-1 font-bold">Martes</label>
-                        <input type="checkbox" id="check-martes" class="col-span-1">
-                        <input type="time" id="in-martes" class="col-span-1 border rounded" disabled>
-                        <input type="time" id="out-martes" class="col-span-1 border rounded" disabled>
-                        <input type="number" id="col-martes" class="col-span-1 border rounded" placeholder="Minutos" disabled>
-                        <div class="col-span-1 flex gap-2">
-                            <input type="time" id="cin-martes" class="border rounded" disabled>
-                            <input type="time" id="cfn-martes" class="border rounded" disabled>
-                        </div>
-                    </div>
-                    <!-- Miércoles -->
-                    <div class="grid grid-cols-6 items-center gap-2">
-                        <label for="check-miercoles" class="col-span-1 font-bold">Miércoles</label>
-                        <input type="checkbox" id="check-miercoles" class="col-span-1">
-                        <input type="time" id="in-miercoles" class="col-span-1 border rounded" disabled>
-                        <input type="time" id="out-miercoles" class="col-span-1 border rounded" disabled>
-                        <input type="number" id="col-miercoles" class="col-span-1 border rounded" placeholder="Minutos" disabled>
-                        <div class="col-span-1 flex gap-2">
-                            <input type="time" id="cin-miercoles" class="border rounded" disabled>
-                            <input type="time" id="cfn-miercoles" class="border rounded" disabled>
-                        </div>
-                    </div>
-                    <!-- Jueves -->
-                    <div class="grid grid-cols-6 items-center gap-2">
-                        <label for="check-jueves" class="col-span-1 font-bold">Jueves</label>
-                        <input type="checkbox" id="check-jueves" class="col-span-1">
-                        <input type="time" id="in-jueves" class="col-span-1 border rounded" disabled>
-                        <input type="time" id="out-jueves" class="col-span-1 border rounded" disabled>
-                        <input type="number" id="col-jueves" class="col-span-1 border rounded" placeholder="Minutos" disabled>
-                        <div class="col-span-1 flex gap-2">
-                            <input type="time" id="cin-jueves" class="border rounded" disabled>
-                            <input type="time" id="cfn-jueves" class="border rounded" disabled>
-                        </div>
-                    </div>
-                    <!-- Viernes -->
-                    <div class="grid grid-cols-6 items-center gap-2">
-                        <label for="check-viernes" class="col-span-1 font-bold">Viernes</label>
-                        <input type="checkbox" id="check-viernes" class="col-span-1">
-                        <input type="time" id="in-viernes" class="col-span-1 border rounded" disabled>
-                        <input type="time" id="out-viernes" class="col-span-1 border rounded" disabled>
-                        <input type="number" id="col-viernes" class="col-span-1 border rounded" placeholder="Minutos" disabled>
-                        <div class="col-span-1 flex gap-2">
-                            <input type="time" id="cin-viernes" class="border rounded" disabled>
-                            <input type="time" id="cfn-viernes" class="border rounded" disabled>
-                        </div>
-                    </div>
-                    <!-- Sábado -->
-                    <div class="grid grid-cols-6 items-center gap-2">
-                        <label for="check-sabado" class="col-span-1 font-bold">Sábado</label>
-                        <input type="checkbox" id="check-sabado" class="col-span-1">
-                        <input type="time" id="in-sabado" class="col-span-1 border rounded" disabled>
-                        <input type="time" id="out-sabado" class="col-span-1 border rounded" disabled>
-                        <input type="number" id="col-sabado" class="col-span-1 border rounded" placeholder="Minutos" disabled>
-                        <div class="col-span-1 flex gap-2">
-                            <input type="time" id="cin-sabado" class="border rounded" disabled>
-                            <input type="time" id="cfn-sabado" class="border rounded" disabled>
-                        </div>
-                    </div>
-                    <!-- Domingo -->
-                    <div class="grid grid-cols-6 items-center gap-2">
-                        <label for="check-domingo" class="col-span-1 font-bold">Domingo</label>
-                        <input type="checkbox" id="check-domingo" class="col-span-1">
-                        <input type="time" id="in-domingo" class="col-span-1 border rounded" disabled>
-                        <input type="time" id="out-domingo" class="col-span-1 border rounded" disabled>
-                        <input type="number" id="col-domingo" class="col-span-1 border rounded" placeholder="Minutos" disabled>
-                        <div class="col-span-1 flex gap-2">
-                            <input type="time" id="cin-domingo" class="border rounded" disabled>
-                            <input type="time" id="cfn-domingo" class="border rounded" disabled>
-                        </div>
+                        <!-- Rows -->
+                        <div id="days-container"></div>
                     </div>
                 </div>
-                <div class="mt-6">
-                    <div id="mensajeAlertaPublico" class="p-4 rounded-lg border hidden"></div>
-                    <div class="flex items-center gap-4 mt-2">
-                        <span class="font-bold text-navy">Total Semanal:</span>
-                        <span id="contadorTotalPublico" class="text-2xl font-black text-navy">0.0</span>
-                        <span class="text-slate-500">horas</span>
+
+                <div class="mt-6 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="w-full md:w-auto">
+                        <div id="mensajeAlertaPublico" class="p-4 rounded-lg border hidden"></div>
+                        <div class="flex items-center gap-4 mt-2">
+                           <span class="font-bold text-navy">Total Semanal:</span>
+                           <span id="contadorTotalPublico" class="text-3xl font-black text-navy">0.0</span>
+                           <span class="text-slate-500">horas</span>
+                        </div>
                     </div>
+                    <button type="submit" id="btn-validar" class="w-full md:w-auto bg-premium text-white font-bold py-4 px-8 rounded-lg shadow-lg hover:bg-opacity-90 focus:outline-none focus:ring-4 focus:ring-amber-300 transition-all duration-300">Validar Turno y Obtener Anexo PDF ➔</button>
                 </div>
-                <button type="submit" class="bg-success text-white font-bold py-2 px-4 rounded mt-4">Calcular</button>
             </form>
         </div>
     </main>
     <script>
-        // Habilitar/deshabilitar inputs según checkbox
-        const dias = ['lunes','martes','miercoles','jueves','viernes','sabado','domingo'];
-        dias.forEach(dia => {
-            document.getElementById('check-' + dia).addEventListener('change', function(e) {
-                const checked = e.target.checked;
-                ['in','out','col','cin','cfn'].forEach(pref => {
-                    document.getElementById(`${pref}-${dia}`).disabled = !checked;
+        document.addEventListener('DOMContentLoaded', () => {
+            const dias = [
+                { id: 'lunes', nombre: 'Lunes' },
+                { id: 'martes', nombre: 'Martes' },
+                { id: 'miercoles', nombre: 'Miércoles' },
+                { id: 'jueves', nombre: 'Jueves' },
+                { id: 'viernes', nombre: 'Viernes' },
+                { id: 'sabado', nombre: 'Sábado' },
+                { id: 'domingo', nombre: 'Domingo' }
+            ];
+            const container = document.getElementById('days-container');
+            const disabledClasses = ['bg-gray-100', 'text-gray-400', 'opacity-50'];
+
+            dias.forEach(({id, nombre}) => {
+                const row = document.createElement('div');
+                row.className = 'grid grid-cols-7 items-center gap-4 px-4 py-2 border-b border-gray-100 day-row';
+                row.innerHTML = `
+                    <div class="col-span-1"><label for="check-${id}" class="font-semibold text-gray-800">${nombre}</label></div>
+                    <div class="col-span-1 flex justify-center"><input type="checkbox" id="check-${id}" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"></div>
+                    <div class="col-span-1"><input type="time" id="in-${id}" class="day-input w-full rounded-md border border-gray-300 px-2 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"></div>
+                    <div class="col-span-1"><input type="time" id="out-${id}" class="day-input w-full rounded-md border border-gray-300 px-2 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"></div>
+                    <div class="col-span-1"><input type="number" id="col-${id}" placeholder="Min" class="day-input w-full rounded-md border border-gray-300 px-2 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"></div>
+                    <div class="col-span-2 flex items-center gap-1">
+                        <input type="time" id="cin-${id}" class="day-input w-full rounded-md border border-gray-300 px-2 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        <span class="text-gray-400 font-bold">-</span>
+                        <input type="time" id="cfn-${id}" class="day-input w-full rounded-md border border-gray-300 px-2 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                    </div>
+                `;
+                container.appendChild(row);
+
+                const checkbox = document.getElementById(`check-${id}`);
+                const inputs = row.querySelectorAll('.day-input');
+
+                const updateInputsState = () => {
+                    const isChecked = checkbox.checked;
+                    inputs.forEach(input => {
+                        input.disabled = !isChecked;
+                        if (isChecked) {
+                            input.classList.remove(...disabledClasses);
+                        } else {
+                            input.classList.add(...disabledClasses);
+                        }
+                    });
+                };
+
+                checkbox.addEventListener('change', () => {
+                    updateInputsState();
+                    calcular();
                 });
-                calcular();
+                
+                inputs.forEach(input => input.addEventListener('input', calcular));
+
+                updateInputsState();
             });
+            
+            document.getElementById('btn-validar').addEventListener('click', calcular);
         });
 
-        // Cálculo de horas efectivas y total semanal en tiempo real
         function timeToMinutes(t) {
             if (!t) return 0;
             const [h, m] = t.split(':').map(Number);
             return h * 60 + m;
         }
+
         function calcular() {
             let total = 0, diasActivos = 0, error10 = false;
-            dias.forEach(dia => {
-                if (document.getElementById('check-' + dia).checked) {
+            const diasIds = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
+            
+            diasIds.forEach(dia => {
+                if (document.getElementById(`check-${dia}`).checked) {
                     diasActivos++;
-                    const hIn = document.getElementById('in-' + dia).value;
-                    const hOut = document.getElementById('out-' + dia).value;
-                    const colM = parseInt(document.getElementById('col-' + dia).value) || 0;
+                    const hIn = document.getElementById(`in-${dia}`).value;
+                    const hOut = document.getElementById(`out-${dia}`).value;
+                    const colM = parseInt(document.getElementById(`col-${dia}`).value) || 0;
                     let mIn = timeToMinutes(hIn), mOut = timeToMinutes(hOut);
                     if (hIn && hOut && mOut <= mIn) mOut += 1440;
                     const hrsEfectivas = (hIn && hOut) ? (mOut - mIn - colM) / 60 : 0;
@@ -159,35 +139,30 @@
                     total += hrsEfectivas > 0 ? hrsEfectivas : 0;
                 }
             });
+
             document.getElementById('contadorTotalPublico').innerText = total.toFixed(1);
             const alertBox = document.getElementById('mensajeAlertaPublico');
-            if (diasActivos === 0) {
-                alertBox.className = "p-4 rounded-lg border mt-4 bg-red-50 border-danger text-danger";
-                alertBox.innerHTML = "<strong>Error:</strong> Selecciona al menos un día.";
-                alertBox.classList.remove('hidden');
-            } else if (error10) {
-                alertBox.className = "p-4 rounded-lg border mt-4 bg-red-50 border-danger text-danger";
-                alertBox.innerHTML = "<strong>Tope Diario:</strong> Máximo 10 hrs efectivas por día.";
-                alertBox.classList.remove('hidden');
-            } else if (total > 42) {
-                alertBox.className = "p-4 rounded-lg border mt-4 bg-red-50 border-danger text-danger";
-                alertBox.innerHTML = "<strong>Exceso Semanal:</strong> Máximo 42 horas semanales.";
-                alertBox.classList.remove('hidden');
-            } else if (total > 30 && (diasActivos < 4 || diasActivos > 6)) {
-                alertBox.className = "p-4 rounded-lg border mt-4 bg-red-50 border-danger text-danger";
-                alertBox.innerHTML = "<strong>Distribución:</strong> Jornada ordinaria debe ser entre 4 y 6 días.";
-                alertBox.classList.remove('hidden');
-            } else {
+            
+            if (diasActivos > 0 && total <= 42 && !error10 && (total <= 30 || (diasActivos >= 4 && diasActivos <= 6))) {
                 alertBox.className = "p-4 rounded-lg border mt-4 bg-green-50 border-success text-success";
                 alertBox.innerHTML = "<strong>¡Perfecto!</strong> Tu horario cumple con la ley vigente.";
                 alertBox.classList.remove('hidden');
+            } else {
+                 alertBox.classList.remove('hidden');
+                 alertBox.className = "p-4 rounded-lg border mt-4 bg-red-50 border-danger text-danger";
+                 if (diasActivos === 0) {
+                    alertBox.innerHTML = "<strong>Error:</strong> Selecciona al menos un día.";
+                 } else if (error10) {
+                    alertBox.innerHTML = "<strong>Tope Diario:</strong> Máximo 10 hrs efectivas por día.";
+                 } else if (total > 42) {
+                    alertBox.innerHTML = "<strong>Exceso Semanal:</strong> Máximo 42 horas semanales.";
+                 } else if (total > 30 && (diasActivos < 4 || diasActivos > 6)) {
+                    alertBox.innerHTML = "<strong>Distribución:</strong> Jornada ordinaria debe ser entre 4 y 6 días.";
+                 } else {
+                     alertBox.classList.add('hidden');
+                 }
             }
         }
-        dias.forEach(dia => {
-            ['in','out','col'].forEach(pref => {
-                document.getElementById(`${pref}-${dia}`).addEventListener('input', calcular);
-            });
-        });
     </script>
 </body>
 </html>
