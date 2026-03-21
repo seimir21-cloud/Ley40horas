@@ -155,6 +155,34 @@
                 </div>
             </form>
         </div>
+         <div id="precios" class="max-w-5xl mx-auto mt-12 p-8 hidden">
+            <h2 class="text-3xl font-bold text-center text-navy mb-8">Convierte tu Horario en un Documento Legal</h2>
+            <p class="text-center text-slate-600 mb-12 max-w-2xl mx-auto">Has validado tu horario. Ahora, genera el anexo de contrato oficial en formato PDF, listo para ser firmado y presentado ante la Dirección del Trabajo.</p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white rounded-xl shadow-lg p-8 border-t-4 border-premium">
+                    <h3 class="text-2xl font-bold text-navy mb-4">Anexo PDF Básico</h3>
+                    <p class="text-slate-500 mb-6">Perfecto para una validación rápida y un único documento.</p>
+                    <div class="text-5xl font-black text-navy mb-6">$4.990 <span class="text-lg font-semibold">CLP</span></div>
+                    <ul class="space-y-3 text-slate-600 mb-8">
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Generación de 1 Anexo PDF.</li>
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Formato estandarizado DT.</li>
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Descarga inmediata.</li>
+                    </ul>
+                    <button class="w-full bg-navy text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-transform">Comprar Ahora</button>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-8 border-t-4 border-blue-600">
+                    <h3 class="text-2xl font-bold text-navy mb-4">Portal RRHH PRO</h3>
+                     <p class="text-slate-500 mb-6">Ideal para empresas y profesionales que gestionan múltiples anexos.</p>
+                    <div class="text-5xl font-black text-navy mb-6">$19.990 <span class="text-lg font-semibold">CLP/mes</span></div>
+                     <ul class="space-y-3 text-slate-600 mb-8">
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Generación de Anexos ilimitada.</li>
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Dashboard de gestión de personal.</li>
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Soporte prioritario.</li>
+                    </ul>
+                    <button class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-transform">Suscribirse</button>
+                </div>
+            </div>
+        </div>
     </main>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -282,15 +310,12 @@
                     return;
                 }
 
-                // 3. Si todo es correcto, proceder
-                alert('¡Horario válido! Preparando para generar anexo...');
-                
-                // TODO: Cuando la sección de precios exista, implementar el scroll/show.
-                // const pricingSection = document.getElementById('planes-precios');
-                // if (pricingSection) {
-                //     pricingSection.classList.remove('hidden');
-                //     pricingSection.scrollIntoView({ behavior: 'smooth' });
-                // }
+                // 3. Si todo es correcto, hacer scroll a la sección de precios
+                const seccionPrecios = document.getElementById('precios');
+                if (seccionPrecios) {
+                    seccionPrecios.classList.remove('hidden');
+                    seccionPrecios.scrollIntoView({ behavior: 'smooth' });
+                }
             });
         });
 
