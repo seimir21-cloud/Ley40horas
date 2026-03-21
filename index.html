@@ -151,7 +151,7 @@
                            <span class="text-slate-500">horas</span>
                         </div>
                     </div>
-                    <button type="submit" id="btn-validar" class="w-full md:w-auto order-1 md:order-2 bg-premium text-white font-bold py-4 px-8 rounded-lg shadow-lg hover:bg-opacity-90 focus:outline-none focus:ring-4 focus:ring-amber-300 transition-all duration-300">Validar Turno y Obtener Anexo PDF ➔</button>
+                    <button type="button" id="btn-validar" class="w-full md:w-auto order-1 md:order-2 bg-premium text-white font-bold py-4 px-8 rounded-lg shadow-lg hover:bg-opacity-90 focus:outline-none focus:ring-4 focus:ring-amber-300 transition-all duration-300">Validar Horario y Obtener Anexo PDF ➔</button>
                 </div>
             </form>
         </div>
@@ -217,13 +217,9 @@
                 document.getElementById(`col-${id}`).addEventListener('input', () => calcularFinColacion(id));
                 document.getElementById(`cin-${id}`).addEventListener('input', () => calcularFinColacion(id));
             });
-            
-            document.getElementById('calcForm').addEventListener('submit', (e) => {
-                e.preventDefault();
-                calcular();
-            });
 
             // --- NUEVA FUNCIONALIDAD DE REPLICAR ---
+
             document.getElementById('btn-replicar-lunes').addEventListener('click', () => {
                 const lunesCheckbox = document.getElementById('check-lunes');
                 if (!lunesCheckbox.checked) {
@@ -264,6 +260,37 @@
                     document.getElementById(`col-${dia}`).dispatchEvent(inputEvent);
                     document.getElementById(`cin-${dia}`).dispatchEvent(inputEvent);
                 });
+            });
+
+            // --- EVENT LISTENER PARA EL BOTÓN PRINCIPAL DE VALIDACIÓN ---
+            document.getElementById('btn-validar').addEventListener('click', () => {
+                // Re-ejecutar el cálculo para asegurar que el estado es el más reciente
+                calcular();
+
+                const totalHoras = parseFloat(document.getElementById('contadorTotalPublico').innerText);
+                const alertBox = document.getElementById('mensajeAlertaPublico');
+
+                // 1. Validar que el total de horas sea mayor a 0
+                if (totalHoras === 0) {
+                    alert("Por favor, ingresa al menos un día de trabajo.");
+                    return;
+                }
+
+                // 2. Validar que no haya errores legales (revisando la caja de alerta)
+                if (alertBox.classList.contains('text-danger')) {
+                    alert(`Error en el horario: ${alertBox.textContent.trim()}`);
+                    return;
+                }
+
+                // 3. Si todo es correcto, proceder
+                alert('¡Horario válido! Preparando para generar anexo...');
+                
+                // TODO: Cuando la sección de precios exista, implementar el scroll/show.
+                // const pricingSection = document.getElementById('planes-precios');
+                // if (pricingSection) {
+                //     pricingSection.classList.remove('hidden');
+                //     pricingSection.scrollIntoView({ behavior: 'smooth' });
+                // }
             });
         });
 
