@@ -54,6 +54,12 @@
                                     <input type="time" id="cfn-lunes" class="day-input w-full rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-gray-100 text-gray-400 opacity-50" readonly disabled>
                                 </div>
                             </div>
+                             <div class="px-4 pb-2 pt-1">
+                                <button type="button" id="btn-replicar-lunes" class="text-xs text-blue-600 hover:text-blue-800 cursor-pointer font-medium flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                    Replicar horario de Lunes a Viernes
+                                </button>
+                            </div>
                             <!-- Martes -->
                             <div class="grid grid-cols-[80px_60px_1fr_1fr_1fr_2fr] gap-4 items-center px-4 py-2 day-row">
                                 <div><label for="check-martes" class="font-semibold text-gray-800">Martes</label></div>
@@ -194,6 +200,12 @@
                             input.classList.add(...disabledClasses);
                             input.value = ''; // Limpiar valores al desmarcar
                         }
+                         // Fin de colación es siempre readonly, pero habilitamos/deshabilitamos el estilo
+                        const finColacionInput = document.getElementById(`cfn-${id}`);
+                        finColacionInput.disabled = !isChecked;
+                         if(isChecked) finColacionInput.classList.remove(...disabledClasses);
+                         else finColacionInput.classList.add(...disabledClasses);
+
                     });
                     calcular();
                     calcularFinColacion(id);
@@ -209,6 +221,49 @@
             document.getElementById('calcForm').addEventListener('submit', (e) => {
                 e.preventDefault();
                 calcular();
+            });
+
+            // --- NUEVA FUNCIONALIDAD DE REPLICAR ---
+            document.getElementById('btn-replicar-lunes').addEventListener('click', () => {
+                const lunesCheckbox = document.getElementById('check-lunes');
+                if (!lunesCheckbox.checked) {
+                    alert('Por favor, completa y marca el horario del Lunes primero para poder replicarlo.');
+                    return;
+                }
+
+                const valoresLunes = {
+                    entrada: document.getElementById('in-lunes').value,
+                    salida: document.getElementById('out-lunes').value,
+                    colacionMin: document.getElementById('col-lunes').value,
+                    colacionInicio: document.getElementById('cin-lunes').value
+                };
+
+                if (!valoresLunes.entrada || !valoresLunes.salida) {
+                    alert('Por favor, completa la hora de Entrada y Salida del Lunes para poder replicarlo.');
+                    return;
+                }
+                
+                const diasSemanaHabil = ['martes', 'miercoles', 'jueves', 'viernes'];
+                const inputEvent = new Event('input', { bubbles: true });
+                const changeEvent = new Event('change', { bubbles: true });
+
+                diasSemanaHabil.forEach(dia => {
+                    const checkbox = document.getElementById(`check-${dia}`);
+                    if (!checkbox.checked) {
+                        checkbox.checked = true;
+                        checkbox.dispatchEvent(changeEvent);
+                    }
+
+                    document.getElementById(`in-${dia}`).value = valoresLunes.entrada;
+                    document.getElementById(`out-${dia}`).value = valoresLunes.salida;
+                    document.getElementById(`col-${dia}`).value = valoresLunes.colacionMin;
+                    document.getElementById(`cin-${dia}`).value = valoresLunes.colacionInicio;
+
+                    document.getElementById(`in-${dia}`).dispatchEvent(inputEvent);
+                    document.getElementById(`out-${dia}`).dispatchEvent(inputEvent);
+                    document.getElementById(`col-${dia}`).dispatchEvent(inputEvent);
+                    document.getElementById(`cin-${dia}`).dispatchEvent(inputEvent);
+                });
             });
         });
 
