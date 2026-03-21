@@ -200,7 +200,6 @@
                          <button type="submit" id="auth-submit-button" class="w-full bg-navy text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-transform">Recibir Link de Acceso</button>
                      </div>
                  </form>
-                 <div id="auth-message" class="mt-4 text-center text-sm"></div>
             </div>
         </div>
 
@@ -325,7 +324,7 @@
                 }
             });
 
-            // --- NUEVO: EVENT LISTENERS PARA BOTONES DE PRECIOS ---
+            // --- EVENT LISTENERS PARA BOTONES DE PRECIOS ---
             const authSection = document.getElementById('auth-section');
             const showAuth = () => {
                 authSection.classList.remove('hidden');
@@ -394,39 +393,45 @@
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         const authForm = document.getElementById('auth-form');
-        const authMessage = document.getElementById('auth-message');
         const authSubmitButton = document.getElementById('auth-submit-button');
+        const emailInput = document.getElementById('email-input');
 
         authForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email-input').value;
+            
+            const email = emailInput.value;
+            
+            // 1. Set loading state
             authSubmitButton.disabled = true;
-            authSubmitButton.textContent = 'Enviando link...';
+            authSubmitButton.textContent = 'Enviando...';
 
+            // 2. Execute sign in
             const { error } = await supabase.auth.signInWithOtp({
                 email: email,
                 options: {
-                    emailRedirectTo: window.location.href, // Redirige de vuelta a la página actual
+                    emailRedirectTo: window.location.href, // Redirect back to the same page
                 }
             });
 
+            // 3. Handle response
             if (error) {
-                authMessage.textContent = `Error: ${error.message}`;
-                authMessage.className = 'text-danger';
-                authSubmitButton.disabled = false;
-                authSubmitButton.textContent = 'Recibir Link de Acceso';
+                alert("Error al enviar: " + error.message);
             } else {
-                authMessage.textContent = '¡Revisa tu correo! Te hemos enviado un link mágico para acceder.';
-                authMessage.className = 'text-success';
-                authForm.classList.add('hidden');
+                alert('¡Revisa tu correo! Te hemos enviado un enlace mágico para entrar.');
+                emailInput.value = ''; // Clear the input
+                document.getElementById('auth-section').classList.add('hidden'); // Close the modal
             }
+
+            // 4. Reset button
+            authSubmitButton.disabled = false;
+            authSubmitButton.textContent = 'Recibir Link de Acceso';
         });
 
-        // Opcional: Escuchar cambios de sesión para mostrar info del usuario o redirigir
+        // Optional: Listener for session changes
         supabase.auth.onAuthStateChange((event, session) => {
             if (session) {
                 console.log('Usuario ha iniciado sesión:', session.user.email);
-                // Aquí podrías redirigir a una página de dashboard o mostrar contenido premium
+                 // Future logic for premium content can go here
             } else {
                 console.log('Usuario no ha iniciado sesión.');
             }
