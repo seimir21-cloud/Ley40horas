@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -191,7 +192,7 @@
             <div class="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8 border-t-4 border-navy">
                  <h2 class="text-2xl font-bold text-center text-navy mb-2">Accede para Continuar</h2>
                  <p class="text-center text-slate-500 mb-6">Ingresa tu correo para recibir un link de acceso mágico.</p>
-                 <form id="auth-form">
+                 <form id="auth-form" onsubmit="event.preventDefault();">
                      <div class="space-y-4">
                          <div>
                              <label for="email-input" class="sr-only">Email</label>
@@ -388,52 +389,49 @@
 
     <!-- Lógica de Supabase -->
     <script>
-        const supabaseUrl = 'https://sfbrwdeqfmlwynrkqgck.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmYnJ3ZGVxZm1sd3lucmtxZ2NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjE0NDI3NTgsImV4cCI6MjAzNzAxODc1OH0.3zB0LQQz3-n-n2e_opL9AMg-xG3z-4-L2hJkZJ9CFsE';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-        const authForm = document.getElementById('auth-form');
-        const authSubmitButton = document.getElementById('auth-submit-button');
-        const emailInput = document.getElementById('email-input');
-
-        authForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const email = emailInput.value;
-            
-            // 1. Set loading state
-            authSubmitButton.disabled = true;
-            authSubmitButton.textContent = 'Enviando...';
-
-            // 2. Execute sign in
-            const { error } = await supabase.auth.signInWithOtp({
-                email: email,
-                options: {
-                    emailRedirectTo: window.location.href, // Redirect back to the same page
-                }
-            });
-
-            // 3. Handle response
-            if (error) {
-                alert("Error al enviar: " + error.message);
-            } else {
-                alert('¡Revisa tu correo! Te hemos enviado un enlace mágico para entrar.');
-                emailInput.value = ''; // Clear the input
-                document.getElementById('auth-section').classList.add('hidden'); // Close the modal
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Validar que la librería cargó
+            if (!window.supabase) {
+                console.error("Supabase CDN no cargó.");
+                return;
             }
 
-            // 4. Reset button
-            authSubmitButton.disabled = false;
-            authSubmitButton.textContent = 'Recibir Link de Acceso';
-        });
+            const supabaseUrl = 'https://sfbrwdeqfmlwynrkqgck.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmYnJ3ZGVxZm1sd3lucmtxZ2NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjE0NDI3NTgsImV4cCI6MjAzNzAxODc1OH0.3zB0LQQz3-n-n2e_opL9AMg-xG3z-4-L2hJkZJ9CFsE';
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Optional: Listener for session changes
-        supabase.auth.onAuthStateChange((event, session) => {
-            if (session) {
-                console.log('Usuario ha iniciado sesión:', session.user.email);
-                 // Future logic for premium content can go here
-            } else {
-                console.log('Usuario no ha iniciado sesión.');
+            const authForm = document.getElementById('auth-form');
+            const authSubmitButton = document.getElementById('auth-submit-button');
+            const emailInput = document.getElementById('email-input');
+
+            if(authForm) {
+                authForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    try {
+                        authSubmitButton.disabled = true;
+                        authSubmitButton.textContent = 'Enviando link mágico...';
+                        
+                        const { error } = await supabase.auth.signInWithOtp({
+                            email: emailInput.value,
+                            options: {
+                                emailRedirectTo: window.location.href,
+                            }
+                        });
+
+                        if (error) throw error;
+
+                        alert('¡Éxito! Revisa tu bandeja de entrada o SPAM. Te hemos enviado un enlace mágico para entrar.');
+                        emailInput.value = '';
+                        document.getElementById('auth-section').classList.add('hidden');
+                        
+                    } catch (error) {
+                        alert("Hubo un problema: " + error.message);
+                    } finally {
+                        authSubmitButton.disabled = false;
+                        authSubmitButton.textContent = 'Recibir Link de Acceso';
+                    }
+                });
             }
         });
     </script>
