@@ -171,7 +171,7 @@
                         <li class="flex items-center gap-3"><svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Formato estandarizado DT.</li>
                         <li class="flex items-center gap-3"><svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Descarga inmediata.</li>
                     </ul>
-                    <button id="btn-comprar-basico" class="w-full bg-navy text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-transform">Comprar Ahora</button>
+                    <button id="btn-comprar-basico" data-plan="basico" class="w-full bg-navy text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-transform">Comprar Ahora</button>
                 </div>
                 <div class="bg-white rounded-xl shadow-lg p-8 border-t-4 border-premium">
                     <h3 class="text-2xl font-bold text-navy mb-4">Paquete 5 Anexos</h3>
@@ -182,7 +182,7 @@
                         <li class="flex items-center gap-3"><svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Créditos guardados en tu cuenta.</li>
                         <li class="flex items-center gap-3"><svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Descarga inmediata.</li>
                     </ul>
-                    <button id="btn-comprar-pack" class="w-full bg-navy text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-transform">Comprar Ahora</button>
+                    <button id="btn-comprar-pack" data-plan="pack_5" class="w-full bg-navy text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-transform">Comprar Ahora</button>
                 </div>
             </div>
         </div>
@@ -368,15 +368,6 @@
                     seccionPrecios.scrollIntoView({ behavior: 'smooth' });
                 }
             });
-
-            // --- EVENT LISTENERS PARA BOTONES DE PRECIOS ---
-            const authSection = document.getElementById('auth-section');
-            const showAuth = () => {
-                authSection.classList.remove('hidden');
-                authSection.scrollIntoView({ behavior: 'smooth' });
-            }
-            document.getElementById('btn-comprar-basico').addEventListener('click', showAuth);
-            document.getElementById('btn-comprar-pack').addEventListener('click', showAuth);
         });
 
         function timeToMinutes(t) {
@@ -453,6 +444,18 @@
             const pdfCreditsSpan = document.getElementById('pdf-credits-remaining');
             const pdfForm = document.getElementById('pdf-form');
             const generatePdfButton = document.getElementById('generate-pdf-button');
+            const btnComprarBasico = document.getElementById('btn-comprar-basico');
+            const btnComprarPack = document.getElementById('btn-comprar-pack');
+
+            // --- FUNCIÓN PARA INICIAR EL FLUJO DE COMPRA ---
+            const startPurchaseFlow = (plan) => {
+                localStorage.setItem('purchase_plan', plan);
+                authSection.classList.remove('hidden');
+                authSection.scrollIntoView({ behavior: 'smooth' });
+            };
+
+            btnComprarBasico.addEventListener('click', () => startPurchaseFlow('basico'));
+            btnComprarPack.addEventListener('click', () => startPurchaseFlow('pack_5'));
 
             // --- LÓGICA DE AUTENTICACIÓN ---
             if(authForm) {
@@ -481,7 +484,19 @@
             // --- VERIFICACIÓN DE ESTADO DE SESIÓN Y PAGO ---
             supabase.auth.onAuthStateChange(async (event, session) => {
                 if (event === 'SIGNED_IN' && session?.user) {
-                    await checkUserCredits(session.user);
+                    const plan = localStorage.getItem('purchase_plan');
+                    
+                    if (plan) {
+                        localStorage.removeItem('purchase_plan');
+                        // Redirigir a la función de pago
+                        console.log(`Usuario ${session.user.email} inició sesión para comprar el plan: ${plan}. Redirigiendo a Mercado Pago...`);
+                        // Aquí se llamaría a la Supabase Function que crea la preferencia de Mercado Pago
+                        // Por ahora, simulamos mostrando el formulario directamente
+                        alert(`¡Bienvenido! Serás redirigido para completar la compra del ${plan}.`);
+                        // window.location.href = `/api/create-payment?plan=${plan}`; // URL de la función
+                    } else {
+                         await checkUserCredits(session.user);
+                    }
                 } else if (event === 'SIGNED_OUT') {
                     pdfFormSection.classList.add('hidden');
                     paymentSuccessBanner.classList.add('hidden');
@@ -496,7 +511,7 @@
                         .eq('id', user.id)
                         .single();
                     
-                    if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows returned
+                    if (error && error.code !== 'PGRST116') throw error;
 
                     if (data && data.creditos_disponibles > 0) {
                         document.getElementById('precios').classList.add('hidden');
@@ -519,24 +534,35 @@
                     generatePdfButton.textContent = 'Generando PDF...';
 
                     try {
-                        // Aquí iría la lógica para generar el PDF y descontar el crédito
                         console.log("Generando PDF con los datos...");
-                        
-                        // Simulación de llamada a función en el servidor
-                        const { data: user, error: userError } = await supabase.auth.getUser();
-                        if (userError) throw userError;
+                        const { data: { user } } = await supabase.auth.getUser();
 
-                        // Descontar crédito (simulado en el front, debe ser en el back)
+                        // Lógica para descontar crédito
+                        // Esta lógica debería ser más robusta y probablemente una Supabase Function
+                        const { data: profile, error: fetchError } = await supabase
+                            .from('perfiles_empresas')
+                            .select('creditos_disponibles')
+                            .eq('id', user.id)
+                            .single();
+                        
+                        if(fetchError || !profile) throw new Error('No se pudo obtener el perfil.');
+                        if(profile.creditos_disponibles <= 0) throw new Error('No tienes créditos suficientes.');
+
+                        const newCreditCount = profile.creditos_disponibles - 1;
+
                         const { error: updateError } = await supabase
                             .from('perfiles_empresas')
-                            .update({ creditos_disponibles: 0 }) // SIMULACIÓN: SET A 0
-                            .eq('id', user.user.id);
+                            .update({ creditos_disponibles: newCreditCount })
+                            .eq('id', user.id);
 
                         if (updateError) throw updateError;
 
                         alert("¡PDF generado con éxito! La descarga comenzará en breve.");
-                        paymentSuccessBanner.classList.add('hidden');
-                        pdfFormSection.classList.add('hidden');
+                        pdfCreditsSpan.textContent = newCreditCount;
+                        if(newCreditCount === 0){
+                           paymentSuccessBanner.classList.add('hidden');
+                           pdfFormSection.classList.add('hidden');
+                        }
 
                     } catch (error) {
                         alert("Hubo un problema al generar el PDF: " + error.message);
