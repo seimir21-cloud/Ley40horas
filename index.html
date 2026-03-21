@@ -247,7 +247,6 @@
             });
 
             // --- NUEVA FUNCIONALIDAD DE REPLICAR ---
-
             document.getElementById('btn-replicar-lunes').addEventListener('click', () => {
                 const lunesCheckbox = document.getElementById('check-lunes');
                 if (!lunesCheckbox.checked) {
@@ -304,13 +303,19 @@
                     return;
                 }
 
-                // 2. Validar que no haya errores legales (revisando la caja de alerta)
+                // 2. NUEVA REGLA: Bloquear si es Jornada Parcial (<= 30 horas)
+                if (totalHoras > 0 && totalHoras <= 30) {
+                    alert("El horario ingresado corresponde a una Jornada Parcial (30 horas o menos). La ley no exige un anexo de reducción de jornada para estos contratos.");
+                    return;
+                }
+                
+                // 3. Validar que no haya otros errores legales
                 if (alertBox.classList.contains('text-danger')) {
                     alert(`Error en el horario: ${alertBox.textContent.trim()}`);
                     return;
                 }
 
-                // 3. Si todo es correcto, hacer scroll a la sección de precios
+                // 4. Si todo es correcto, hacer scroll a la sección de precios
                 const seccionPrecios = document.getElementById('precios');
                 if (seccionPrecios) {
                     seccionPrecios.classList.remove('hidden');
@@ -345,25 +350,30 @@
 
             document.getElementById('contadorTotalPublico').innerText = total.toFixed(1);
             const alertBox = document.getElementById('mensajeAlertaPublico');
-            
-            if (diasActivos > 0 && total <= 42 && !error10 && (total <= 30 || (diasActivos >= 4 && diasActivos <= 6))) {
+            alertBox.classList.remove('hidden');
+
+            // Lógica de Mensajes de Alerta Actualizada
+            if (error10) {
+                alertBox.className = "p-4 rounded-lg border mt-4 bg-red-50 border-danger text-danger";
+                alertBox.innerHTML = "<strong>Tope Diario:</strong> Máximo 10 hrs efectivas por día.";
+            } else if (total > 42) {
+                alertBox.className = "p-4 rounded-lg border mt-4 bg-red-50 border-danger text-danger";
+                alertBox.innerHTML = "<strong>Exceso Semanal:</strong> Máximo 42 horas semanales.";
+            } else if (total > 30 && (diasActivos < 4 || diasActivos > 6)) {
+                alertBox.className = "p-4 rounded-lg border mt-4 bg-red-50 border-danger text-danger";
+                alertBox.innerHTML = "<strong>Distribución:</strong> Jornada ordinaria sobre 30 hrs debe ser entre 4 y 6 días.";
+            } else if (total > 30 && total <= 42) {
                 alertBox.className = "p-4 rounded-lg border mt-4 bg-green-50 border-success text-success";
                 alertBox.innerHTML = "<strong>¡Perfecto!</strong> Tu horario cumple con la ley vigente.";
-                alertBox.classList.remove('hidden');
+            } else if (total > 0 && total <= 30) {
+                // NUEVA REGLA UI: Mensaje informativo para Jornada Parcial
+                alertBox.className = "p-4 rounded-lg border mt-4 bg-amber-50 border-premium text-amber-800";
+                alertBox.innerHTML = "<strong>Jornada Parcial (Part-Time).</strong> Los contratos de 30 horas o menos no requieren este anexo de adecuación por la nueva ley.";
+            } else if (diasActivos === 0) {
+                alertBox.className = "p-4 rounded-lg border mt-4 bg-red-50 border-danger text-danger";
+                alertBox.innerHTML = "<strong>Error:</strong> Selecciona al menos un día.";
             } else {
-                 alertBox.classList.remove('hidden');
-                 alertBox.className = "p-4 rounded-lg border mt-4 bg-red-50 border-danger text-danger";
-                 if (diasActivos === 0) {
-                    alertBox.innerHTML = "<strong>Error:</strong> Selecciona al menos un día.";
-                 } else if (error10) {
-                    alertBox.innerHTML = "<strong>Tope Diario:</strong> Máximo 10 hrs efectivas por día.";
-                 } else if (total > 42) {
-                    alertBox.innerHTML = "<strong>Exceso Semanal:</strong> Máximo 42 horas semanales.";
-                 } else if (total > 30 && (diasActivos < 4 || diasActivos > 6)) {
-                    alertBox.innerHTML = "<strong>Distribución:</strong> Jornada ordinaria debe ser entre 4 y 6 días.";
-                 } else {
-                     alertBox.classList.add('hidden');
-                 }
+                alertBox.classList.add('hidden');
             }
         }
     </script>
