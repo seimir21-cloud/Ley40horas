@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora Ley 42 Horas Chile</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com/"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -173,16 +173,16 @@
                     </ul>
                     <button id="btn-comprar-basico" class="w-full bg-navy text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-transform">Comprar Ahora</button>
                 </div>
-                <div class="bg-white rounded-xl shadow-lg p-8 border-t-4 border-blue-600">
-                    <h3 class="text-2xl font-bold text-navy mb-4">Portal RRHH PRO</h3>
-                     <p class="text-slate-500 mb-6">Ideal para empresas y profesionales que gestionan múltiples anexos.</p>
-                    <div class="text-5xl font-black text-navy mb-6">$19.990 <span class="text-lg font-semibold">CLP/mes</span></div>
-                     <ul class="space-y-3 text-slate-600 mb-8">
-                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Generación de Anexos ilimitada.</li>
-                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Dashboard de gestión de personal.</li>
-                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Soporte prioritario.</li>
+                <div class="bg-white rounded-xl shadow-lg p-8 border-t-4 border-premium">
+                    <h3 class="text-2xl font-bold text-navy mb-4">Paquete 5 Anexos</h3>
+                    <p class="text-slate-500 mb-6">Perfecto si gestionas varios trabajadores o necesitas más de un documento.</p>
+                    <div class="text-5xl font-black text-navy mb-6">$19.990 <span class="text-lg font-semibold">CLP</span></div>
+                    <ul class="space-y-3 text-slate-600 mb-8">
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Generación de 5 Anexos PDF.</li>
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Créditos guardados en tu cuenta.</li>
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Descarga inmediata.</li>
                     </ul>
-                    <button id="btn-suscribirse-pro" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-transform">Suscribirse</button>
+                    <button id="btn-comprar-pack" class="w-full bg-navy text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-transform">Comprar Ahora</button>
                 </div>
             </div>
         </div>
@@ -376,7 +376,7 @@
                 authSection.scrollIntoView({ behavior: 'smooth' });
             }
             document.getElementById('btn-comprar-basico').addEventListener('click', showAuth);
-            document.getElementById('btn-suscribirse-pro').addEventListener('click', showAuth);
+            document.getElementById('btn-comprar-pack').addEventListener('click', showAuth);
         });
 
         function timeToMinutes(t) {
