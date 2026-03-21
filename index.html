@@ -204,6 +204,50 @@
             </div>
         </div>
 
+        <!-- PDF Generation Form (hidden by default) -->
+        <div id="pdf-form-section" class="max-w-5xl mx-auto mt-12 p-8 hidden">
+            <div id="payment-success-banner" class="hidden bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-lg">
+                <p class="font-bold">¡Pago detectado!</p>
+                <p>Gracias por tu compra. Tienes <span id="pdf-credits-remaining" class="font-bold"></span> crédito(s) para generar tu anexo.</p>
+            </div>
+
+            <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8 border-t-4 border-navy">
+                <h2 class="text-2xl font-bold text-center text-navy mb-6">Completa los Datos para el Anexo</h2>
+                <form id="pdf-form">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Datos del Empleador -->
+                        <div class="md:col-span-2 font-bold text-lg text-slate-700">Datos del Empleador</div>
+                        <div>
+                            <label for="employer-name" class="block text-sm font-medium text-gray-700">Nombre o Razón Social</label>
+                            <input type="text" id="employer-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="employer-rut" class="block text-sm font-medium text-gray-700">RUT</label>
+                            <input type="text" id="employer-rut" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="employer-address" class="block text-sm font-medium text-gray-700">Domicilio</label>
+                            <input type="text" id="employer-address" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+
+                        <!-- Datos del Trabajador -->
+                        <div class="md:col-span-2 mt-4 font-bold text-lg text-slate-700">Datos del Trabajador</div>
+                        <div>
+                            <label for="employee-name" class="block text-sm font-medium text-gray-700">Nombre Completo</label>
+                            <input type="text" id="employee-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="employee-rut" class="block text-sm font-medium text-gray-700">RUT</label>
+                            <input type="text" id="employee-rut" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                    </div>
+                    <div class="mt-8 text-center">
+                        <button type="submit" id="generate-pdf-button" class="w-full md:w-auto bg-premium text-white font-bold py-3 px-12 rounded-lg shadow-lg hover:bg-opacity-90 focus:outline-none focus:ring-4 focus:ring-amber-300 transition-all duration-300">Generar PDF</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </main>
     <script>
         // --- LÓGICA DE LA CALCULADORA ---
@@ -387,44 +431,44 @@
         }
     </script>
 
-    <!-- Lógica de Supabase -->
+    <!-- Lógica de Supabase, Autenticación y Flujo Post-Pago -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. Validar que la librería cargó
+            // --- INICIALIZACIÓN DE SUPABASE ---
             if (!window.supabase) {
                 console.error("Supabase CDN no cargó.");
                 return;
             }
-
             const supabaseUrl = 'https://smodjwbmabffobonywad.supabase.co';
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb2Rqd2JtYWJmZm9ib255d2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjYyOTYsImV4cCI6MjA4OTM0MjI5Nn0.7nN75BHnzc7VzzdS9zy0Tvv8D43YjYK6PSLgeOp3uVg';
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+            // --- REFERENCIAS A ELEMENTOS DEL DOM ---
             const authForm = document.getElementById('auth-form');
             const authSubmitButton = document.getElementById('auth-submit-button');
             const emailInput = document.getElementById('email-input');
+            const authSection = document.getElementById('auth-section');
+            const pdfFormSection = document.getElementById('pdf-form-section');
+            const paymentSuccessBanner = document.getElementById('payment-success-banner');
+            const pdfCreditsSpan = document.getElementById('pdf-credits-remaining');
+            const pdfForm = document.getElementById('pdf-form');
+            const generatePdfButton = document.getElementById('generate-pdf-button');
 
+            // --- LÓGICA DE AUTENTICACIÓN ---
             if(authForm) {
                 authForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    
                     try {
                         authSubmitButton.disabled = true;
                         authSubmitButton.textContent = 'Enviando link mágico...';
-                        
                         const { error } = await supabase.auth.signInWithOtp({
                             email: emailInput.value,
-                            options: {
-                                emailRedirectTo: window.location.href,
-                            }
+                            options: { emailRedirectTo: window.location.href }
                         });
-
                         if (error) throw error;
-
                         alert('¡Éxito! Revisa tu bandeja de entrada o SPAM. Te hemos enviado un enlace mágico para entrar.');
                         emailInput.value = '';
-                        document.getElementById('auth-section').classList.add('hidden');
-                        
+                        authSection.classList.add('hidden');
                     } catch (error) {
                         alert("Hubo un problema: " + error.message);
                     } finally {
@@ -433,7 +477,77 @@
                     }
                 });
             }
+
+            // --- VERIFICACIÓN DE ESTADO DE SESIÓN Y PAGO ---
+            supabase.auth.onAuthStateChange(async (event, session) => {
+                if (event === 'SIGNED_IN' && session?.user) {
+                    await checkUserCredits(session.user);
+                } else if (event === 'SIGNED_OUT') {
+                    pdfFormSection.classList.add('hidden');
+                    paymentSuccessBanner.classList.add('hidden');
+                }
+            });
+
+            async function checkUserCredits(user) {
+                try {
+                    const { data, error } = await supabase
+                        .from('perfiles_empresas')
+                        .select('creditos_disponibles')
+                        .eq('id', user.id)
+                        .single();
+                    
+                    if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows returned
+
+                    if (data && data.creditos_disponibles > 0) {
+                        document.getElementById('precios').classList.add('hidden');
+                        authSection.classList.add('hidden');
+                        pdfCreditsSpan.textContent = data.creditos_disponibles;
+                        paymentSuccessBanner.classList.remove('hidden');
+                        pdfFormSection.classList.remove('hidden');
+                        pdfFormSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                } catch (error) {
+                    console.error('Error al verificar créditos del usuario:', error);
+                }
+            }
+
+            // --- LÓGICA DEL FORMULARIO DE GENERACIÓN DE PDF ---
+            if (pdfForm) {
+                pdfForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    generatePdfButton.disabled = true;
+                    generatePdfButton.textContent = 'Generando PDF...';
+
+                    try {
+                        // Aquí iría la lógica para generar el PDF y descontar el crédito
+                        console.log("Generando PDF con los datos...");
+                        
+                        // Simulación de llamada a función en el servidor
+                        const { data: user, error: userError } = await supabase.auth.getUser();
+                        if (userError) throw userError;
+
+                        // Descontar crédito (simulado en el front, debe ser en el back)
+                        const { error: updateError } = await supabase
+                            .from('perfiles_empresas')
+                            .update({ creditos_disponibles: 0 }) // SIMULACIÓN: SET A 0
+                            .eq('id', user.user.id);
+
+                        if (updateError) throw updateError;
+
+                        alert("¡PDF generado con éxito! La descarga comenzará en breve.");
+                        paymentSuccessBanner.classList.add('hidden');
+                        pdfFormSection.classList.add('hidden');
+
+                    } catch (error) {
+                        alert("Hubo un problema al generar el PDF: " + error.message);
+                    } finally {
+                        generatePdfButton.disabled = false;
+                        generatePdfButton.textContent = 'Generar PDF';
+                    }
+                });
+            }
         });
     </script>
+
 </body>
 </html>
