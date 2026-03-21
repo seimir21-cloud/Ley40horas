@@ -16,6 +16,8 @@
             }
         }
     </script>
+    <!-- Script de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
     <header class="bg-navy text-white py-12 px-4 text-center">
@@ -168,7 +170,7 @@
                         <li class="flex items-center gap-3"><svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Formato estandarizado DT.</li>
                         <li class="flex items-center gap-3"><svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Descarga inmediata.</li>
                     </ul>
-                    <button class="w-full bg-navy text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-transform">Comprar Ahora</button>
+                    <button id="btn-comprar-basico" class="w-full bg-navy text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-transform">Comprar Ahora</button>
                 </div>
                 <div class="bg-white rounded-xl shadow-lg p-8 border-t-4 border-blue-600">
                     <h3 class="text-2xl font-bold text-navy mb-4">Portal RRHH PRO</h3>
@@ -179,12 +181,32 @@
                         <li class="flex items-center gap-3"><svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Dashboard de gestión de personal.</li>
                         <li class="flex items-center gap-3"><svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Soporte prioritario.</li>
                     </ul>
-                    <button class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-transform">Suscribirse</button>
+                    <button id="btn-suscribirse-pro" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-transform">Suscribirse</button>
                 </div>
             </div>
         </div>
+
+        <!-- Auth Section (hidden by default) -->
+        <div id="auth-section" class="max-w-5xl mx-auto mt-12 p-8 hidden">
+            <div class="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8 border-t-4 border-navy">
+                 <h2 class="text-2xl font-bold text-center text-navy mb-2">Accede para Continuar</h2>
+                 <p class="text-center text-slate-500 mb-6">Ingresa tu correo para recibir un link de acceso mágico.</p>
+                 <form id="auth-form">
+                     <div class="space-y-4">
+                         <div>
+                             <label for="email-input" class="sr-only">Email</label>
+                             <input type="email" id="email-input" placeholder="tu.correo@ejemplo.com" required class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"/>
+                         </div>
+                         <button type="submit" id="auth-submit-button" class="w-full bg-navy text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-transform">Recibir Link de Acceso</button>
+                     </div>
+                 </form>
+                 <div id="auth-message" class="mt-4 text-center text-sm"></div>
+            </div>
+        </div>
+
     </main>
     <script>
+        // --- LÓGICA DE LA CALCULADORA ---
         document.addEventListener('DOMContentLoaded', () => {
             const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
             const disabledClasses = ['bg-gray-100', 'text-gray-400', 'opacity-50'];
@@ -228,8 +250,7 @@
                             input.classList.add(...disabledClasses);
                             input.value = ''; // Limpiar valores al desmarcar
                         }
-                         // Fin de colación es siempre readonly, pero habilitamos/deshabilitamos el estilo
-                        const finColacionInput = document.getElementById(`cfn-${id}`);
+                         const finColacionInput = document.getElementById(`cfn-${id}`);
                         finColacionInput.disabled = !isChecked;
                          if(isChecked) finColacionInput.classList.remove(...disabledClasses);
                          else finColacionInput.classList.add(...disabledClasses);
@@ -241,47 +262,39 @@
                 
                 inputs.forEach(input => input.addEventListener('input', calcular));
 
-                // Listeners para la lógica de colación
                 document.getElementById(`col-${id}`).addEventListener('input', () => calcularFinColacion(id));
                 document.getElementById(`cin-${id}`).addEventListener('input', () => calcularFinColacion(id));
             });
 
-            // --- NUEVA FUNCIONALIDAD DE REPLICAR ---
             document.getElementById('btn-replicar-lunes').addEventListener('click', () => {
                 const lunesCheckbox = document.getElementById('check-lunes');
                 if (!lunesCheckbox.checked) {
                     alert('Por favor, completa y marca el horario del Lunes primero para poder replicarlo.');
                     return;
                 }
-
                 const valoresLunes = {
                     entrada: document.getElementById('in-lunes').value,
                     salida: document.getElementById('out-lunes').value,
                     colacionMin: document.getElementById('col-lunes').value,
                     colacionInicio: document.getElementById('cin-lunes').value
                 };
-
                 if (!valoresLunes.entrada || !valoresLunes.salida) {
                     alert('Por favor, completa la hora de Entrada y Salida del Lunes para poder replicarlo.');
                     return;
                 }
-                
                 const diasSemanaHabil = ['martes', 'miercoles', 'jueves', 'viernes'];
                 const inputEvent = new Event('input', { bubbles: true });
                 const changeEvent = new Event('change', { bubbles: true });
-
                 diasSemanaHabil.forEach(dia => {
                     const checkbox = document.getElementById(`check-${dia}`);
                     if (!checkbox.checked) {
                         checkbox.checked = true;
                         checkbox.dispatchEvent(changeEvent);
                     }
-
                     document.getElementById(`in-${dia}`).value = valoresLunes.entrada;
                     document.getElementById(`out-${dia}`).value = valoresLunes.salida;
                     document.getElementById(`col-${dia}`).value = valoresLunes.colacionMin;
                     document.getElementById(`cin-${dia}`).value = valoresLunes.colacionInicio;
-
                     document.getElementById(`in-${dia}`).dispatchEvent(inputEvent);
                     document.getElementById(`out-${dia}`).dispatchEvent(inputEvent);
                     document.getElementById(`col-${dia}`).dispatchEvent(inputEvent);
@@ -289,39 +302,37 @@
                 });
             });
 
-            // --- EVENT LISTENER PARA EL BOTÓN PRINCIPAL DE VALIDACIÓN ---
             document.getElementById('btn-validar').addEventListener('click', () => {
-                // Re-ejecutar el cálculo para asegurar que el estado es el más reciente
                 calcular();
-
                 const totalHoras = parseFloat(document.getElementById('contadorTotalPublico').innerText);
                 const alertBox = document.getElementById('mensajeAlertaPublico');
-
-                // 1. Validar que el total de horas sea mayor a 0
                 if (totalHoras === 0) {
                     alert("Por favor, ingresa al menos un día de trabajo.");
                     return;
                 }
-
-                // 2. NUEVA REGLA: Bloquear si es Jornada Parcial (<= 30 horas)
                 if (totalHoras > 0 && totalHoras <= 30) {
                     alert("El horario ingresado corresponde a una Jornada Parcial (30 horas o menos). La ley no exige un anexo de reducción de jornada para estos contratos.");
                     return;
                 }
-                
-                // 3. Validar que no haya otros errores legales
                 if (alertBox.classList.contains('text-danger')) {
                     alert(`Error en el horario: ${alertBox.textContent.trim()}`);
                     return;
                 }
-
-                // 4. Si todo es correcto, hacer scroll a la sección de precios
                 const seccionPrecios = document.getElementById('precios');
                 if (seccionPrecios) {
                     seccionPrecios.classList.remove('hidden');
                     seccionPrecios.scrollIntoView({ behavior: 'smooth' });
                 }
             });
+
+            // --- NUEVO: EVENT LISTENERS PARA BOTONES DE PRECIOS ---
+            const authSection = document.getElementById('auth-section');
+            const showAuth = () => {
+                authSection.classList.remove('hidden');
+                authSection.scrollIntoView({ behavior: 'smooth' });
+            }
+            document.getElementById('btn-comprar-basico').addEventListener('click', showAuth);
+            document.getElementById('btn-suscribirse-pro').addEventListener('click', showAuth);
         });
 
         function timeToMinutes(t) {
@@ -352,7 +363,6 @@
             const alertBox = document.getElementById('mensajeAlertaPublico');
             alertBox.classList.remove('hidden');
 
-            // Lógica de Mensajes de Alerta Actualizada
             if (error10) {
                 alertBox.className = "p-4 rounded-lg border mt-4 bg-red-50 border-danger text-danger";
                 alertBox.innerHTML = "<strong>Tope Diario:</strong> Máximo 10 hrs efectivas por día.";
@@ -366,7 +376,6 @@
                 alertBox.className = "p-4 rounded-lg border mt-4 bg-green-50 border-success text-success";
                 alertBox.innerHTML = "<strong>¡Perfecto!</strong> Tu horario cumple con la ley vigente.";
             } else if (total > 0 && total <= 30) {
-                // NUEVA REGLA UI: Mensaje informativo para Jornada Parcial
                 alertBox.className = "p-4 rounded-lg border mt-4 bg-amber-50 border-premium text-amber-800";
                 alertBox.innerHTML = "<strong>Jornada Parcial (Part-Time).</strong> Los contratos de 30 horas o menos no requieren este anexo de adecuación por la nueva ley.";
             } else if (diasActivos === 0) {
@@ -376,6 +385,52 @@
                 alertBox.classList.add('hidden');
             }
         }
+    </script>
+
+    <!-- Lógica de Supabase -->
+    <script>
+        const supabaseUrl = 'https://sfbrwdeqfmlwynrkqgck.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmYnJ3ZGVxZm1sd3lucmtxZ2NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjE0NDI3NTgsImV4cCI6MjAzNzAxODc1OH0.3zB0LQQz3-n-n2e_opL9AMg-xG3z-4-L2hJkZJ9CFsE';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        const authForm = document.getElementById('auth-form');
+        const authMessage = document.getElementById('auth-message');
+        const authSubmitButton = document.getElementById('auth-submit-button');
+
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email-input').value;
+            authSubmitButton.disabled = true;
+            authSubmitButton.textContent = 'Enviando link...';
+
+            const { error } = await supabase.auth.signInWithOtp({
+                email: email,
+                options: {
+                    emailRedirectTo: window.location.href, // Redirige de vuelta a la página actual
+                }
+            });
+
+            if (error) {
+                authMessage.textContent = `Error: ${error.message}`;
+                authMessage.className = 'text-danger';
+                authSubmitButton.disabled = false;
+                authSubmitButton.textContent = 'Recibir Link de Acceso';
+            } else {
+                authMessage.textContent = '¡Revisa tu correo! Te hemos enviado un link mágico para acceder.';
+                authMessage.className = 'text-success';
+                authForm.classList.add('hidden');
+            }
+        });
+
+        // Opcional: Escuchar cambios de sesión para mostrar info del usuario o redirigir
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (session) {
+                console.log('Usuario ha iniciado sesión:', session.user.email);
+                // Aquí podrías redirigir a una página de dashboard o mostrar contenido premium
+            } else {
+                console.log('Usuario no ha iniciado sesión.');
+            }
+        });
     </script>
 </body>
 </html>
