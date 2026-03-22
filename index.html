@@ -451,7 +451,7 @@
             
             // --- LÓGICA DE COMPRA Y AUTENTICACIÓN ---
             const startPurchaseFlow = (plan) => {
-                authForm.dataset.plan = plan;
+                localStorage.setItem('pendingPlan', plan); // Punto 1: Persistir plan
                 authSection.classList.remove('hidden');
                 preciosSection.classList.add('hidden');
                 authSection.scrollIntoView({ behavior: 'smooth' });
@@ -463,17 +463,15 @@
             if(authForm) {
                 authForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    const plan = authForm.dataset.plan;
-                    if (!plan) return;
-
                     authSubmitButton.disabled = true;
                     authSubmitButton.textContent = 'Enviando link mágico...';
                     
                     try {
-                        const redirectUrl = `${window.location.origin}${window.location.pathname}?purchase_intent=${plan}`;
                         const { error } = await supabase.auth.signInWithOtp({
                             email: emailInput.value,
-                            options: { emailRedirectTo: redirectUrl } 
+                            options: { 
+                                emailRedirectTo: `${window.location.origin}${window.location.pathname}` // URL simple
+                            } 
                         });
                         if (error) throw error;
                         mainCalculator.classList.add('hidden');
@@ -489,9 +487,11 @@
                 });
             }
 
-            // --- FUNCIÓN DE PAGO CON FETCH (NO BLOQUEANTE) ---
+            // --- FUNCIÓN DE PAGO CON FETCH ---
             const createPaymentWithFetch = async (plan, session) => {
+                localStorage.removeItem('pendingPlan'); // Punto 3: Limpiar memoria
                 document.body.innerHTML = '<div class="w-screen h-screen flex items-center justify-center bg-navy text-white font-bold text-2xl">Conectando con la pasarela de pago...</div>';
+                
                 try {
                     const response = await fetch(`${supabaseUrl}/functions/v1/create-payment`, {
                         method: 'POST',
@@ -516,12 +516,12 @@
                     }
                 } catch (error) {
                     console.error('Error al crear el pago:', error.message);
-                    alert('Hubo un problema al iniciar el pago. Serás redirigido a la página principal para que puedas intentarlo de nuevo.');
+                    alert('Hubo un problema al iniciar el pago. Serás redirigido para intentarlo de nuevo.');
                     window.location.href = window.location.origin;
                 }
             };
 
-            // --- VERIFICADOR DE CRÉDITOS (NO BLOQUEANTE) ---
+            // --- VERIFICADOR DE CRÉDITOS ---
             async function checkUserCredits(user) {
                 try {
                     const { data, error } = await supabase.from('perfiles_empresas').select('creditos_disponibles').eq('id', user.id).single();
@@ -549,26 +549,24 @@
             
             // --- GESTOR PRINCIPAL DE ESTADO ---
             const handleSessionState = async (session) => {
+                const pendingPlan = localStorage.getItem('pendingPlan');
                 const urlParams = new URLSearchParams(window.location.search);
-                const purchaseIntent = urlParams.get('purchase_intent');
                 const paymentStatus = urlParams.get('payment');
 
                 if (session && session.user) {
-                    // --- Usuario Logueado ---
-                    if (purchaseIntent) {
-                        window.history.replaceState({}, document.title, window.location.pathname);
-                        await createPaymentWithFetch(purchaseIntent, session);
+                    // Punto 2: Disparador automático
+                    if (pendingPlan) {
+                        await createPaymentWithFetch(pendingPlan, session);
                     } else {
                         if (paymentStatus) {
                              window.history.replaceState({}, document.title, window.location.pathname);
                              if(paymentStatus === 'success') {
-                                 alert("¡Pago completado con éxito! Tus créditos se han añadido.");
+                                 alert("¡Pago completado con éxito! Tus créditos han sido añadidos.");
                              }
                         }
                         await checkUserCredits(session.user);
                     }
                 } else {
-                    // --- Usuario No Logueado ---
                     mainCalculator.classList.remove('hidden');
                     pdfFormSection.classList.add('hidden');
                     authSection.classList.add('hidden');
@@ -578,7 +576,12 @@
 
             // --- MANEJADOR DE AUTENTICACIÓN ---
             supabase.auth.onAuthStateChange((event, session) => {
-                 handleSessionState(session);
+                 // El evento 'INITIAL_SESSION' también es importante para usuarios que ya estaban logueados
+                 if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+                    handleSessionState(session);
+                 } else if (event === 'SIGNED_OUT') {
+                    handleSessionState(null);
+                 }
             });
 
             // --- LÓGICA DEL FORMULARIO DE PDF (SIN CAMBIOS) ---
