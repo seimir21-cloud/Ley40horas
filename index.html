@@ -490,38 +490,27 @@
                     }
                 });
             }
-
-            // --- FUNCIÓN DE PAGO MANUAL CON FETCH ---
-            const createPaymentWithFetch = async (plan, session) => {
-                document.body.innerHTML = '<div class="w-screen h-screen flex items-center justify-center bg-navy text-white font-bold text-2xl">Conectando con la pasarela de pago...</div>';
+            // --- FUNCIÓN DE PAGO OFICIAL CON SUPABASE ---
+            const createPayment = async (plan) => {
+                document.body.innerHTML = '<div class="w-screen h-screen flex items-center justify-center bg-navy text-white font-bold text-2xl">Conectando con Mercado Pago...</div>';
                 try {
-                    const response = await fetch(`${supabaseUrl}/functions/v1/create-payment`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${session.access_token}`,
-                            'apikey': supabaseKey
-                        },
-                        body: JSON.stringify({ plan })
+                    // El cliente oficial inyecta el JWT automáticamente
+                    const { data, error } = await supabase.functions.invoke('create-payment', {
+                        body: { plan }
                     });
 
-                    if (!response.ok) {
-                        let errorMsg = `Error ${response.status}: ${response.statusText}`;
-                        try {
-                            const errorBody = await response.json();
-                            errorMsg = errorBody.error || errorBody.message || errorMsg;
-                        } catch (e) { /* No se pudo parsear el cuerpo, usar el statusText */ }
-                        throw new Error(errorMsg);
+                    if (error) {
+                        console.error("Error devuelto por la función:", error);
+                        throw error;
                     }
 
-                    const data = await response.json();
-                    if (data.payment_url) {
+                    if (data && data.payment_url) {
                         window.location.href = data.payment_url;
                     } else {
                         throw new Error('No se recibió la URL de pago.');
                     }
                 } catch (error) {
-                    alert('Error al crear el pago: ' + error.message);
+                    alert('Error al crear el pago: ' + error.message + '\n\nRevisa la consola para más detalles.');
                     window.location.href = window.location.origin;
                 }
             };
@@ -540,7 +529,7 @@
                     if (purchaseIntent) {
                         // Limpiar la URL y proceder al pago
                         window.history.replaceState({}, document.title, window.location.pathname);
-                        await createPaymentWithFetch(purchaseIntent, session);
+                        await createPayment(purchaseIntent);
                     } else {
                         if (paymentStatus) {
                              window.history.replaceState({}, document.title, window.location.pathname);
