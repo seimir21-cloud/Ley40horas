@@ -453,6 +453,7 @@
             const startPurchaseFlow = (plan) => {
                 authForm.dataset.plan = plan;
                 authSection.classList.remove('hidden');
+                preciosSection.classList.add('hidden');
                 authSection.scrollIntoView({ behavior: 'smooth' });
             };
 
@@ -463,10 +464,7 @@
                 authForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     const plan = authForm.dataset.plan;
-                    if (!plan) {
-                        alert("Error crítico: No se ha seleccionado ningún plan. Por favor, intenta de nuevo.");
-                        return;
-                    }
+                    if (!plan) return;
 
                     authSubmitButton.disabled = true;
                     authSubmitButton.textContent = 'Enviando link mágico...';
@@ -479,10 +477,10 @@
                         });
                         if (error) throw error;
                         mainCalculator.classList.add('hidden');
-                        preciosSection.classList.add('hidden');
                         authSection.classList.add('hidden');
                         document.body.innerHTML = '<div class="w-screen h-screen flex items-center justify-center bg-navy text-white font-bold text-2xl">¡Éxito! Revisa tu correo para completar el acceso.</div>';
                     } catch (error) {
+                        console.error("Hubo un problema al enviar el link: ", error);
                         alert("Hubo un problema al enviar el link: " + error.message);
                     } finally {
                         authSubmitButton.disabled = false;
@@ -490,82 +488,93 @@
                     }
                 });
             }
-            // --- FUNCIÓN DE PAGO OFICIAL CON SUPABASE ---
-            const createPayment = async (plan) => {
-                document.body.innerHTML = '<div class="w-screen h-screen flex items-center justify-center bg-navy text-white font-bold text-2xl">Conectando con Mercado Pago...</div>';
+
+            // --- FUNCIÓN DE PAGO CON FETCH (NO BLOQUEANTE) ---
+            const createPaymentWithFetch = async (plan, session) => {
+                document.body.innerHTML = '<div class="w-screen h-screen flex items-center justify-center bg-navy text-white font-bold text-2xl">Conectando con la pasarela de pago...</div>';
                 try {
-                    // El cliente oficial inyecta el JWT automáticamente
-                    const { data, error } = await supabase.functions.invoke('create-payment', {
-                        body: { plan }
+                    const response = await fetch(`${supabaseUrl}/functions/v1/create-payment`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.access_token}`,
+                            'apikey': supabaseKey
+                        },
+                        body: JSON.stringify({ plan })
                     });
 
-                    if (error) {
-                        console.error("Error devuelto por la función:", error);
-                        throw error;
+                    if (!response.ok) {
+                        const errorBody = await response.json().catch(() => ({ message: `Error ${response.status}: ${response.statusText}` }));
+                        throw new Error(errorBody.error || errorBody.message);
                     }
 
-                    if (data && data.payment_url) {
+                    const data = await response.json();
+                    if (data.payment_url) {
                         window.location.href = data.payment_url;
                     } else {
-                        throw new Error('No se recibió la URL de pago.');
+                        throw new Error('No se recibió la URL de pago del servidor.');
                     }
                 } catch (error) {
-                    alert('Error al crear el pago: ' + error.message + '\n\nRevisa la consola para más detalles.');
+                    console.error('Error al crear el pago:', error.message);
+                    alert('Hubo un problema al iniciar el pago. Serás redirigido a la página principal para que puedas intentarlo de nuevo.');
                     window.location.href = window.location.origin;
                 }
             };
 
-            // --- GESTOR PRINCIPAL DE ESTADO DE UI Y SESIÓN ---
+            // --- VERIFICADOR DE CRÉDITOS (NO BLOQUEANTE) ---
+            async function checkUserCredits(user) {
+                try {
+                    const { data, error } = await supabase.from('perfiles_empresas').select('creditos_disponibles').eq('id', user.id).single();
+                    if (error && error.code !== 'PGRST116') throw error;
+
+                    const hasCredits = data && data.creditos_disponibles > 0;
+
+                    if (hasCredits) {
+                        pdfCreditsSpan.textContent = data.creditos_disponibles;
+                        paymentSuccessBanner.classList.remove('hidden');
+                        pdfFormSection.classList.remove('hidden');
+                        mainCalculator.classList.add('hidden');
+                        preciosSection.classList.add('hidden');
+                    } else {
+                        paymentSuccessBanner.classList.add('hidden');
+                        pdfFormSection.classList.add('hidden');
+                        mainCalculator.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error('Error al verificar créditos:', error);
+                    mainCalculator.classList.remove('hidden');
+                    pdfFormSection.classList.add('hidden');
+                }
+            }
+            
+            // --- GESTOR PRINCIPAL DE ESTADO ---
             const handleSessionState = async (session) => {
                 const urlParams = new URLSearchParams(window.location.search);
                 const purchaseIntent = urlParams.get('purchase_intent');
                 const paymentStatus = urlParams.get('payment');
 
                 if (session && session.user) {
-                    // --- Usuario está logueado ---
-                    mainCalculator.classList.add('hidden');
-                    preciosSection.classList.add('hidden');
-                    
+                    // --- Usuario Logueado ---
                     if (purchaseIntent) {
-                        // Limpiar la URL y proceder al pago
                         window.history.replaceState({}, document.title, window.location.pathname);
-                        await createPayment(purchaseIntent);
+                        await createPaymentWithFetch(purchaseIntent, session);
                     } else {
                         if (paymentStatus) {
                              window.history.replaceState({}, document.title, window.location.pathname);
-                             if(paymentStatus === 'success') alert("¡Pago completado con éxito! Tus créditos se han añadido.");
+                             if(paymentStatus === 'success') {
+                                 alert("¡Pago completado con éxito! Tus créditos se han añadido.");
+                             }
                         }
                         await checkUserCredits(session.user);
                     }
                 } else {
-                    // --- Usuario no está logueado ---
+                    // --- Usuario No Logueado ---
                     mainCalculator.classList.remove('hidden');
+                    pdfFormSection.classList.add('hidden');
+                    authSection.classList.add('hidden');
+                    preciosSection.classList.add('hidden');
                 }
             };
-
-            async function checkUserCredits(user) {
-                try {
-                    const { data, error } = await supabase.from('perfiles_empresas').select('creditos_disponibles').eq('id', user.id).single();
-                    
-                    if (error && error.code !== 'PGRST116') throw error;
-
-                    if (data && data.creditos_disponibles > 0) {
-                        pdfCreditsSpan.textContent = data.creditos_disponibles;
-                        paymentSuccessBanner.classList.remove('hidden');
-                        pdfFormSection.classList.remove('hidden');
-                    } else {
-                        paymentSuccessBanner.classList.add('hidden');
-                        pdfFormSection.classList.add('hidden');
-                        // Si no tiene créditos, mostramos la calculadora para que pueda generar otro horario
-                        mainCalculator.classList.remove('hidden'); 
-                        alert("No tienes créditos disponibles. Por favor, completa un horario para comprar más.");
-                    }
-                } catch (error) {
-                    console.error('Error al verificar créditos:', error);
-                    alert("Hubo un error al consultar tus datos. Recargando la página.");
-                    window.location.href = window.location.origin;
-                }
-            }
 
             // --- MANEJADOR DE AUTENTICACIÓN ---
             supabase.auth.onAuthStateChange((event, session) => {
@@ -608,6 +617,5 @@
             }
         });
     </script>
-
 </body>
 </html>
