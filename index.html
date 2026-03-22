@@ -26,7 +26,7 @@
         <p class="text-lg text-slate-300">Configura tu horario detallado y verifica el cumplimiento de la ley.</p>
     </header>
     <main class="flex-grow p-4">
-        <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-lg p-8">
+        <div id="main-calculator" class="max-w-5xl mx-auto bg-white rounded-xl shadow-lg p-8">
             <form id="calcForm" class="space-y-6" onsubmit="event.preventDefault();">
                 <h2 class="text-2xl font-bold text-slate-800">Ingresa el Horario Semanal</h2>
 
@@ -207,8 +207,8 @@
         <!-- PDF Generation Form (hidden by default) -->
         <div id="pdf-form-section" class="max-w-5xl mx-auto mt-12 p-8 hidden">
             <div id="payment-success-banner" class="hidden bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-lg">
-                <p class="font-bold">¡Pago detectado!</p>
-                <p>Gracias por tu compra. Tienes <span id="pdf-credits-remaining" class="font-bold"></span> crédito(s) para generar tu anexo.</p>
+                <p class="font-bold">¡Bienvenido de vuelta!</p>
+                <p>Tienes <span id="pdf-credits-remaining" class="font-bold"></span> crédito(s) para generar tu anexo.</p>
             </div>
 
             <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8 border-t-4 border-navy">
@@ -250,7 +250,7 @@
 
     </main>
     <script>
-        // --- LÓGICA DE LA CALCULADORA ---
+        // --- LÓGICA DE LA CALCULADORA (SIN CAMBIOS) ---
         document.addEventListener('DOMContentLoaded', () => {
             const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
             const disabledClasses = ['bg-gray-100', 'text-gray-400', 'opacity-50'];
@@ -292,7 +292,7 @@
                             input.classList.remove(...disabledClasses);
                         } else {
                             input.classList.add(...disabledClasses);
-                            input.value = ''; // Limpiar valores al desmarcar
+                            input.value = '';
                         }
                          const finColacionInput = document.getElementById(`cfn-${id}`);
                         finColacionInput.disabled = !isChecked;
@@ -426,15 +426,16 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- INICIALIZACIÓN DE SUPABASE ---
+            const supabaseUrl = 'https://smodjwbmabffobonywad.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb2Rqd2JtYWJmZm9ib255d2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjYyOTYsImV4cCI6MjA4OTM0MjI5Nn0.7nN75BHnzc7VzzdS9zy0Tvv8D43YjYK6PSLgeOp3uVg';
             if (!window.supabase) {
                 console.error("Supabase CDN no cargó.");
                 return;
             }
-            const supabaseUrl = 'https://smodjwbmabffobonywad.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb2Rqd2JtYWJmZm9ib255d2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjYyOTYsImV4cCI6MjA4OTM0MjI5Nn0.7nN75BHnzc7VzzdS9zy0Tvv8D43YjYK6PSLgeOp3uVg';
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
             // --- REFERENCIAS A ELEMENTOS DEL DOM ---
+            const mainCalculator = document.getElementById('main-calculator');
             const authForm = document.getElementById('auth-form');
             const authSubmitButton = document.getElementById('auth-submit-button');
             const emailInput = document.getElementById('email-input');
@@ -446,10 +447,11 @@
             const generatePdfButton = document.getElementById('generate-pdf-button');
             const btnComprarBasico = document.getElementById('btn-comprar-basico');
             const btnComprarPack = document.getElementById('btn-comprar-pack');
-
-            // --- FUNCIÓN PARA INICIAR EL FLUJO DE COMPRA ---
+            const preciosSection = document.getElementById('precios');
+            
+            // --- LÓGICA DE COMPRA Y AUTENTICACIÓN ---
             const startPurchaseFlow = (plan) => {
-                localStorage.setItem('purchase_plan', plan);
+                authForm.dataset.plan = plan;
                 authSection.classList.remove('hidden');
                 authSection.scrollIntoView({ behavior: 'smooth' });
             };
@@ -457,23 +459,31 @@
             btnComprarBasico.addEventListener('click', () => startPurchaseFlow('basico'));
             btnComprarPack.addEventListener('click', () => startPurchaseFlow('pack_5'));
 
-            // --- LÓGICA DE AUTENTICACIÓN ---
             if(authForm) {
                 authForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
+                    const plan = authForm.dataset.plan;
+                    if (!plan) {
+                        alert("Error crítico: No se ha seleccionado ningún plan. Por favor, intenta de nuevo.");
+                        return;
+                    }
+
+                    authSubmitButton.disabled = true;
+                    authSubmitButton.textContent = 'Enviando link mágico...';
+                    
                     try {
-                        authSubmitButton.disabled = true;
-                        authSubmitButton.textContent = 'Enviando link mágico...';
+                        const redirectUrl = `${window.location.origin}${window.location.pathname}?purchase_intent=${plan}`;
                         const { error } = await supabase.auth.signInWithOtp({
                             email: emailInput.value,
-                            options: { emailRedirectTo: window.location.href.split('?')[0] } // Quita parámetros
+                            options: { emailRedirectTo: redirectUrl } 
                         });
                         if (error) throw error;
-                        alert('¡Éxito! Revisa tu bandeja de entrada o SPAM. Te hemos enviado un enlace mágico para entrar.');
-                        emailInput.value = '';
+                        mainCalculator.classList.add('hidden');
+                        preciosSection.classList.add('hidden');
                         authSection.classList.add('hidden');
+                        document.body.innerHTML = '<div class="w-screen h-screen flex items-center justify-center bg-navy text-white font-bold text-2xl">¡Éxito! Revisa tu correo para completar el acceso.</div>';
                     } catch (error) {
-                        alert("Hubo un problema: " + error.message);
+                        alert("Hubo un problema al enviar el link: " + error.message);
                     } finally {
                         authSubmitButton.disabled = false;
                         authSubmitButton.textContent = 'Recibir Link de Acceso';
@@ -481,107 +491,124 @@
                 });
             }
 
-            // --- VERIFICACIÓN DE ESTADO DE SESIÓN Y PAGO ---
-            supabase.auth.onAuthStateChange(async (event, session) => {
-                if (event === 'SIGNED_IN' && session?.user) {
-                    const plan = localStorage.getItem('purchase_plan');
-                    
-                    if (plan) {
-                        localStorage.removeItem('purchase_plan');
-                        document.body.innerHTML = '<div class="w-screen h-screen flex items-center justify-center bg-navy text-white font-bold text-2xl">Redirigiendo a Mercado Pago...</div>';
+            // --- FUNCIÓN DE PAGO MANUAL CON FETCH ---
+            const createPaymentWithFetch = async (plan, session) => {
+                document.body.innerHTML = '<div class="w-screen h-screen flex items-center justify-center bg-navy text-white font-bold text-2xl">Conectando con la pasarela de pago...</div>';
+                try {
+                    const response = await fetch(`${supabaseUrl}/functions/v1/create-payment`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.access_token}`,
+                            'apikey': supabaseKey
+                        },
+                        body: JSON.stringify({ plan })
+                    });
 
+                    if (!response.ok) {
+                        let errorMsg = `Error ${response.status}: ${response.statusText}`;
                         try {
-                            const { data, error } = await supabase.functions.invoke('create-payment', {
-                                method: 'POST',
-                                body: { plan }
-                            });
-
-                            if (error) throw error;
-                            
-                            if (data.payment_url) {
-                                window.location.href = data.payment_url;
-                            } else {
-                                throw new Error('No se recibió la URL de pago.');
-                            }
-                        } catch (error) {
-                            alert('Error al crear el pago: ' + error.message);
-                            window.location.href = window.location.href.split('?')[0]; // Recargar a la página limpia
-                        }
-                    } else {
-                         const urlParams = new URLSearchParams(window.location.search);
-                         if (urlParams.get('payment') === 'success') {
-                            await checkUserCredits(session.user);
-                            // Limpia la URL para evitar re-chequeos innecesarios
-                            window.history.replaceState({}, document.title, window.location.pathname);
-                         } else {
-                            await checkUserCredits(session.user);
-                         }
+                            const errorBody = await response.json();
+                            errorMsg = errorBody.error || errorBody.message || errorMsg;
+                        } catch (e) { /* No se pudo parsear el cuerpo, usar el statusText */ }
+                        throw new Error(errorMsg);
                     }
-                } else if (event === 'SIGNED_OUT') {
-                    pdfFormSection.classList.add('hidden');
-                    paymentSuccessBanner.classList.add('hidden');
+
+                    const data = await response.json();
+                    if (data.payment_url) {
+                        window.location.href = data.payment_url;
+                    } else {
+                        throw new Error('No se recibió la URL de pago.');
+                    }
+                } catch (error) {
+                    alert('Error al crear el pago: ' + error.message);
+                    window.location.href = window.location.origin;
                 }
-            });
+            };
+
+            // --- GESTOR PRINCIPAL DE ESTADO DE UI Y SESIÓN ---
+            const handleSessionState = async (session) => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const purchaseIntent = urlParams.get('purchase_intent');
+                const paymentStatus = urlParams.get('payment');
+
+                if (session && session.user) {
+                    // --- Usuario está logueado ---
+                    mainCalculator.classList.add('hidden');
+                    preciosSection.classList.add('hidden');
+                    
+                    if (purchaseIntent) {
+                        // Limpiar la URL y proceder al pago
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        await createPaymentWithFetch(purchaseIntent, session);
+                    } else {
+                        if (paymentStatus) {
+                             window.history.replaceState({}, document.title, window.location.pathname);
+                             if(paymentStatus === 'success') alert("¡Pago completado con éxito! Tus créditos se han añadido.");
+                        }
+                        await checkUserCredits(session.user);
+                    }
+                } else {
+                    // --- Usuario no está logueado ---
+                    mainCalculator.classList.remove('hidden');
+                }
+            };
 
             async function checkUserCredits(user) {
                 try {
-                    const { data, error } = await supabase
-                        .from('perfiles_empresas')
-                        .select('creditos_disponibles')
-                        .eq('id', user.id)
-                        .single();
+                    const { data, error } = await supabase.from('perfiles_empresas').select('creditos_disponibles').eq('id', user.id).single();
                     
                     if (error && error.code !== 'PGRST116') throw error;
 
                     if (data && data.creditos_disponibles > 0) {
-                        document.getElementById('precios').classList.add('hidden');
-                        authSection.classList.add('hidden');
                         pdfCreditsSpan.textContent = data.creditos_disponibles;
                         paymentSuccessBanner.classList.remove('hidden');
                         pdfFormSection.classList.remove('hidden');
-                        pdfFormSection.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                        paymentSuccessBanner.classList.add('hidden');
+                        pdfFormSection.classList.add('hidden');
+                        // Si no tiene créditos, mostramos la calculadora para que pueda generar otro horario
+                        mainCalculator.classList.remove('hidden'); 
+                        alert("No tienes créditos disponibles. Por favor, completa un horario para comprar más.");
                     }
                 } catch (error) {
-                    console.error('Error al verificar créditos del usuario:', error);
+                    console.error('Error al verificar créditos:', error);
+                    alert("Hubo un error al consultar tus datos. Recargando la página.");
+                    window.location.href = window.location.origin;
                 }
             }
 
-            // --- LÓGICA DEL FORMULARIO DE GENERACIÓN DE PDF ---
+            // --- MANEJADOR DE AUTENTICACIÓN ---
+            supabase.auth.onAuthStateChange((event, session) => {
+                 handleSessionState(session);
+            });
+
+            // --- LÓGICA DEL FORMULARIO DE PDF (SIN CAMBIOS) ---
             if (pdfForm) {
                 pdfForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     generatePdfButton.disabled = true;
                     generatePdfButton.textContent = 'Generando PDF...';
-
                     try {
-                        console.log("Generando PDF con los datos...");
                         const { data: { user } } = await supabase.auth.getUser();
-
-                        const { data: profile, error: fetchError } = await supabase
-                            .from('perfiles_empresas')
-                            .select('creditos_disponibles')
-                            .eq('id', user.id)
-                            .single();
-                        
-                        if(fetchError || !profile) throw new Error('No se pudo obtener el perfil.');
+                        if(!user) throw new Error('Sesión no encontrada, por favor inicia sesión de nuevo');
+                        const { data: profile, error } = await supabase.from('perfiles_empresas').select('creditos_disponibles').eq('id', user.id).single();
+                        if(error || !profile) throw new Error('No se pudo obtener el perfil.');
                         if(profile.creditos_disponibles <= 0) throw new Error('No tienes créditos suficientes.');
 
+                        // Simulación de descuento de crédito
                         const newCreditCount = profile.creditos_disponibles - 1;
-
-                        const { error: updateError } = await supabase
-                            .from('perfiles_empresas')
-                            .update({ creditos_disponibles: newCreditCount })
-                            .eq('id', user.id);
-
+                        const { error: updateError } = await supabase.from('perfiles_empresas').update({ creditos_disponibles: newCreditCount }).eq('id', user.id);
                         if (updateError) throw updateError;
 
-                        alert("¡PDF generado con éxito! La descarga comenzará en breve.");
+                        alert("¡Anexo generado con éxito! (Simulación) El crédito ha sido descontado.");
                         pdfCreditsSpan.textContent = newCreditCount;
+                        
                         if(newCreditCount === 0){
                            paymentSuccessBanner.classList.add('hidden');
                            pdfFormSection.classList.add('hidden');
+                           mainCalculator.classList.remove('hidden');
                         }
-
                     } catch (error) {
                         alert("Hubo un problema al generar el PDF: " + error.message);
                     } finally {

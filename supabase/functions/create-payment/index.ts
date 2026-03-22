@@ -2,13 +2,13 @@
 // supabase/functions/create-payment/index.ts
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { corsHeaders } from '../_shared/cors.ts'
+import { corsHeaders } from './_shared/cors.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 // La clave de servicio de Supabase nos da permisos de administrador para actuar en nombre del usuario.
 const supabaseAdmin = createClient(
   Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  Deno.env.get('SERVICE_ROLE_KEY') ?? ''
 )
 
 serve(async (req) => {
