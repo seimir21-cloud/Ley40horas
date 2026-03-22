@@ -466,7 +466,7 @@
                         authSubmitButton.textContent = 'Enviando link mágico...';
                         const { error } = await supabase.auth.signInWithOtp({
                             email: emailInput.value,
-                            options: { emailRedirectTo: window.location.href }
+                            options: { emailRedirectTo: window.location.href.split('?')[0] } // Quita parámetros
                         });
                         if (error) throw error;
                         alert('¡Éxito! Revisa tu bandeja de entrada o SPAM. Te hemos enviado un enlace mágico para entrar.');
@@ -488,14 +488,34 @@
                     
                     if (plan) {
                         localStorage.removeItem('purchase_plan');
-                        // Redirigir a la función de pago
-                        console.log(`Usuario ${session.user.email} inició sesión para comprar el plan: ${plan}. Redirigiendo a Mercado Pago...`);
-                        // Aquí se llamaría a la Supabase Function que crea la preferencia de Mercado Pago
-                        // Por ahora, simulamos mostrando el formulario directamente
-                        alert(`¡Bienvenido! Serás redirigido para completar la compra del ${plan}.`);
-                        // window.location.href = `/api/create-payment?plan=${plan}`; // URL de la función
+                        document.body.innerHTML = '<div class="w-screen h-screen flex items-center justify-center bg-navy text-white font-bold text-2xl">Redirigiendo a Mercado Pago...</div>';
+
+                        try {
+                            const { data, error } = await supabase.functions.invoke('create-payment', {
+                                method: 'POST',
+                                body: { plan }
+                            });
+
+                            if (error) throw error;
+                            
+                            if (data.payment_url) {
+                                window.location.href = data.payment_url;
+                            } else {
+                                throw new Error('No se recibió la URL de pago.');
+                            }
+                        } catch (error) {
+                            alert('Error al crear el pago: ' + error.message);
+                            window.location.href = window.location.href.split('?')[0]; // Recargar a la página limpia
+                        }
                     } else {
-                         await checkUserCredits(session.user);
+                         const urlParams = new URLSearchParams(window.location.search);
+                         if (urlParams.get('payment') === 'success') {
+                            await checkUserCredits(session.user);
+                            // Limpia la URL para evitar re-chequeos innecesarios
+                            window.history.replaceState({}, document.title, window.location.pathname);
+                         } else {
+                            await checkUserCredits(session.user);
+                         }
                     }
                 } else if (event === 'SIGNED_OUT') {
                     pdfFormSection.classList.add('hidden');
@@ -537,8 +557,6 @@
                         console.log("Generando PDF con los datos...");
                         const { data: { user } } = await supabase.auth.getUser();
 
-                        // Lógica para descontar crédito
-                        // Esta lógica debería ser más robusta y probablemente una Supabase Function
                         const { data: profile, error: fetchError } = await supabase
                             .from('perfiles_empresas')
                             .select('creditos_disponibles')
