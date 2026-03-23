@@ -219,30 +219,35 @@
                         <div class="md:col-span-2 font-bold text-lg text-slate-700">Datos del Empleador</div>
                         <div>
                             <label for="employer-name" class="block text-sm font-medium text-gray-700">Nombre o Razón Social</label>
-                            <input type="text" id="employer-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <input type="text" id="employer-name" required class="pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <p id="employer-name-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
                         <div>
                             <label for="employer-rut" class="block text-sm font-medium text-gray-700">RUT</label>
-                            <input type="text" id="employer-rut" required class="rut-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <input type="text" id="employer-rut" required class="rut-input pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <p id="employer-rut-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
                         <div class="md:col-span-2">
                             <label for="employer-address" class="block text-sm font-medium text-gray-700">Domicilio</label>
-                            <input type="text" id="employer-address" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <input type="text" id="employer-address" required class="pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <p id="employer-address-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
 
                         <!-- Datos del Trabajador -->
                         <div class="md:col-span-2 mt-4 font-bold text-lg text-slate-700">Datos del Trabajador</div>
                         <div>
                             <label for="employee-name" class="block text-sm font-medium text-gray-700">Nombre Completo</label>
-                            <input type="text" id="employee-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <input type="text" id="employee-name" required class="pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <p id="employee-name-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
                         <div>
                             <label for="employee-rut" class="block text-sm font-medium text-gray-700">RUT</label>
-                            <input type="text" id="employee-rut" required class="rut-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <input type="text" id="employee-rut" required class="rut-input pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <p id="employee-rut-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
                     </div>
                     <div class="mt-8 text-center">
-                        <button type="submit" id="generate-pdf-button" class="w-full md:w-auto bg-premium text-white font-bold py-3 px-12 rounded-lg shadow-lg hover:bg-opacity-90 focus:outline-none focus:ring-4 focus:ring-amber-300 transition-all duration-300">Generar PDF</button>
+                        <button type="submit" id="generate-pdf-button" class="w-full md:w-auto bg-premium text-white font-bold py-3 px-12 rounded-lg shadow-lg hover:bg-opacity-90 focus:outline-none focus:ring-4 focus:ring-amber-300 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">Generar PDF</button>
                     </div>
                 </form>
             </div>
@@ -566,6 +571,11 @@
                         pdfFormSection.classList.remove('hidden');
                         mainCalculator.classList.add('hidden');
                         preciosSection.classList.add('hidden');
+                        
+                        // Lanzar la validación inicial del formulario de PDF una vez que es visible
+                        const validateFormEvent = new Event('input');
+                        pdfForm.querySelector('input').dispatchEvent(validateFormEvent);
+
                     } else {
                         paymentSuccessBanner.classList.add('hidden');
                         pdfFormSection.classList.add('hidden');
@@ -616,36 +626,62 @@
 
             // --- LÓGICA DEL FORMULARIO DE PDF ---
             if (pdfForm) {
-                const employerRutInput = document.getElementById('employer-rut');
-                const employeeRutInput = document.getElementById('employee-rut');
+                const allPdfInputs = pdfForm.querySelectorAll('input[required]');
 
-                const validateRutAndToggleSubmit = () => {
-                    const isEmployerRutValid = Rut.validate(employerRutInput.value);
-                    const isEmployeeRutValid = Rut.validate(employeeRutInput.value);
-                    
-                    [employerRutInput, employeeRutInput].forEach(input => {
-                        const isValid = Rut.validate(input.value);
-                        input.classList.toggle('border-danger', !isValid && input.value.length > 0);
-                        input.classList.toggle('border-success', isValid);
+                const validateForm = () => {
+                    let isFormValid = true;
+
+                    allPdfInputs.forEach(input => {
+                        const errorElement = document.getElementById(`${input.id}-error`);
+                        let errorMessage = '';
+                        let isValid = true;
+
+                        if (!input.value.trim()) {
+                            errorMessage = 'Este campo es requerido.';
+                            isValid = false;
+                        } else if (input.classList.contains('rut-input') && !Rut.validate(input.value)) {
+                            errorMessage = 'El RUT ingresado no es válido.';
+                            isValid = false;
+                        } 
+                        
+                        if (errorElement) errorElement.textContent = errorMessage;
+
+                        if (isValid) {
+                            input.classList.remove('border-danger');
+                            input.classList.add('border-success');
+                        } else {
+                            input.classList.remove('border-success');
+                            input.classList.add('border-danger');
+                            isFormValid = false;
+                        }
                     });
 
-                    generatePdfButton.disabled = !isEmployerRutValid || !isEmployeeRutValid;
+                    generatePdfButton.disabled = !isFormValid;
                 };
-
-                [employerRutInput, employeeRutInput].forEach(input => {
-                    input.addEventListener('input', (e) => {
+                
+                pdfForm.querySelectorAll('.rut-input').forEach(rutInput => {
+                    rutInput.addEventListener('input', (e) => {
                         const cleaned = Rut.clean(e.target.value);
-                        e.target.value = Rut.format(cleaned);
-                        validateRutAndToggleSubmit();
+                        if (e.target.value !== Rut.format(cleaned)) {
+                            e.target.value = Rut.format(cleaned);
+                        }
                     });
+                });
+
+                allPdfInputs.forEach(input => {
+                    input.addEventListener('input', validateForm);
                 });
 
                 pdfForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
+                    console.log("Botón presionado: Intento de envío de formulario.");
+
+                    validateForm(); // Re-validar antes del envío
                     if (generatePdfButton.disabled) {
-                        alert("Por favor, corrige los RUT inválidos antes de continuar.");
+                        console.warn("Intento de envío con formulario inválido. La UI debería prevenir esto.");
                         return;
                     }
+                    
                     generatePdfButton.disabled = true;
                     generatePdfButton.textContent = 'Generando PDF...';
 
@@ -709,8 +745,8 @@
                     } catch (error) {
                         alert("Hubo un problema al generar el PDF: " + error.message);
                     } finally {
-                        generatePdfButton.disabled = false;
                         generatePdfButton.textContent = 'Generar PDF';
+                        validateForm(); // Re-evaluar estado del botón tras el proceso
                     }
                 });
             }
