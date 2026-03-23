@@ -463,8 +463,10 @@
             if(authForm) {
                 authForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
+                    
+                    const prodURL = 'https://www.portal40horas.cl';
                     const plan = localStorage.getItem('pendingPlan') || 'basico';
-                    const magicRedirect = `${window.location.origin}${window.location.pathname}?purchase_intent=${plan}`;
+                    const magicRedirect = `${prodURL}/?purchase_intent=${plan}`;
 
                     authSubmitButton.disabled = true;
                     authSubmitButton.textContent = 'Enviando link mágico...';
