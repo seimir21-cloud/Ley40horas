@@ -8,34 +8,45 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// --- UTILIDADES DE VALIDACIÓN Y FORMATO DE RUT CHILENO ---
+// --- UTILIDADES DE VALIDACIÓN Y FORMATO DE RUT CHILENO (CORREGIDO) ---
 const Rut = {
+  // Valida un RUT chileno, aceptando cualquier formato (puntos, guiones, K/k)
   validate: (rut) => {
-    if (!/^[0-9]+-[0-9kK]{1}$/.test(rut)) return false;
-    const tmp = rut.split('-');
-    let digv = tmp[1];
-    const rutBody = tmp[0];
-    if (digv == 'K') digv = 'k';
-    return Rut.dv(rutBody) == digv;
+    if (typeof rut !== 'string' || rut.trim() === '') return false;
+    
+    // Limpia el RUT a su forma básica (ej: '12345678k')
+    const cleanedRut = rut.replace(/[^0-9kK]/g, '').toLowerCase();
+    if (cleanedRut.length < 2) return false;
+
+    const body = cleanedRut.slice(0, -1);
+    const dv = cleanedRut.slice(-1);
+    
+    // Compara el dígito verificador provisto con el calculado
+    return Rut.dv(body) === dv;
   },
-  dv: (T) => {
+
+  // Calcula el dígito verificador para un cuerpo de RUT
+  dv: (rutBody) => {
+    let T = parseInt(rutBody, 10);
     let M = 0, S = 1;
     for (; T; T = Math.floor(T / 10)) {
-      S = (S + T % 10 * (9 - M++ % 6)) % 11;
+        S = (S + T % 10 * (9 - M++ % 6)) % 11;
     }
-    return S ? S - 1 : 'k';
+    return S ? String(S - 1) : 'k';
   },
+
+  // Formatea un RUT al estándar XX.XXX.XXX-X
   format: (rut) => {
-    rut = rut.replace(/[^0-9kK]/g, '');
-    if (rut.length <= 1) return rut;
-    const body = rut.slice(0, -1);
-    const dv = rut.slice(-1).toUpperCase();
+    const cleaned = rut.replace(/[^0-9kK]/g, '').toUpperCase();
+    if (cleaned.length < 2) return cleaned;
+    
+    const body = cleaned.slice(0, -1);
+    const dv = cleaned.slice(-1);
+
     const formattedBody = new Intl.NumberFormat('es-CL').format(body);
     return `${formattedBody}-${dv}`;
-  },
-  clean: (rut) => rut.replace(/[^0-9kK]/g, '').toLowerCase()
+  }
 };
-
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -55,11 +66,11 @@ serve(async (req) => {
     const payload = await req.json();
     const { employerName, employerRut, employerAddress, employeeName, employeeRut, schedule } = payload;
     
-    // 1. VALIDACIÓN DE DATOS DE ENTRADA (INCLUYENDO RUT)
+    // VALIDACIÓN DE DATOS DE ENTRADA (INCLUYENDO RUT)
     if (!employerName || !employerRut || !employeeName || !employeeRut || !schedule) {
         throw new Error("Datos incompletos. Se requiere información del empleador, trabajador y el horario.");
     }
-    if (!Rut.validate(Rut.clean(employerRut)) || !Rut.validate(Rut.clean(employeeRut))) {
+    if (!Rut.validate(employerRut) || !Rut.validate(employeeRut)) {
         throw new Error("RUT inválido. Por favor, verifica el RUT del empleador y del trabajador.");
     }
 
@@ -74,7 +85,7 @@ serve(async (req) => {
     if (fetchError) throw new Error(`Error al verificar créditos: ${fetchError.message}`);
     if (!profile || profile.creditos_disponibles <= 0) throw new Error("No tienes créditos suficientes.");
 
-    // 2. GENERACIÓN DEL PDF CON TABLA MEJORADA
+    // GENERACIÓN DEL PDF
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage();
     const { width, height } = page.getSize();
@@ -101,7 +112,6 @@ serve(async (req) => {
     page.drawText('"La jornada ordinaria de trabajo será de 40 horas semanales, distribuidas de la siguiente manera:', { x, y, font, size: 11, lineHeight: 15 });
     y -= lineheight * 1.5;
 
-    // Definición de la tabla
     const table = {
       x: x,
       y: y,
@@ -110,13 +120,11 @@ serve(async (req) => {
       headers: ['Día', 'Entrada', 'Salida', 'Colación (min)', 'Inicio Colación', 'Fin Colación']
     };
     
-    // Dibuja la cabecera de la tabla
     table.headers.forEach((header, i) => {
       page.drawText(header, { x: table.x + table.colWidths.slice(0, i).reduce((a, b) => a + b, 0), y: table.y, font: boldFont, size: 9 });
     });
     y -= table.lineHeight;
 
-    // Dibuja el cuerpo de la tabla (mapeo correcto de claves)
     schedule.forEach(item => {
         if(!item) return;
         const row = [item.day, item.entry, item.exit, item.lunchDuration, item.lunchEntry, item.lunchExit];
@@ -140,7 +148,6 @@ serve(async (req) => {
 
     const pdfBytes = await pdfDoc.save();
 
-    // 3. DESCONTAR CRÉDITO
     const { error: updateError } = await supabaseAdmin.from('perfiles_empresas').update({ creditos_disponibles: profile.creditos_disponibles - 1 }).eq('id', user.id);
     if (updateError) console.error(`ERROR CRÍTICO: PDF generado para ${user.id} pero el crédito no fue descontado.`);
 

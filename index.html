@@ -247,7 +247,7 @@
                         </div>
                     </div>
                     <div class="mt-8 text-center">
-                        <button type="submit" id="generate-pdf-button" class="w-full md:w-auto bg-premium text-white font-bold py-3 px-12 rounded-lg shadow-lg hover:bg-opacity-90 focus:outline-none focus:ring-4 focus:ring-amber-300 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">Generar PDF</button>
+                        <button type="submit" id="generate-pdf-button" class="w-full md:w-auto bg-premium text-white font-bold py-3 px-12 rounded-lg shadow-lg hover:bg-opacity-90 focus:outline-none focus:ring-4 focus:ring-amber-300 disabled:opacity-50 disabled:cursor-not-allowed">Generar PDF</button>
                     </div>
                 </form>
             </div>
@@ -255,31 +255,32 @@
 
     </main>
     <script>
-        // --- UTILIDADES DE VALIDACIÓN Y FORMATO DE RUT CHILENO ---
+        // --- UTILIDADES DE VALIDACIÓN Y FORMATO DE RUT CHILENO (CORREGIDO) ---
         const Rut = {
-            validate: (rut) => {
-                if (typeof rut !== 'string') return false;
-                rut = Rut.clean(rut);
-                if (!/^[0-9]+-[0-9kK]{1}$/.test(rut)) return false;
-                const [body, dv] = rut.split('-');
-                return Rut.dv(body) == dv.toLowerCase();
-            },
-            dv: (T) => {
-                let M = 0, S = 1;
-                for (; T; T = Math.floor(T / 10)) {
+          validate: (rut) => {
+            if (typeof rut !== 'string' || rut.trim() === '') return false;
+            const cleanedRut = rut.replace(/[^0-9kK]/g, '').toLowerCase();
+            if (cleanedRut.length < 2) return false;
+            const body = cleanedRut.slice(0, -1);
+            const dv = cleanedRut.slice(-1);
+            return Rut.dv(body) === dv;
+          },
+          dv: (rutBody) => {
+            let T = parseInt(rutBody, 10);
+            let M = 0, S = 1;
+            for (; T; T = Math.floor(T / 10)) {
                 S = (S + T % 10 * (9 - M++ % 6)) % 11;
-                }
-                return S ? String(S - 1) : 'k';
-            },
-            format: (rut) => {
-                rut = Rut.clean(rut);
-                if (rut.length < 2) return rut;
-                const body = rut.slice(0, -1);
-                const dv = rut.slice(-1).toUpperCase();
-                const formattedBody = new Intl.NumberFormat('es-CL').format(body);
-                return `${formattedBody}-${dv}`;
-            },
-            clean: (rut) => rut.replace(/[^0-9kK]/g, '').toLowerCase()
+            }
+            return S ? String(S - 1) : 'k';
+          },
+          format: (rut) => {
+            const cleaned = rut.replace(/[^0-9kK]/g, '').toUpperCase();
+            if (cleaned.length < 2) return cleaned;
+            const body = cleaned.slice(0, -1);
+            const dv = cleaned.slice(-1);
+            const formattedBody = new Intl.NumberFormat('es-CL').format(body);
+            return `${formattedBody}-${dv}`;
+          }
         };
 
         // --- LÓGICA DE LA CALCULADORA (SIN CAMBIOS) ---
@@ -572,8 +573,7 @@
                         mainCalculator.classList.add('hidden');
                         preciosSection.classList.add('hidden');
                         
-                        // Lanzar la validación inicial del formulario de PDF una vez que es visible
-                        const validateFormEvent = new Event('input');
+                        const validateFormEvent = new Event('input', { bubbles: true });
                         pdfForm.querySelector('input').dispatchEvent(validateFormEvent);
 
                     } else {
@@ -624,9 +624,10 @@
                  }
             });
 
-            // --- LÓGICA DEL FORMULARIO DE PDF ---
+            // --- LÓGICA DEL FORMULARIO DE PDF (CON VALIDACIÓN DE RUT MEJORADA) ---
             if (pdfForm) {
                 const allPdfInputs = pdfForm.querySelectorAll('input[required]');
+                const generatePdfButton = document.getElementById('generate-pdf-button');
 
                 const validateForm = () => {
                     let isFormValid = true;
@@ -635,50 +636,76 @@
                         const errorElement = document.getElementById(`${input.id}-error`);
                         let errorMessage = '';
                         let isValid = true;
+                        const value = input.value.trim();
 
-                        if (!input.value.trim()) {
+                        if (!value) {
+                            isValid = false;
                             errorMessage = 'Este campo es requerido.';
+                        } else if (input.classList.contains('rut-input') && !Rut.validate(value)) {
                             isValid = false;
-                        } else if (input.classList.contains('rut-input') && !Rut.validate(input.value)) {
                             errorMessage = 'El RUT ingresado no es válido.';
-                            isValid = false;
-                        } 
-                        
-                        if (errorElement) errorElement.textContent = errorMessage;
+                        }
+
+                        if (errorElement) {
+                            // Mostrar error solo si el campo ha sido tocado o no es válido
+                            if (!isValid && value) {
+                                errorElement.textContent = errorMessage;
+                            } else if (!isValid && !input.classList.contains('rut-input')) {
+                                errorElement.textContent = errorMessage;
+                            } else {
+                                errorElement.textContent = '';
+                            }
+                        }
 
                         if (isValid) {
                             input.classList.remove('border-danger');
-                            input.classList.add('border-success');
+                            if (value) input.classList.add('border-success');
                         } else {
-                            input.classList.remove('border-success');
-                            input.classList.add('border-danger');
                             isFormValid = false;
+                            input.classList.remove('border-success');
+                            if (value) {
+                                input.classList.add('border-danger');
+                            }
                         }
                     });
 
                     generatePdfButton.disabled = !isFormValid;
                 };
-                
+
                 pdfForm.querySelectorAll('.rut-input').forEach(rutInput => {
                     rutInput.addEventListener('input', (e) => {
-                        const cleaned = Rut.clean(e.target.value);
-                        if (e.target.value !== Rut.format(cleaned)) {
-                            e.target.value = Rut.format(cleaned);
+                        const formatted = Rut.format(e.target.value);
+                        if (e.target.value !== formatted) {
+                            e.target.value = formatted;
                         }
+                        validateForm();
                     });
+                     rutInput.addEventListener('blur', validateForm); // Validar al salir del campo
                 });
 
                 allPdfInputs.forEach(input => {
-                    input.addEventListener('input', validateForm);
+                    if (!input.classList.contains('rut-input')) {
+                        input.addEventListener('input', validateForm);
+                    }
                 });
+                
+                // Forzar validación inicial
+                validateForm();
 
                 pdfForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     console.log("Botón presionado: Intento de envío de formulario.");
 
-                    validateForm(); // Re-validar antes del envío
+                    validateForm();
                     if (generatePdfButton.disabled) {
-                        console.warn("Intento de envío con formulario inválido. La UI debería prevenir esto.");
+                        console.warn("Intento de envío con formulario inválido.");
+                        // Forzar la muestra de todos los errores de campos vacíos
+                        allPdfInputs.forEach(input => {
+                            if (!input.value.trim()) {
+                                document.getElementById(`${input.id}-error`).textContent = 'Este campo es requerido.';
+                                input.classList.add('border-danger');
+                            }
+                        });
                         return;
                     }
                     
@@ -746,7 +773,7 @@
                         alert("Hubo un problema al generar el PDF: " + error.message);
                     } finally {
                         generatePdfButton.textContent = 'Generar PDF';
-                        validateForm(); // Re-evaluar estado del botón tras el proceso
+                        validateForm();
                     }
                 });
             }
