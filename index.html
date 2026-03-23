@@ -593,25 +593,70 @@
                     e.preventDefault();
                     generatePdfButton.disabled = true;
                     generatePdfButton.textContent = 'Generando PDF...';
+
                     try {
-                        const { data: { user } } = await supabase.auth.getUser();
-                        if(!user) throw new Error('Sesión no encontrada, por favor inicia sesión de nuevo');
-                        const { data: profile, error } = await supabase.from('perfiles_empresas').select('creditos_disponibles').eq('id', user.id).single();
-                        if(error || !profile) throw new Error('No se pudo obtener el perfil.');
-                        if(profile.creditos_disponibles <= 0) throw new Error('No tienes créditos suficientes.');
+                        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                        if (sessionError || !session) throw new Error('Sesión no encontrada, por favor inicia sesión de nuevo.');
 
-                        const newCreditCount = profile.creditos_disponibles - 1;
-                        const { error: updateError } = await supabase.from('perfiles_empresas').update({ creditos_disponibles: newCreditCount }).eq('id', user.id);
-                        if (updateError) throw updateError;
+                        // 1. Recolectar datos del formulario y del horario
+                        const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
+                        const scheduleData = dias.map(dia => {
+                            if (!document.getElementById(`check-${dia}`).checked) return null;
+                            return {
+                                day: dia.charAt(0).toUpperCase() + dia.slice(1),
+                                entry: document.getElementById(`in-${dia}`).value || 'N/A',
+                                exit: document.getElementById(`out-${dia}`).value || 'N/A',
+                                lunchDuration: document.getElementById(`col-${dia}`).value || '0',
+                                lunchEntry: document.getElementById(`cin-${dia}`).value || 'N/A',
+                                lunchExit: document.getElementById(`cfn-${dia}`).value || 'N/A',
+                            };
+                        }).filter(Boolean);
 
-                        alert("¡Anexo generado con éxito! (Simulación) El crédito ha sido descontado.");
-                        pdfCreditsSpan.textContent = newCreditCount;
-                        
-                        if(newCreditCount === 0){
-                           paymentSuccessBanner.classList.add('hidden');
-                           pdfFormSection.classList.add('hidden');
-                           mainCalculator.classList.remove('hidden');
+                        const payload = {
+                            employerName: document.getElementById('employer-name').value,
+                            employerRut: document.getElementById('employer-rut').value,
+                            employerAddress: document.getElementById('employer-address').value,
+                            employeeName: document.getElementById('employee-name').value,
+                            employeeRut: document.getElementById('employee-rut').value,
+                            schedule: scheduleData,
+                        };
+
+                        // 2. Llamar a la Edge Function 'generate-anexo'
+                        // Esta función se encarga de generar el PDF y descontar el crédito en la DB.
+                        const response = await fetch(`${supabaseUrl}/functions/v1/generate-anexo`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${session.access_token}`,
+                                'apikey': supabaseKey
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (!response.ok) {
+                            const errorBody = await response.json().catch(() => ({ error: `Error ${response.status}: ${response.statusText}` }));
+                            throw new Error(errorBody.error || 'No se pudo generar el PDF del anexo.');
                         }
+                        
+                        // 3. Procesar la respuesta (Blob) y forzar la descarga
+                        const pdfBlob = await response.blob();
+                        const blobUrl = URL.createObjectURL(pdfBlob);
+                        
+                        const link = document.createElement('a');
+                        link.href = blobUrl;
+                        link.download = `Anexo_Contrato_Jornada_Laboral.pdf`;
+                        document.body.appendChild(link);
+                        link.click();
+                        
+                        // Limpieza
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(blobUrl);
+
+                        alert("¡Anexo PDF generado con éxito y descarga iniciada!");
+
+                        // 4. Actualizar la UI refrescando el conteo de créditos desde la DB
+                        await checkUserCredits(session.user);
+
                     } catch (error) {
                         alert("Hubo un problema al generar el PDF: " + error.message);
                     } finally {
