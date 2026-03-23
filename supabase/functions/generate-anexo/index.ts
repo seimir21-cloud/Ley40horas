@@ -8,15 +8,34 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Función para formatear el RUT chileno
-function formatRut(rut) {
-  rut = rut.replace(/[^0-9kK]/g, '');
-  if (rut.length <= 1) return rut;
-  const body = rut.slice(0, -1);
-  const dv = rut.slice(-1).toUpperCase();
-  const formattedBody = new Intl.NumberFormat('es-CL').format(body);
-  return `${formattedBody}-${dv}`;
-}
+// --- UTILIDADES DE VALIDACIÓN Y FORMATO DE RUT CHILENO ---
+const Rut = {
+  validate: (rut) => {
+    if (!/^[0-9]+-[0-9kK]{1}$/.test(rut)) return false;
+    const tmp = rut.split('-');
+    let digv = tmp[1];
+    const rutBody = tmp[0];
+    if (digv == 'K') digv = 'k';
+    return Rut.dv(rutBody) == digv;
+  },
+  dv: (T) => {
+    let M = 0, S = 1;
+    for (; T; T = Math.floor(T / 10)) {
+      S = (S + T % 10 * (9 - M++ % 6)) % 11;
+    }
+    return S ? S - 1 : 'k';
+  },
+  format: (rut) => {
+    rut = rut.replace(/[^0-9kK]/g, '');
+    if (rut.length <= 1) return rut;
+    const body = rut.slice(0, -1);
+    const dv = rut.slice(-1).toUpperCase();
+    const formattedBody = new Intl.NumberFormat('es-CL').format(body);
+    return `${formattedBody}-${dv}`;
+  },
+  clean: (rut) => rut.replace(/[^0-9kK]/g, '').toLowerCase()
+};
+
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -24,7 +43,6 @@ serve(async (req) => {
   }
 
   try {
-    // 1. Crear cliente de Supabase y validar la sesión del usuario.
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -32,33 +50,31 @@ serve(async (req) => {
     )
 
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError) throw new Error(`Autenticación fallida: ${userError.message}`);
-    if (!user) throw new Error("No se encontró un usuario autenticado.");
+    if (userError || !user) throw new Error("Acceso no autorizado. Se requiere autenticación.");
 
-    // 2. Extraer y validar el payload del body.
     const payload = await req.json();
     const { employerName, employerRut, employerAddress, employeeName, employeeRut, schedule } = payload;
+    
+    // 1. VALIDACIÓN DE DATOS DE ENTRADA (INCLUYENDO RUT)
     if (!employerName || !employerRut || !employeeName || !employeeRut || !schedule) {
-        throw new Error("Faltan datos en la solicitud para generar el anexo.");
+        throw new Error("Datos incompletos. Se requiere información del empleador, trabajador y el horario.");
+    }
+    if (!Rut.validate(Rut.clean(employerRut)) || !Rut.validate(Rut.clean(employeeRut))) {
+        throw new Error("RUT inválido. Por favor, verifica el RUT del empleador y del trabajador.");
     }
 
-    // 3. Crear cliente Admin para operaciones privilegiadas.
     const supabaseAdmin = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // 4. VERIFICAR Y DESCONTAR CRÉDITO DE FORMA ATÓMICA (SELECT + UPDATE)
     const { data: profile, error: fetchError } = await supabaseAdmin
-      .from('perfiles_empresas')
-      .select('creditos_disponibles')
-      .eq('id', user.id)
-      .single();
+      .from('perfiles_empresas').select('creditos_disponibles').eq('id', user.id).single();
 
-    if (fetchError) throw new Error(`No se pudo obtener el perfil del usuario: ${fetchError.message}`);
-    if (!profile || profile.creditos_disponibles <= 0) throw new Error("No tienes créditos suficientes para generar el documento.");
+    if (fetchError) throw new Error(`Error al verificar créditos: ${fetchError.message}`);
+    if (!profile || profile.creditos_disponibles <= 0) throw new Error("No tienes créditos suficientes.");
 
-    // 5. GENERACIÓN DEL PDF
+    // 2. GENERACIÓN DEL PDF CON TABLA MEJORADA
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage();
     const { width, height } = page.getSize();
@@ -71,86 +87,66 @@ serve(async (req) => {
 
     page.drawText('ANEXO DE CONTRATO DE TRABAJO - AJUSTE DE JORNADA LABORAL (LEY N°21.561)', { x, y, font: boldFont, size: 12 });
     y -= lineheight * 2;
-
     page.drawText(`En ${employerAddress}, a ${new Date().toLocaleDateString('es-CL')}, entre:`, { x, y, font, size: 11 });
     y -= lineheight * 2;
-
     page.drawText(`Empleador: ${employerName}`, { x, y, font: boldFont, size: 11 });
-    y -= lineheight;
-    page.drawText(`RUT: ${formatRut(employerRut)}`, { x, y, font, size: 11 });
-    y -= lineheight;
-    page.drawText(`Domicilio: ${employerAddress}`, { x, y, font, size: 11 });
+    y -= lineheight; page.drawText(`RUT: ${Rut.format(employerRut)}`, { x, y, font, size: 11 });
+    y -= lineheight; page.drawText(`Domicilio: ${employerAddress}`, { x, y, font, size: 11 });
     y -= lineheight * 2;
-
     page.drawText(`Trabajador: ${employeeName}`, { x, y, font: boldFont, size: 11 });
-    y -= lineheight;
-    page.drawText(`RUT: ${formatRut(employeeRut)}`, { x, y, font, size: 11 });
+    y -= lineheight; page.drawText(`RUT: ${Rut.format(employeeRut)}`, { x, y, font, size: 11 });
     y -= lineheight * 2;
-
-    page.drawText('Las partes acuerdan modificar la cláusula de jornada de trabajo, la cual quedará como sigue:', { x, y, font, size: 11 });
+    page.drawText('Las partes acuerdan modificar la cláusula de jornada de trabajo, la cual quedará como sigue:', { x, y, font, size: 11, lineHeight: 15 });
+    y -= lineheight * 1.5;
+    page.drawText('"La jornada ordinaria de trabajo será de 40 horas semanales, distribuidas de la siguiente manera:', { x, y, font, size: 11, lineHeight: 15 });
     y -= lineheight * 1.5;
 
-    page.drawText('"La jornada ordinaria de trabajo será de 40 horas semanales, distribuidas de la siguiente manera:', { x, y, font, size: 11 });
-    y -= lineheight * 1.5;
+    // Definición de la tabla
+    const table = {
+      x: x,
+      y: y,
+      colWidths: [80, 70, 70, 80, 80, 80],
+      lineHeight: 16,
+      headers: ['Día', 'Entrada', 'Salida', 'Colación (min)', 'Inicio Colación', 'Fin Colación']
+    };
+    
+    // Dibuja la cabecera de la tabla
+    table.headers.forEach((header, i) => {
+      page.drawText(header, { x: table.x + table.colWidths.slice(0, i).reduce((a, b) => a + b, 0), y: table.y, font: boldFont, size: 9 });
+    });
+    y -= table.lineHeight;
 
-    // Tabla de Horario
-    const tableTop = y;
-    const tableHeaderX = [x, x + 80, x + 160, x+240, x+320, x+400];
-    const headers = ['Día', 'Entrada', 'Salida', 'Colación (min)', 'Inicio Colación', 'Fin Colación'];
-    headers.forEach((header, i) => page.drawText(header, {x: tableHeaderX[i], y, font: boldFont, size: 9}));
-    y -= lineheight;
-
+    // Dibuja el cuerpo de la tabla (mapeo correcto de claves)
     schedule.forEach(item => {
         if(!item) return;
-        page.drawText(item.day, { x: tableHeaderX[0], y, font, size: 9 });
-        page.drawText(item.entry, { x: tableHeaderX[1], y, font, size: 9 });
-        page.drawText(item.exit, { x: tableHeaderX[2], y, font, size: 9 });
-        page.drawText(item.lunchDuration, { x: tableHeaderX[3], y, font, size: 9 });
-        page.drawText(item.lunchEntry, { x: tableHeaderX[4], y, font, size: 9 });
-        page.drawText(item.lunchExit, { x: tableHeaderX[5], y, font, size: 9 });
-        y -= lineheight * 0.9;
+        const row = [item.day, item.entry, item.exit, item.lunchDuration, item.lunchEntry, item.lunchExit];
+        row.forEach((cell, i) => {
+            page.drawText(cell, { x: table.x + table.colWidths.slice(0, i).reduce((a, b) => a + b, 0), y: y, font, size: 9 });
+        });
+        y -= table.lineHeight;
     });
     
-    y = tableTop - ((schedule.length + 2) * lineheight * 0.9) - 20;
+    y -= 20;
 
     page.drawText('Se deja constancia que el tiempo de colación no es imputable a la jornada de trabajo.', { x, y, font, size: 10 });
     y -= lineheight * 3;
 
-    // Firmas
     page.drawText('___________________________', { x: x + 20, y, font, size: 11 });
     page.drawText('___________________________', { x: width / 2 + 20, y, font, size: 11 });
-    y -= lineheight * 0.8;
-    page.drawText(employerName, { x: x + 20, y, font, size: 10 });
+    y -= lineheight * 0.8; page.drawText(employerName, { x: x + 20, y, font, size: 10 });
     page.drawText(employeeName, { x: width / 2 + 20, y, font, size: 10 });
-    y -= lineheight * 0.7;
-    page.drawText('Empleador', { x: x + 20, y, font, size: 9 });
+    y -= lineheight * 0.7; page.drawText('Empleador', { x: x + 20, y, font, size: 9 });
     page.drawText('Trabajador', { x: width / 2 + 20, y, font, size: 9 });
 
     const pdfBytes = await pdfDoc.save();
 
-    // 6. Si el PDF se generó, descontar el crédito.
-    const newCreditCount = profile.creditos_disponibles - 1;
-    const { error: updateError } = await supabaseAdmin
-      .from('perfiles_empresas')
-      .update({ creditos_disponibles: newCreditCount })
-      .eq('id', user.id);
+    // 3. DESCONTAR CRÉDITO
+    const { error: updateError } = await supabaseAdmin.from('perfiles_empresas').update({ creditos_disponibles: profile.creditos_disponibles - 1 }).eq('id', user.id);
+    if (updateError) console.error(`ERROR CRÍTICO: PDF generado para ${user.id} pero el crédito no fue descontado.`);
 
-    if (updateError) {
-      console.error(`ERROR CRÍTICO: El PDF para el usuario ${user.id} se generó pero no se pudo descontar el crédito.`, updateError.message);
-      // Aún así, entregamos el PDF al usuario, pero logueamos el error.
-    }
-
-    // 7. Devolver el PDF.
-    return new Response(pdfBytes, {
-      headers: { ...corsHeaders, 'Content-Type': 'application/pdf' },
-      status: 200,
-    });
+    return new Response(pdfBytes, { headers: { ...corsHeaders, 'Content-Type': 'application/pdf' }, status: 200 });
 
   } catch (error) {
-    console.error("Error en generate-anexo: ", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
-    });
+    return new Response(JSON.stringify({ error: error.message }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 });
   }
 })

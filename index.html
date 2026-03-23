@@ -223,7 +223,7 @@
                         </div>
                         <div>
                             <label for="employer-rut" class="block text-sm font-medium text-gray-700">RUT</label>
-                            <input type="text" id="employer-rut" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <input type="text" id="employer-rut" required class="rut-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                         </div>
                         <div class="md:col-span-2">
                             <label for="employer-address" class="block text-sm font-medium text-gray-700">Domicilio</label>
@@ -238,7 +238,7 @@
                         </div>
                         <div>
                             <label for="employee-rut" class="block text-sm font-medium text-gray-700">RUT</label>
-                            <input type="text" id="employee-rut" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <input type="text" id="employee-rut" required class="rut-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                         </div>
                     </div>
                     <div class="mt-8 text-center">
@@ -250,6 +250,33 @@
 
     </main>
     <script>
+        // --- UTILIDADES DE VALIDACIÓN Y FORMATO DE RUT CHILENO ---
+        const Rut = {
+            validate: (rut) => {
+                if (typeof rut !== 'string') return false;
+                rut = Rut.clean(rut);
+                if (!/^[0-9]+-[0-9kK]{1}$/.test(rut)) return false;
+                const [body, dv] = rut.split('-');
+                return Rut.dv(body) == dv.toLowerCase();
+            },
+            dv: (T) => {
+                let M = 0, S = 1;
+                for (; T; T = Math.floor(T / 10)) {
+                S = (S + T % 10 * (9 - M++ % 6)) % 11;
+                }
+                return S ? String(S - 1) : 'k';
+            },
+            format: (rut) => {
+                rut = Rut.clean(rut);
+                if (rut.length < 2) return rut;
+                const body = rut.slice(0, -1);
+                const dv = rut.slice(-1).toUpperCase();
+                const formattedBody = new Intl.NumberFormat('es-CL').format(body);
+                return `${formattedBody}-${dv}`;
+            },
+            clean: (rut) => rut.replace(/[^0-9kK]/g, '').toLowerCase()
+        };
+
         // --- LÓGICA DE LA CALCULADORA (SIN CAMBIOS) ---
         document.addEventListener('DOMContentLoaded', () => {
             const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
@@ -589,8 +616,36 @@
 
             // --- LÓGICA DEL FORMULARIO DE PDF ---
             if (pdfForm) {
+                const employerRutInput = document.getElementById('employer-rut');
+                const employeeRutInput = document.getElementById('employee-rut');
+
+                const validateRutAndToggleSubmit = () => {
+                    const isEmployerRutValid = Rut.validate(employerRutInput.value);
+                    const isEmployeeRutValid = Rut.validate(employeeRutInput.value);
+                    
+                    [employerRutInput, employeeRutInput].forEach(input => {
+                        const isValid = Rut.validate(input.value);
+                        input.classList.toggle('border-danger', !isValid && input.value.length > 0);
+                        input.classList.toggle('border-success', isValid);
+                    });
+
+                    generatePdfButton.disabled = !isEmployerRutValid || !isEmployeeRutValid;
+                };
+
+                [employerRutInput, employeeRutInput].forEach(input => {
+                    input.addEventListener('input', (e) => {
+                        const cleaned = Rut.clean(e.target.value);
+                        e.target.value = Rut.format(cleaned);
+                        validateRutAndToggleSubmit();
+                    });
+                });
+
                 pdfForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
+                    if (generatePdfButton.disabled) {
+                        alert("Por favor, corrige los RUT inválidos antes de continuar.");
+                        return;
+                    }
                     generatePdfButton.disabled = true;
                     generatePdfButton.textContent = 'Generando PDF...';
 
@@ -598,7 +653,6 @@
                         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
                         if (sessionError || !session) throw new Error('Sesión no encontrada, por favor inicia sesión de nuevo.');
 
-                        // 1. Recolectar datos del formulario y del horario
                         const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
                         const scheduleData = dias.map(dia => {
                             if (!document.getElementById(`check-${dia}`).checked) return null;
@@ -621,8 +675,6 @@
                             schedule: scheduleData,
                         };
 
-                        // 2. Llamar a la Edge Function 'generate-anexo'
-                        // Esta función se encarga de generar el PDF y descontar el crédito en la DB.
                         const response = await fetch(`${supabaseUrl}/functions/v1/generate-anexo`, {
                             method: 'POST',
                             headers: {
@@ -638,7 +690,6 @@
                             throw new Error(errorBody.error || 'No se pudo generar el PDF del anexo.');
                         }
                         
-                        // 3. Procesar la respuesta (Blob) y forzar la descarga
                         const pdfBlob = await response.blob();
                         const blobUrl = URL.createObjectURL(pdfBlob);
                         
@@ -648,13 +699,11 @@
                         document.body.appendChild(link);
                         link.click();
                         
-                        // Limpieza
                         document.body.removeChild(link);
                         URL.revokeObjectURL(blobUrl);
 
                         alert("¡Anexo PDF generado con éxito y descarga iniciada!");
 
-                        // 4. Actualizar la UI refrescando el conteo de créditos desde la DB
                         await checkUserCredits(session.user);
 
                     } catch (error) {
