@@ -463,24 +463,21 @@
             if(authForm) {
                 authForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    const plan = localStorage.getItem('pendingPlan');
-                    if (!plan) {
-                        alert("Error: No se ha seleccionado ningún plan. Por favor, vuelve a la sección de precios.");
-                        return;
-                    }
+                    const plan = localStorage.getItem('pendingPlan') || 'basico';
+                    const magicRedirect = `${window.location.origin}${window.location.pathname}?purchase_intent=${plan}`;
 
                     authSubmitButton.disabled = true;
                     authSubmitButton.textContent = 'Enviando link mágico...';
                     
                     try {
-                        const redirectUrl = `${window.location.origin}${window.location.pathname}?purchase_intent=${plan}`;
                         const { error } = await supabase.auth.signInWithOtp({
                             email: emailInput.value,
-                            options: { emailRedirectTo: redirectUrl } 
+                            options: { emailRedirectTo: magicRedirect } 
                         });
                         if (error) throw error;
                         mainCalculator.classList.add('hidden');
                         authSection.classList.add('hidden');
+                        preciosSection.classList.add('hidden');
                         document.body.innerHTML = '<div class="w-screen h-screen flex items-center justify-center bg-navy text-white font-bold text-2xl">¡Éxito! Revisa tu correo para completar el acceso.</div>';
                     } catch (error) {
                         console.error("Hubo un problema al enviar el link: ", error);
@@ -588,7 +585,7 @@
                  }
             });
 
-            // --- LÓGICA DEL FORMULARIO DE PDF (SIN CAMBIOS) ---
+            // --- LÓGICA DEL FORMULARIO DE PDF ---
             if (pdfForm) {
                 pdfForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
@@ -601,7 +598,6 @@
                         if(error || !profile) throw new Error('No se pudo obtener el perfil.');
                         if(profile.creditos_disponibles <= 0) throw new Error('No tienes créditos suficientes.');
 
-                        // Simulación de descuento de crédito
                         const newCreditCount = profile.creditos_disponibles - 1;
                         const { error: updateError } = await supabase.from('perfiles_empresas').update({ creditos_disponibles: newCreditCount }).eq('id', user.id);
                         if (updateError) throw updateError;
