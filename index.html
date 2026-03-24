@@ -56,7 +56,6 @@
         </div>
         <div id="precios" class="max-w-5xl mx-auto mt-12 p-8 hidden"></div>
         <div id="auth-section" class="max-w-5xl mx-auto mt-12 p-8 hidden"></div>
-        <!-- FORMULARIO DE ANEXO RESTAURADO -->
         <div id="pdf-form-section" class="max-w-5xl mx-auto mt-12 p-8 hidden">
             <div id="payment-success-banner" class="hidden bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-lg">
                 <p class="font-bold">¡Bienvenido de vuelta!</p>
@@ -121,7 +120,10 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // --- LÓGICA DE LA CALCULADORA (INTACTA) ---
+            const supabaseUrl = 'https://smodjwbmabffobonywad.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb2Rqd2JtYWJmZm9ib255d2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjYyOTYsImV4cCI6MjA4OTM0MjI5Nn0.7nN75BHnzc7VzzdS9zy0Tvv8D43YjYK6PSLgeOp3uVg';
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
             const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
             const calculatorDaysContainer = document.getElementById('calculator-days-container');
             const disabledClasses = ['bg-gray-100', 'opacity-50'];
@@ -223,7 +225,6 @@
                 document.getElementById('pdf-form-section').classList.remove('hidden');
             });
 
-            // --- LÓGICA DEL FORMULARIO DE PDF (RESTAURADA) ---
             const pdfForm = document.getElementById('pdf-form');
             if (pdfForm) {
                 const allPdfInputs = pdfForm.querySelectorAll('input[required]');
@@ -256,8 +257,67 @@
                 pdfForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     if (generatePdfButton.disabled) return;
-                    generatePdfButton.disabled = true; generatePdfButton.textContent = 'Generando...';
-                    // Lógica para llamar a la Edge Function...
+                    generatePdfButton.disabled = true;
+                    generatePdfButton.textContent = 'Generando...';
+
+                    try {
+                        const { data: { session } } = await supabase.auth.getSession();
+                        if (!session) throw new Error('Sesión no encontrada. Por favor, inicie sesión de nuevo.');
+
+                        const savedSchedule = localStorage.getItem('anexoSchedule');
+                        if (!savedSchedule) throw new Error('Datos de horario no encontrados en el localStorage. Por favor, vuelva a la calculadora.');
+
+                        const payload = {
+                            employerName: document.getElementById('employer-name').value,
+                            employerRut: document.getElementById('employer-rut').value,
+                            employerRepName: document.getElementById('employer-rep-name').value,
+                            employerRepRut: document.getElementById('employer-rep-rut').value,
+                            employerAddress: document.getElementById('employer-address').value,
+                            employeeName: document.getElementById('employee-name').value,
+                            employeeRut: document.getElementById('employee-rut').value,
+                            schedule: JSON.parse(savedSchedule),
+                        };
+
+                        const response = await fetch(`${supabaseUrl}/functions/v1/generate-anexo`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${session.access_token}`,
+                                'apikey': supabaseKey
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (!response.ok) {
+                            const errText = await response.text();
+                            try {
+                              const errJson = JSON.parse(errText);
+                              throw new Error(errJson.error || 'El servidor devolvió una respuesta de error.');
+                            } catch {
+                              throw new Error(errText || 'Error desconocido del servidor.');
+                            }
+                        }
+
+                        const pdfBlob = await response.blob();
+                        const blobUrl = URL.createObjectURL(pdfBlob);
+                        const link = document.createElement('a');
+                        link.href = blobUrl;
+                        link.download = `Anexo_Contrato_Jornada_Laboral.pdf`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(blobUrl);
+
+                        alert("¡Anexo PDF generado con éxito!");
+                        localStorage.removeItem('anexoSchedule');
+                        location.reload();
+
+                    } catch (error) {
+                        alert("Hubo un problema al generar el PDF: " + error.message);
+                    } finally {
+                        generatePdfButton.disabled = false;
+                        generatePdfButton.textContent = 'Generar PDF';
+                    }
                 });
             }
         });
