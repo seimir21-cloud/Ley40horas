@@ -257,33 +257,30 @@
     <script>
         // --- UTILIDADES DE VALIDACIÓN Y FORMATO DE RUT CHILENO (CORREGIDO) ---
         const Rut = {
+          clean: (rut) => typeof rut === 'string' ? rut.replace(/[\.\-\s]/g, '').toLowerCase() : '',
           validate: (rut) => {
-            if (typeof rut !== 'string' || rut.trim() === '') return false;
-            const cleanedRut = rut.replace(/[^0-9kK]/g, '').toLowerCase();
-            if (cleanedRut.length < 2) return false;
-            const body = cleanedRut.slice(0, -1);
-            const dv = cleanedRut.slice(-1);
-            return Rut.dv(body) === dv;
+            const cleanedRut = Rut.clean(rut)
+            if (cleanedRut.length < 2 || !/^\d+$/.test(cleanedRut.slice(0, -1))) return false
+            return Rut.calculateDV(cleanedRut.slice(0, -1)) === cleanedRut.slice(-1)
           },
-          dv: (rutBody) => {
-            let T = parseInt(rutBody, 10);
-            let M = 0, S = 1;
-            for (; T; T = Math.floor(T / 10)) {
-                S = (S + T % 10 * (9 - M++ % 6)) % 11;
+          calculateDV: (rutBody) => {
+            let M = 0, S = 1
+            for (let T = parseInt(rutBody, 10); T; T = Math.floor(T / 10)) {
+              S = (S + (T % 10) * (9 - (M++ % 6))) % 11
             }
-            return S ? String(S - 1) : 'k';
+            return S ? String(S - 1) : 'k'
           },
           format: (rut) => {
-            const cleaned = rut.replace(/[^0-9kK]/g, '').toUpperCase();
-            if (cleaned.length < 2) return cleaned;
-            const body = cleaned.slice(0, -1);
-            const dv = cleaned.slice(-1);
-            const formattedBody = new Intl.NumberFormat('es-CL').format(body);
-            return `${formattedBody}-${dv}`;
+            const cleaned = Rut.clean(rut).toUpperCase()
+            if (cleaned.length < 2) return cleaned
+            const body = cleaned.slice(0, -1)
+            const dv = cleaned.slice(-1)
+            const formattedBody = new Intl.NumberFormat('es-CL').format(parseInt(body, 10))
+            return `${formattedBody}-${dv}`
           }
-        };
+        }
 
-        // --- LÓGICA DE LA CALCULADORA (SIN CAMBIOS) ---
+        // --- LÓGICA DE LA CALCULADORA ---
         document.addEventListener('DOMContentLoaded', () => {
             const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
             const disabledClasses = ['bg-gray-100', 'text-gray-400', 'opacity-50'];
@@ -292,21 +289,13 @@
                 const duracionInput = document.getElementById(`col-${dia}`);
                 const inicioInput = document.getElementById(`cin-${dia}`);
                 const finInput = document.getElementById(`cfn-${dia}`);
-                
                 const duracionMins = parseInt(duracionInput.value, 10);
                 const horaInicio = inicioInput.value;
-
                 if (!isNaN(duracionMins) && horaInicio) {
                     const [horas, minutos] = horaInicio.split(':').map(Number);
-                    const fechaInicio = new Date();
-                    fechaInicio.setHours(horas, minutos, 0, 0);
-
+                    const fechaInicio = new Date(); fechaInicio.setHours(horas, minutos, 0, 0);
                     const fechaFin = new Date(fechaInicio.getTime() + duracionMins * 60000);
-                    
-                    const finHoras = String(fechaFin.getHours()).padStart(2, '0');
-                    const finMinutos = String(fechaFin.getMinutes()).padStart(2, '0');
-                    
-                    finInput.value = `${finHoras}:${finMinutos}`;
+                    finInput.value = `${String(fechaFin.getHours()).padStart(2, '0')}:${String(fechaFin.getMinutes()).padStart(2, '0')}`;
                 } else {
                     finInput.value = '';
                 }
@@ -316,29 +305,20 @@
                 const checkbox = document.getElementById(`check-${id}`);
                 const row = checkbox.closest('.day-row');
                 const inputs = row.querySelectorAll('.day-input');
-
                 checkbox.addEventListener('change', () => {
                     const isChecked = checkbox.checked;
                     inputs.forEach(input => {
                         input.disabled = !isChecked;
-                        if (isChecked) {
-                            input.classList.remove(...disabledClasses);
-                        } else {
-                            input.classList.add(...disabledClasses);
-                            input.value = '';
-                        }
-                         const finColacionInput = document.getElementById(`cfn-${id}`);
-                        finColacionInput.disabled = !isChecked;
-                         if(isChecked) finColacionInput.classList.remove(...disabledClasses);
-                         else finColacionInput.classList.add(...disabledClasses);
-
+                        input.classList.toggle(...disabledClasses, !isChecked);
+                        if(!isChecked) input.value = '';
                     });
+                    const finColacionInput = document.getElementById(`cfn-${id}`);
+                    finColacionInput.disabled = !isChecked;
+                    finColacionInput.classList.toggle(...disabledClasses, !isChecked);
                     calcular();
                     calcularFinColacion(id);
                 });
-                
                 inputs.forEach(input => input.addEventListener('input', calcular));
-
                 document.getElementById(`col-${id}`).addEventListener('input', () => calcularFinColacion(id));
                 document.getElementById(`cin-${id}`).addEventListener('input', () => calcularFinColacion(id));
             });
@@ -364,236 +344,151 @@
                 const changeEvent = new Event('change', { bubbles: true });
                 diasSemanaHabil.forEach(dia => {
                     const checkbox = document.getElementById(`check-${dia}`);
-                    if (!checkbox.checked) {
-                        checkbox.checked = true;
-                        checkbox.dispatchEvent(changeEvent);
-                    }
+                    if (!checkbox.checked) { checkbox.checked = true; checkbox.dispatchEvent(changeEvent); }
                     document.getElementById(`in-${dia}`).value = valoresLunes.entrada;
                     document.getElementById(`out-${dia}`).value = valoresLunes.salida;
                     document.getElementById(`col-${dia}`).value = valoresLunes.colacionMin;
                     document.getElementById(`cin-${dia}`).value = valoresLunes.colacionInicio;
-                    document.getElementById(`in-${dia}`).dispatchEvent(inputEvent);
-                    document.getElementById(`out-${dia}`).dispatchEvent(inputEvent);
-                    document.getElementById(`col-${dia}`).dispatchEvent(inputEvent);
-                    document.getElementById(`cin-${dia}`).dispatchEvent(inputEvent);
+                    ['in', 'out', 'col', 'cin'].forEach(type => document.getElementById(`${type}-${dia}`).dispatchEvent(inputEvent));
                 });
             });
 
+            // 1. FRONTEND: Guardar el horario en localStorage al validar.
             document.getElementById('btn-validar').addEventListener('click', () => {
                 calcular();
                 const totalHoras = parseFloat(document.getElementById('contadorTotalPublico').innerText);
                 const alertBox = document.getElementById('mensajeAlertaPublico');
-                if (totalHoras === 0) {
-                    alert("Por favor, ingresa al menos un día de trabajo.");
-                    return;
+                if (totalHoras === 0 || totalHoras > 42 || (totalHoras > 30 && (document.querySelectorAll('.day-row input[type=checkbox]:checked').length < 4 || document.querySelectorAll('.day-row input[type=checkbox]:checked').length > 6))){
+                     alert("Por favor, corrige los errores en el horario antes de continuar."); return;
                 }
-                if (totalHoras > 0 && totalHoras <= 30) {
-                    alert("El horario ingresado corresponde a una Jornada Parcial (30 horas o menos). La ley no exige un anexo de reducción de jornada para estos contratos.");
-                    return;
-                }
-                if (alertBox.classList.contains('text-danger')) {
-                    alert(`Error en el horario: ${alertBox.textContent.trim()}`);
-                    return;
-                }
+                if (totalHoras > 0 && totalHoras <= 30) { alert("Jornada Parcial (30 horas o menos). No se requiere este anexo."); return; }
+                
+                // Guardar el horario en localStorage
+                const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
+                const scheduleToSave = dias.map(dia => {
+                    if (!document.getElementById(`check-${dia}`).checked) return null;
+                    return {
+                        day: dia.charAt(0).toUpperCase() + dia.slice(1),
+                        entry: document.getElementById(`in-${dia}`).value || 'N/A',
+                        exit: document.getElementById(`out-${dia}`).value || 'N/A',
+                        lunchDuration: document.getElementById(`col-${dia}`).value || '0',
+                        lunchEntry: document.getElementById(`cin-${dia}`).value || 'N/A',
+                        lunchExit: document.getElementById(`cfn-${dia}`).value || 'N/A',
+                    };
+                }).filter(Boolean);
+                localStorage.setItem('anexoSchedule', JSON.stringify(scheduleToSave));
+
                 const seccionPrecios = document.getElementById('precios');
-                if (seccionPrecios) {
-                    seccionPrecios.classList.remove('hidden');
-                    seccionPrecios.scrollIntoView({ behavior: 'smooth' });
-                }
+                if (seccionPrecios) { seccionPrecios.classList.remove('hidden'); seccionPrecios.scrollIntoView({ behavior: 'smooth' }); }
             });
         });
 
-        function timeToMinutes(t) {
-            if (!t) return 0;
-            const [h, m] = t.split(':').map(Number);
-            return h * 60 + m;
-        }
-
+        function timeToMinutes(t) { if (!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
         function calcular() {
             let total = 0, diasActivos = 0, error10 = false;
-            const diasIds = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
-            
-            diasIds.forEach(dia => {
+            ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'].forEach(dia => {
                 if (document.getElementById(`check-${dia}`).checked) {
                     diasActivos++;
-                    const hIn = document.getElementById(`in-${dia}`).value;
-                    const hOut = document.getElementById(`out-${dia}`).value;
-                    const colM = parseInt(document.getElementById(`col-${dia}`).value) || 0;
+                    const hIn = document.getElementById(`in-${dia}`).value, hOut = document.getElementById(`out-${dia}`).value, colM = parseInt(document.getElementById(`col-${dia}`).value) || 0;
                     let mIn = timeToMinutes(hIn), mOut = timeToMinutes(hOut);
-                    if (hIn && hOut && mOut <= mIn) mOut += 1440; // Overnight shift
+                    if (hIn && hOut && mOut <= mIn) mOut += 1440;
                     const hrsEfectivas = (hIn && hOut) ? (mOut - mIn - colM) / 60 : 0;
                     if (hrsEfectivas > 10) error10 = true;
                     total += hrsEfectivas > 0 ? hrsEfectivas : 0;
                 }
             });
-
             document.getElementById('contadorTotalPublico').innerText = total.toFixed(1);
             const alertBox = document.getElementById('mensajeAlertaPublico');
             alertBox.classList.remove('hidden');
-
-            if (error10) {
-                alertBox.className = "p-4 rounded-lg border mt-4 bg-red-50 border-danger text-danger";
-                alertBox.innerHTML = "<strong>Tope Diario:</strong> Máximo 10 hrs efectivas por día.";
-            } else if (total > 42) {
-                alertBox.className = "p-4 rounded-lg border mt-4 bg-red-50 border-danger text-danger";
-                alertBox.innerHTML = "<strong>Exceso Semanal:</strong> Máximo 42 horas semanales.";
-            } else if (total > 30 && (diasActivos < 4 || diasActivos > 6)) {
-                alertBox.className = "p-4 rounded-lg border mt-4 bg-red-50 border-danger text-danger";
-                alertBox.innerHTML = "<strong>Distribución:</strong> Jornada ordinaria sobre 30 hrs debe ser entre 4 y 6 días.";
-            } else if (total > 30 && total <= 42) {
-                alertBox.className = "p-4 rounded-lg border mt-4 bg-green-50 border-success text-success";
-                alertBox.innerHTML = "<strong>¡Perfecto!</strong> Tu horario cumple con la ley vigente.";
-            } else if (total > 0 && total <= 30) {
-                alertBox.className = "p-4 rounded-lg border mt-4 bg-amber-50 border-premium text-amber-800";
-                alertBox.innerHTML = "<strong>Jornada Parcial (Part-Time).</strong> Los contratos de 30 horas o menos no requieren este anexo de adecuación por la nueva ley.";
-            } else if (diasActivos === 0) {
-                alertBox.className = "p-4 rounded-lg border mt-4 bg-red-50 border-danger text-danger";
-                alertBox.innerHTML = "<strong>Error:</strong> Selecciona al menos un día.";
-            } else {
-                alertBox.classList.add('hidden');
-            }
+            if (error10) { alertBox.className = "p-4 rounded-lg border mt-4 bg-red-50 border-danger text-danger"; alertBox.innerHTML = "<strong>Tope Diario:</strong> Máximo 10 hrs efectivas por día.";
+            } else if (total > 42) { alertBox.className = "p-4 rounded-lg border mt-4 bg-red-50 border-danger text-danger"; alertBox.innerHTML = "<strong>Exceso Semanal:</strong> Máximo 42 horas semanales.";
+            } else if (total > 30 && (diasActivos < 4 || diasActivos > 6)) { alertBox.className = "p-4 rounded-lg border mt-4 bg-red-50 border-danger text-danger"; alertBox.innerHTML = "<strong>Distribución:</strong> Jornada ordinaria sobre 30 hrs debe ser entre 4 y 6 días.";
+            } else if (total > 30 && total <= 42) { alertBox.className = "p-4 rounded-lg border mt-4 bg-green-50 border-success text-success"; alertBox.innerHTML = "<strong>¡Perfecto!</strong> Tu horario cumple con la ley.";
+            } else if (total > 0 && total <= 30) { alertBox.className = "p-4 rounded-lg border mt-4 bg-amber-50 border-premium text-amber-800"; alertBox.innerHTML = "<strong>Jornada Parcial (Part-Time).</strong> No se requiere anexo.";
+            } else { alertBox.classList.add('hidden'); }
         }
     </script>
 
-    <!-- Lógica de Supabase, Autenticación y Flujo Post-Pago -->
+    <!-- Lógica de Supabase, Auth y Flujo PDF -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- INICIALIZACIÓN DE SUPABASE ---
             const supabaseUrl = 'https://smodjwbmabffobonywad.supabase.co';
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb2Rqd2JtYWJmZm9ib255d2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjYyOTYsImV4cCI6MjA4OTM0MjI5Nn0.7nN75BHnzc7VzzdS9zy0Tvv8D43YjYK6PSLgeOp3uVg';
-            if (!window.supabase) {
-                console.error("Supabase CDN no cargó.");
-                return;
-            }
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-            // --- REFERENCIAS A ELEMENTOS DEL DOM ---
-            const mainCalculator = document.getElementById('main-calculator');
-            const authForm = document.getElementById('auth-form');
-            const authSubmitButton = document.getElementById('auth-submit-button');
-            const emailInput = document.getElementById('email-input');
-            const authSection = document.getElementById('auth-section');
-            const pdfFormSection = document.getElementById('pdf-form-section');
-            const paymentSuccessBanner = document.getElementById('payment-success-banner');
-            const pdfCreditsSpan = document.getElementById('pdf-credits-remaining');
-            const pdfForm = document.getElementById('pdf-form');
-            const generatePdfButton = document.getElementById('generate-pdf-button');
-            const btnComprarBasico = document.getElementById('btn-comprar-basico');
-            const btnComprarPack = document.getElementById('btn-comprar-pack');
-            const preciosSection = document.getElementById('precios');
-            
-            // --- LÓGICA DE COMPRA Y AUTENTICACIÓN ---
+            const mainCalculator = document.getElementById('main-calculator'), authSection = document.getElementById('auth-section'), pdfFormSection = document.getElementById('pdf-form-section'), preciosSection = document.getElementById('precios');
+            const authForm = document.getElementById('auth-form'), pdfForm = document.getElementById('pdf-form');
+
             const startPurchaseFlow = (plan) => {
                 localStorage.setItem('pendingPlan', plan);
                 authSection.classList.remove('hidden');
                 preciosSection.classList.add('hidden');
                 authSection.scrollIntoView({ behavior: 'smooth' });
             };
-
-            btnComprarBasico.addEventListener('click', () => startPurchaseFlow('basico'));
-            btnComprarPack.addEventListener('click', () => startPurchaseFlow('pack_5'));
+            document.getElementById('btn-comprar-basico').addEventListener('click', () => startPurchaseFlow('basico'));
+            document.getElementById('btn-comprar-pack').addEventListener('click', () => startPurchaseFlow('pack_5'));
 
             if(authForm) {
                 authForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    
                     const prodURL = 'https://www.portal40horas.cl';
                     const plan = localStorage.getItem('pendingPlan') || 'basico';
                     const magicRedirect = `${prodURL}/?purchase_intent=${plan}`;
-
-                    authSubmitButton.disabled = true;
-                    authSubmitButton.textContent = 'Enviando link mágico...';
-                    
+                    const authSubmitButton = document.getElementById('auth-submit-button');
+                    authSubmitButton.disabled = true; authSubmitButton.textContent = 'Enviando...';
                     try {
-                        const { error } = await supabase.auth.signInWithOtp({
-                            email: emailInput.value,
-                            options: { emailRedirectTo: magicRedirect } 
-                        });
+                        const { error } = await supabase.auth.signInWithOtp({ email: document.getElementById('email-input').value, options: { emailRedirectTo: magicRedirect } });
                         if (error) throw error;
-                        mainCalculator.classList.add('hidden');
-                        authSection.classList.add('hidden');
-                        preciosSection.classList.add('hidden');
-                        document.body.innerHTML = '<div class="w-screen h-screen flex items-center justify-center bg-navy text-white font-bold text-2xl">¡Éxito! Revisa tu correo para completar el acceso.</div>';
+                        document.body.innerHTML = '<div class="w-screen h-screen flex items-center justify-center bg-navy text-white font-bold text-2xl">¡Éxito! Revisa tu correo para el acceso.</div>';
                     } catch (error) {
-                        console.error("Hubo un problema al enviar el link: ", error);
                         alert("Hubo un problema al enviar el link: " + error.message);
                     } finally {
-                        authSubmitButton.disabled = false;
-                        authSubmitButton.textContent = 'Recibir Link de Acceso';
+                        authSubmitButton.disabled = false; authSubmitButton.textContent = 'Recibir Link de Acceso';
                     }
                 });
             }
 
-            // --- FUNCIÓN DE PAGO CON FETCH ---
             const createPaymentWithFetch = async (plan, session) => {
-                localStorage.removeItem('pendingPlan');
-                document.body.innerHTML = '<div class="w-screen h-screen flex items-center justify-center bg-navy text-white font-bold text-2xl">Conectando con la pasarela de pago...</div>';
-                
+                document.body.innerHTML = '<div class="w-screen h-screen flex items-center justify-center bg-navy text-white font-bold text-2xl">Conectando con el pago...</div>';
                 try {
-                    const response = await fetch(`${supabaseUrl}/functions/v1/create-payment`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${session.access_token}`,
-                            'apikey': supabaseKey
-                        },
-                        body: JSON.stringify({ plan })
-                    });
-
-                    if (!response.ok) {
-                        const errorBody = await response.json().catch(() => ({ message: `Error ${response.status}: ${response.statusText}` }));
-                        throw new Error(errorBody.error || errorBody.message);
-                    }
-
+                    const response = await fetch(`${supabaseUrl}/functions/v1/create-payment`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': supabaseKey }, body: JSON.stringify({ plan }) });
+                    if (!response.ok) { const err = await response.json(); throw new Error(err.error || `Error ${response.status}`); }
                     const data = await response.json();
-                    if (data.payment_url) {
-                        window.location.href = data.payment_url;
-                    } else {
-                        throw new Error('No se recibió la URL de pago del servidor.');
-                    }
+                    if (data.payment_url) window.location.href = data.payment_url;
+                    else throw new Error('URL de pago no recibida.');
                 } catch (error) {
-                    console.error('Error al crear el pago:', error.message);
-                    alert('Hubo un problema al iniciar el pago. Serás redirigido para intentarlo de nuevo.');
+                    alert('Hubo un problema al iniciar el pago. Redirigiendo...');
                     window.location.href = window.location.origin;
                 }
             };
 
-            // --- VERIFICADOR DE CRÉDITOS ---
             async function checkUserCredits(user) {
                 try {
                     const { data, error } = await supabase.from('perfiles_empresas').select('creditos_disponibles').eq('id', user.id).single();
                     if (error && error.code !== 'PGRST116') throw error;
-
                     const hasCredits = data && data.creditos_disponibles > 0;
-
                     if (hasCredits) {
-                        pdfCreditsSpan.textContent = data.creditos_disponibles;
-                        paymentSuccessBanner.classList.remove('hidden');
+                        document.getElementById('pdf-credits-remaining').textContent = data.creditos_disponibles;
+                        document.getElementById('payment-success-banner').classList.remove('hidden');
                         pdfFormSection.classList.remove('hidden');
-                        mainCalculator.classList.add('hidden');
-                        preciosSection.classList.add('hidden');
-                        
+                        [mainCalculator, preciosSection, authSection].forEach(el => el.classList.add('hidden'));
                         const validateFormEvent = new Event('input', { bubbles: true });
                         pdfForm.querySelector('input').dispatchEvent(validateFormEvent);
-
                     } else {
-                        paymentSuccessBanner.classList.add('hidden');
-                        pdfFormSection.classList.add('hidden');
-                        mainCalculator.classList.remove('hidden');
+                         localStorage.removeItem('anexoSchedule'); // Limpiar si no hay créditos
+                         mainCalculator.classList.remove('hidden');
+                         pdfFormSection.classList.add('hidden');
                     }
                 } catch (error) {
-                    console.error('Error al verificar créditos:', error);
                     mainCalculator.classList.remove('hidden');
                     pdfFormSection.classList.add('hidden');
                 }
             }
             
-            // --- GESTOR PRINCIPAL DE ESTADO ---
             const handleSessionState = async (session) => {
                 const urlParams = new URLSearchParams(window.location.search);
                 const purchaseIntent = urlParams.get('purchase_intent');
                 const paymentStatus = urlParams.get('payment');
-
                 if (session && session.user) {
                     if (purchaseIntent) {
                         window.history.replaceState({}, document.title, window.location.pathname);
@@ -601,133 +496,65 @@
                     } else {
                         if (paymentStatus) {
                              window.history.replaceState({}, document.title, window.location.pathname);
-                             if(paymentStatus === 'success') {
-                                 alert("¡Pago completado con éxito! Tus créditos han sido añadidos.");
-                             }
+                             if(paymentStatus === 'success') alert("¡Pago completado con éxito! Tus créditos han sido añadidos.");
                         }
                         await checkUserCredits(session.user);
                     }
                 } else {
-                    mainCalculator.classList.remove('hidden');
-                    pdfFormSection.classList.add('hidden');
-                    authSection.classList.add('hidden');
-                    preciosSection.classList.add('hidden');
+                     mainCalculator.classList.remove('hidden');
+                     [pdfFormSection, authSection, preciosSection].forEach(el => el.classList.add('hidden'));
                 }
             };
 
-            // --- MANEJADOR DE AUTENTICACIÓN ---
             supabase.auth.onAuthStateChange((event, session) => {
-                 if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-                    handleSessionState(session);
-                 } else if (event === 'SIGNED_OUT') {
-                    handleSessionState(null);
-                 }
+                 if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') handleSessionState(session);
+                 else if (event === 'SIGNED_OUT') handleSessionState(null);
             });
 
-            // --- LÓGICA DEL FORMULARIO DE PDF (CON VALIDACIÓN DE RUT MEJORADA) ---
             if (pdfForm) {
                 const allPdfInputs = pdfForm.querySelectorAll('input[required]');
                 const generatePdfButton = document.getElementById('generate-pdf-button');
 
                 const validateForm = () => {
                     let isFormValid = true;
-
                     allPdfInputs.forEach(input => {
                         const errorElement = document.getElementById(`${input.id}-error`);
-                        let errorMessage = '';
-                        let isValid = true;
+                        let errorMessage = '', isValid = true;
                         const value = input.value.trim();
+                        if (!value) { isValid = false; errorMessage = 'Requerido.';
+                        } else if (input.classList.contains('rut-input') && !Rut.validate(value)) { isValid = false; errorMessage = 'RUT no válido.'; }
+                        
+                        if(errorElement) errorElement.textContent = !isValid && (value || !input.classList.contains('rut-input')) ? errorMessage : '';
 
-                        if (!value) {
-                            isValid = false;
-                            errorMessage = 'Este campo es requerido.';
-                        } else if (input.classList.contains('rut-input') && !Rut.validate(value)) {
-                            isValid = false;
-                            errorMessage = 'El RUT ingresado no es válido.';
-                        }
-
-                        if (errorElement) {
-                            // Mostrar error solo si el campo ha sido tocado o no es válido
-                            if (!isValid && value) {
-                                errorElement.textContent = errorMessage;
-                            } else if (!isValid && !input.classList.contains('rut-input')) {
-                                errorElement.textContent = errorMessage;
-                            } else {
-                                errorElement.textContent = '';
-                            }
-                        }
-
-                        if (isValid) {
-                            input.classList.remove('border-danger');
-                            if (value) input.classList.add('border-success');
-                        } else {
-                            isFormValid = false;
-                            input.classList.remove('border-success');
-                            if (value) {
-                                input.classList.add('border-danger');
-                            }
-                        }
+                        if (isValid) { input.classList.remove('border-danger'); if (value) input.classList.add('border-success');
+                        } else { isFormValid = false; input.classList.remove('border-success'); if (value) input.classList.add('border-danger'); }
                     });
-
                     generatePdfButton.disabled = !isFormValid;
                 };
 
                 pdfForm.querySelectorAll('.rut-input').forEach(rutInput => {
-                    rutInput.addEventListener('input', (e) => {
-                        const formatted = Rut.format(e.target.value);
-                        if (e.target.value !== formatted) {
-                            e.target.value = formatted;
-                        }
-                        validateForm();
-                    });
-                     rutInput.addEventListener('blur', validateForm); // Validar al salir del campo
+                    rutInput.addEventListener('input', (e) => { const formatted = Rut.format(e.target.value); if (e.target.value !== formatted) e.target.value = formatted; validateForm(); });
+                    rutInput.addEventListener('blur', validateForm);
                 });
-
-                allPdfInputs.forEach(input => {
-                    if (!input.classList.contains('rut-input')) {
-                        input.addEventListener('input', validateForm);
-                    }
-                });
-                
-                // Forzar validación inicial
+                allPdfInputs.forEach(input => { if (!input.classList.contains('rut-input')) input.addEventListener('input', validateForm); });
                 validateForm();
 
                 pdfForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    console.log("Botón presionado: Intento de envío de formulario.");
-
+                    e.preventDefault(); console.log("Botón presionado");
                     validateForm();
-                    if (generatePdfButton.disabled) {
-                        console.warn("Intento de envío con formulario inválido.");
-                        // Forzar la muestra de todos los errores de campos vacíos
-                        allPdfInputs.forEach(input => {
-                            if (!input.value.trim()) {
-                                document.getElementById(`${input.id}-error`).textContent = 'Este campo es requerido.';
-                                input.classList.add('border-danger');
-                            }
-                        });
-                        return;
-                    }
+                    if (generatePdfButton.disabled) { allPdfInputs.forEach(input => { if (!input.value.trim()) document.getElementById(`${input.id}-error`).textContent = 'Requerido.'; }); return; }
                     
-                    generatePdfButton.disabled = true;
-                    generatePdfButton.textContent = 'Generando PDF...';
+                    generatePdfButton.disabled = true; generatePdfButton.textContent = 'Generando...';
 
                     try {
                         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-                        if (sessionError || !session) throw new Error('Sesión no encontrada, por favor inicia sesión de nuevo.');
+                        if (sessionError || !session) throw new Error('Sesión no encontrada.');
 
-                        const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
-                        const scheduleData = dias.map(dia => {
-                            if (!document.getElementById(`check-${dia}`).checked) return null;
-                            return {
-                                day: dia.charAt(0).toUpperCase() + dia.slice(1),
-                                entry: document.getElementById(`in-${dia}`).value || 'N/A',
-                                exit: document.getElementById(`out-${dia}`).value || 'N/A',
-                                lunchDuration: document.getElementById(`col-${dia}`).value || '0',
-                                lunchEntry: document.getElementById(`cin-${dia}`).value || 'N/A',
-                                lunchExit: document.getElementById(`cfn-${dia}`).value || 'N/A',
-                            };
-                        }).filter(Boolean);
+                        // 1. FRONTEND: Recuperar el horario desde localStorage.
+                        const savedSchedule = localStorage.getItem('anexoSchedule');
+                        if (!savedSchedule) {
+                            throw new Error('No se encontraron datos del horario. Por favor, vuelve a la calculadora y valida tu horario.');
+                        }
 
                         const payload = {
                             employerName: document.getElementById('employer-name').value,
@@ -735,46 +562,23 @@
                             employerAddress: document.getElementById('employer-address').value,
                             employeeName: document.getElementById('employee-name').value,
                             employeeRut: document.getElementById('employee-rut').value,
-                            schedule: scheduleData,
+                            schedule: JSON.parse(savedSchedule),
                         };
 
-                        const response = await fetch(`${supabaseUrl}/functions/v1/generate-anexo`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${session.access_token}`,
-                                'apikey': supabaseKey
-                            },
-                            body: JSON.stringify(payload)
-                        });
-
-                        if (!response.ok) {
-                            const errorBody = await response.json().catch(() => ({ error: `Error ${response.status}: ${response.statusText}` }));
-                            throw new Error(errorBody.error || 'No se pudo generar el PDF del anexo.');
-                        }
+                        const response = await fetch(`${supabaseUrl}/functions/v1/generate-anexo`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': supabaseKey }, body: JSON.stringify(payload) });
+                        if (!response.ok) { const err = await response.json(); throw new Error(err.error || 'No se pudo generar el PDF.'); }
                         
                         const pdfBlob = await response.blob();
                         const blobUrl = URL.createObjectURL(pdfBlob);
-                        
                         const link = document.createElement('a');
-                        link.href = blobUrl;
-                        link.download = `Anexo_Contrato_Jornada_Laboral.pdf`;
-                        document.body.appendChild(link);
-                        link.click();
-                        
-                        document.body.removeChild(link);
+                        link.href = blobUrl; link.download = `Anexo_Contrato_Jornada_Laboral.pdf`;
+                        document.body.appendChild(link); link.click(); document.body.removeChild(link);
                         URL.revokeObjectURL(blobUrl);
-
-                        alert("¡Anexo PDF generado con éxito y descarga iniciada!");
-
+                        alert("¡Anexo PDF generado con éxito!");
+                        localStorage.removeItem('anexoSchedule'); // Limpiar después de usar
                         await checkUserCredits(session.user);
-
-                    } catch (error) {
-                        alert("Hubo un problema al generar el PDF: " + error.message);
-                    } finally {
-                        generatePdfButton.textContent = 'Generar PDF';
-                        validateForm();
-                    }
+                    } catch (error) { alert("Hubo un problema: " + error.message);
+                    } finally { generatePdfButton.textContent = 'Generar PDF'; validateForm(); }
                 });
             }
         });
