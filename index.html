@@ -57,7 +57,7 @@
         <div id="precios" class="max-w-5xl mx-auto mt-12 p-8 hidden"></div>
         <div id="auth-section" class="max-w-5xl mx-auto mt-12 p-8 hidden"></div>
         <div id="pdf-form-section" class="max-w-5xl mx-auto mt-12 p-8 hidden">
-             <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8 border-t-4 border-navy">
+            <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8 border-t-4 border-navy">
                 <h2 class="text-2xl font-bold text-center text-navy mb-6">Completa los Datos para el Anexo</h2>
                 <form id="pdf-form"></form>
             </div>
@@ -91,6 +91,22 @@
 
             const timeToMinutes = (t) => { if (!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; };
             
+            const updateAlerts = () => {
+                const total = parseFloat(document.getElementById('contadorTotalPublico').innerText);
+                const alertBox = document.getElementById('mensajeAlertaPublico');
+                alertBox.classList.remove('hidden', 'bg-red-50', 'border-danger', 'text-danger', 'bg-green-50', 'border-success', 'text-success', 'bg-amber-50', 'border-premium', 'text-amber-800');
+
+                if (total > 42) {
+                    alertBox.classList.add('bg-amber-50', 'border-premium', 'text-amber-800');
+                    alertBox.innerHTML = "<strong>Advertencia:</strong> Este horario supera el límite legal vigente de 42 horas.";
+                } else if (total > 0 && total <= 40) {
+                    alertBox.classList.add('bg-green-50', 'border-success', 'text-success');
+                    alertBox.innerHTML = "<strong>¡Correcto!</strong> El horario cumple la normativa.";
+                } else {
+                    alertBox.classList.add('hidden');
+                }
+            };
+
             const calcularTotal = () => {
                 let total = 0;
                 dias.forEach(dia => {
@@ -103,20 +119,16 @@
                     }
                 });
                 document.getElementById('contadorTotalPublico').innerText = total.toFixed(1);
+                updateAlerts(); // Actualizar las alertas después de cada cálculo
             };
 
-            // 1. AUTOCOMPLETADO DE COLACIÓN: Función para calcular el fin de la colación.
             const calcularFinColacion = (dia) => {
-                const duracionInput = document.getElementById(`col-${dia}`);
-                const inicioInput = document.getElementById(`cin-${dia}`);
-                const finInput = document.getElementById(`cfn-${dia}`);
+                const duracionInput = document.getElementById(`col-${dia}`), inicioInput = document.getElementById(`cin-${dia}`), finInput = document.getElementById(`cfn-${dia}`);
                 const duracionMins = parseInt(duracionInput.value, 10);
                 const horaInicio = inicioInput.value;
                 if (!isNaN(duracionMins) && horaInicio) {
                     const [horas, minutos] = horaInicio.split(':').map(Number);
-                    const fechaInicio = new Date();
-                    fechaInicio.setHours(horas, minutos, 0, 0);
-                    const fechaFin = new Date(fechaInicio.getTime() + duracionMins * 60000);
+                    const fechaFin = new Date(new Date().setHours(horas, minutos) + duracionMins * 60000);
                     finInput.value = `${String(fechaFin.getHours()).padStart(2, '0')}:${String(fechaFin.getMinutes()).padStart(2, '0')}`;
                 } else {
                     finInput.value = '';
@@ -124,62 +136,53 @@
             };
 
             dias.forEach(id => {
-                const checkbox = document.getElementById(`check-${id}`);
-                const row = checkbox.closest('.day-row');
-                const inputs = row.querySelectorAll('.day-input');
-
+                const checkbox = document.getElementById(`check-${id}`), row = checkbox.closest('.day-row'), inputs = row.querySelectorAll('.day-input');
                 checkbox.addEventListener('change', () => {
                     const isChecked = checkbox.checked;
                     inputs.forEach(input => {
-                        input.disabled = !isChecked;
-                        input.classList.toggle(...disabledClasses, !isChecked);
+                        input.disabled = !isChecked; input.classList.toggle(...disabledClasses, !isChecked);
                         if(!isChecked) input.value = '';
                     });
                     calcularTotal();
-                    calcularFinColacion(id);
                 });
-
                 inputs.forEach(input => input.addEventListener('input', calcularTotal));
-                
-                // Vinculación de eventos para el autocompletado de colación.
                 document.getElementById(`col-${id}`).addEventListener('input', () => calcularFinColacion(id));
                 document.getElementById(`cin-${id}`).addEventListener('input', () => calcularFinColacion(id));
             });
             
-            // 2. RÉPLICA TOTAL: Lógica de replicación corregida.
-            const btnReplicar = document.getElementById('btn-replicar-lunes');
-            if(btnReplicar) {
-                btnReplicar.addEventListener('click', () => {
-                    const lunesCheckbox = document.getElementById('check-lunes');
-                    if (!lunesCheckbox.checked) { alert('Completa y marca el Lunes para replicar.'); return; }
-                    
-                    const valoresLunes = {
-                        entrada: document.getElementById('in-lunes').value,
-                        salida: document.getElementById('out-lunes').value,
-                        colacionMin: document.getElementById('col-lunes').value,
-                        colacionInicio: document.getElementById('cin-lunes').value,
-                        colacionFin: document.getElementById('cfn-lunes').value // Campo añadido
-                    };
-
-                    const diasSemana = ['martes', 'miercoles', 'jueves', 'viernes'];
-                    const inputEvent = new Event('input', { bubbles: true });
-                    const changeEvent = new Event('change', { bubbles: true });
-
-                    diasSemana.forEach(dia => {
-                        const checkbox = document.getElementById(`check-${dia}`);
-                        if (!checkbox.checked) { checkbox.checked = true; checkbox.dispatchEvent(changeEvent); }
-                        
-                        document.getElementById(`in-${dia}`).value = valoresLunes.entrada;
-                        document.getElementById(`out-${dia}`).value = valoresLunes.salida;
-                        document.getElementById(`col-${dia}`).value = valoresLunes.colacionMin;
-                        document.getElementById(`cin-${dia}`).value = valoresLunes.colacionInicio;
-                        document.getElementById(`cfn-${dia}`).value = valoresLunes.colacionFin; // Campo replicado
-
-                        // Disparar eventos para asegurar recálculos
-                        ['in', 'out', 'col', 'cin'].forEach(type => document.getElementById(`${type}-${dia}`).dispatchEvent(inputEvent));
+            document.getElementById('btn-replicar-lunes')?.addEventListener('click', () => {
+                if (!document.getElementById('check-lunes').checked) { alert('Completa y marca el Lunes para replicar.'); return; }
+                const valoresLunes = { entrada: document.getElementById('in-lunes').value, salida: document.getElementById('out-lunes').value, colacionMin: document.getElementById('col-lunes').value, colacionInicio: document.getElementById('cin-lunes').value, colacionFin: document.getElementById('cfn-lunes').value };
+                const diasSemana = ['martes', 'miercoles', 'jueves', 'viernes'], inputEvent = new Event('input', { bubbles: true }), changeEvent = new Event('change', { bubbles: true });
+                diasSemana.forEach(dia => {
+                    const checkbox = document.getElementById(`check-${dia}`);
+                    if (!checkbox.checked) { checkbox.checked = true; checkbox.dispatchEvent(changeEvent); }
+                    Object.keys(valoresLunes).forEach(key => { 
+                        const idMap = { entrada: `in-${dia}`, salida: `out-${dia}`, colacionMin: `col-${dia}`, colacionInicio: `cin-${dia}`, colacionFin: `cfn-${dia}` };
+                        document.getElementById(idMap[key]).value = valoresLunes[key];
                     });
+                    row.querySelectorAll('.day-input').forEach(i => i.dispatchEvent(inputEvent));
                 });
-            }
+                calcularTotal();
+            });
+
+            // Lógica de validación NO BLOQUEANTE
+            document.getElementById('btn-validar').addEventListener('click', () => {
+                calcularTotal(); // Asegura que el cálculo esté al día
+                const scheduleToSave = dias.map(dia => {
+                    if (!document.getElementById(`check-${dia}`).checked) return null;
+                    return { day: dia.charAt(0).toUpperCase() + dia.slice(1), entry: document.getElementById(`in-${dia}`).value || 'N/A', exit: document.getElementById(`out-${dia}`).value || 'N/A', lunchDuration: document.getElementById(`col-${dia}`).value || '0', lunchEntry: document.getElementById(`cin-${dia}`).value || 'N/A', lunchExit: document.getElementById(`cfn-${dia}`).value || 'N/A', };
+                }).filter(Boolean);
+                if (scheduleToSave.length === 0) { alert("Debes definir un horario para al menos un día."); return; }
+
+                localStorage.setItem('anexoSchedule', JSON.stringify(scheduleToSave));
+                // Aquí iría la lógica para mostrar la siguiente sección (precios, auth, etc.)
+                // Por ejemplo: document.getElementById('precios').classList.remove('hidden');
+                alert("Horario validado y guardado. Procediendo al siguiente paso...");
+            });
+
+            // La validación del formulario final (nombre, rut, etc.) ya se maneja por separado 
+            // y correctamente habilita/deshabilita el botón "Generar PDF" final.
         });
     </script>
 </body>
