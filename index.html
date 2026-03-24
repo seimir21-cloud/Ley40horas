@@ -257,6 +257,7 @@
                 pdfForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     if (generatePdfButton.disabled) return;
+
                     generatePdfButton.disabled = true;
                     generatePdfButton.textContent = 'Generando...';
 
@@ -265,7 +266,7 @@
                         if (!session) throw new Error('Sesión no encontrada. Por favor, inicie sesión de nuevo.');
 
                         const savedSchedule = localStorage.getItem('anexoSchedule');
-                        if (!savedSchedule) throw new Error('Datos de horario no encontrados en el localStorage. Por favor, vuelva a la calculadora.');
+                        if (!savedSchedule) throw new Error('Datos de horario no encontrados en el localStorage.');
 
                         const payload = {
                             employerName: document.getElementById('employer-name').value,
@@ -291,10 +292,10 @@
                         if (!response.ok) {
                             const errText = await response.text();
                             try {
-                              const errJson = JSON.parse(errText);
-                              throw new Error(errJson.error || 'El servidor devolvió una respuesta de error.');
+                                const errJson = JSON.parse(errText);
+                                throw new Error(errJson.error || 'El servidor devolvió una respuesta de error.');
                             } catch {
-                              throw new Error(errText || 'Error desconocido del servidor.');
+                                throw new Error(errText || 'Error desconocido del servidor.');
                             }
                         }
 
@@ -308,9 +309,9 @@
                         document.body.removeChild(link);
                         URL.revokeObjectURL(blobUrl);
 
-                        alert("¡Anexo PDF generado con éxito!");
                         localStorage.removeItem('anexoSchedule');
-                        location.reload();
+
+                        alert("¡Anexo PDF generado con éxito!");
 
                     } catch (error) {
                         alert("Hubo un problema al generar el PDF: " + error.message);
