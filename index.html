@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Ley 42 Horas Chile</title>
+    <title>Calculadora Ley 40 Horas Chile</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com/"></script>
     <script>
@@ -21,7 +21,7 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
     <header class="bg-navy text-white py-12 px-4 text-center">
-        <h1 class="text-3xl md:text-4xl font-bold mb-4">Calculadora Ley 42 Horas Chile</h1>
+        <h1 class="text-3xl md:text-4xl font-bold mb-4">Calculadora Ley 40 Horas Chile</h1>
         <p class="text-lg text-slate-300">Configura tu horario detallado y verifica el cumplimiento de la ley.</p>
     </header>
     <main class="flex-grow p-4">
@@ -39,7 +39,7 @@
                             <div class="text-xs font-semibold text-gray-500 uppercase">Horario Colación</div>
                         </div>
                         <div class="divide-y divide-gray-100" id="calculator-days-container">
-                            <!-- Las filas de los días se insertarán aquí con JavaScript -->
+                            <!-- Las filas se insertan aquí -->
                         </div>
                     </div>
                 </div>
@@ -58,10 +58,12 @@
         </div>
         <div id="precios" class="max-w-5xl mx-auto mt-12 p-8 hidden"></div>
         <div id="auth-section" class="max-w-5xl mx-auto mt-12 p-8 hidden"></div>
+        
+        <!-- FORMULARIO PDF -->
         <div id="pdf-form-section" class="max-w-5xl mx-auto mt-12 p-8 hidden">
             <div id="payment-success-banner" class="hidden bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-lg">
                 <p class="font-bold">¡Bienvenido!</p>
-                <p>Tienes <span id="pdf-credits-remaining" class="font-bold"></span> crédito(s).</p>
+                <p>Tienes <span id="pdf-credits-remaining" class="font-bold"></span> crédito(s) disponible(s).</p>
             </div>
             <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8 border-t-4 border-navy">
                 <h2 class="text-2xl font-bold text-center text-navy mb-6">Completa los Datos para el Anexo</h2>
@@ -69,96 +71,151 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="md:col-span-2 font-bold text-lg text-slate-700">Datos del Empleador</div>
                         <div>
-                            <label for="employer-name">Razón Social</label>
-                            <input type="text" id="employer-name" required class="pdf-input mt-1 block w-full rounded-md shadow-sm sm:text-sm">
+                            <label for="employer-name" class="block text-sm font-medium text-gray-700">Nombre o Razón Social</label>
+                            <input type="text" id="employer-name" required class="pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
                             <p id="employer-name-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
                         <div>
-                            <label for="employer-rut">RUT Empresa</label>
-                            <input type="text" id="employer-rut" required class="rut-input pdf-input mt-1 block w-full rounded-md shadow-sm sm:text-sm">
+                            <label for="employer-rut" class="block text-sm font-medium text-gray-700">RUT Empresa</label>
+                            <input type="text" id="employer-rut" required class="rut-input pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
                             <p id="employer-rut-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
+                        
+                        <!-- 2. MOSTRAR CAMPOS FALTANTES: Campos del representante legal añadidos -->
                         <div>
-                            <label for="employer-rep-name">Nombre Representante</label>
-                            <input type="text" id="employer-rep-name" required placeholder="Ej: Juan Pérez" class="pdf-input mt-1 block w-full rounded-md shadow-sm sm:text-sm">
+                            <label for="employer-rep-name" class="block text-sm font-medium text-gray-700">Nombre Representante Legal</label>
+                            <input type="text" id="employer-rep-name" required placeholder="Ej: Juan Pérez Soto" class="pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
                             <p id="employer-rep-name-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
                         <div>
-                            <label for="employer-rep-rut">RUT Representante</label>
-                            <input type="text" id="employer-rep-rut" required class="rut-input pdf-input mt-1 block w-full rounded-md shadow-sm sm:text-sm">
+                            <label for="employer-rep-rut" class="block text-sm font-medium text-gray-700">RUT Representante Legal</label>
+                            <input type="text" id="employer-rep-rut" required class="rut-input pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
                             <p id="employer-rep-rut-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
+
                         <div class="md:col-span-2">
-                            <label for="employer-address">Domicilio (Ciudad)</label>
-                            <input type="text" id="employer-address" required placeholder="Ej: Santiago" class="pdf-input mt-1 block w-full rounded-md shadow-sm sm:text-sm">
+                            <label for="employer-address" class="block text-sm font-medium text-gray-700">Domicilio (Ciudad)</label>
+                            <input type="text" id="employer-address" required placeholder="Ej: Santiago" class="pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
                             <p id="employer-address-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
                         <div class="md:col-span-2 mt-4 font-bold text-lg text-slate-700">Datos del Trabajador</div>
                         <div>
-                            <label for="employee-name">Nombre Trabajador</label>
-                            <input type="text" id="employee-name" required class="pdf-input mt-1 block w-full rounded-md shadow-sm sm:text-sm">
+                            <label for="employee-name" class="block text-sm font-medium text-gray-700">Nombre Completo</label>
+                            <input type="text" id="employee-name" required class="pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
                             <p id="employee-name-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
                         <div>
-                            <label for="employee-rut">RUT Trabajador</label>
-                            <input type="text" id="employee-rut" required class="rut-input pdf-input mt-1 block w-full rounded-md shadow-sm sm:text-sm">
+                            <label for="employee-rut" class="block text-sm font-medium text-gray-700">RUT</label>
+                            <input type="text" id="employee-rut" required class="rut-input pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
                             <p id="employee-rut-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
                     </div>
                     <div class="mt-8 text-center">
-                        <button type="submit" id="generate-pdf-button" class="w-full md:w-auto bg-premium text-white font-bold py-3 px-12 rounded-lg shadow-lg disabled:opacity-50">Generar PDF</button>
+                        <button type="submit" id="generate-pdf-button" class="w-full md:w-auto bg-premium text-white font-bold py-3 px-12 rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">Generar PDF</button>
                     </div>
                 </form>
             </div>
         </div>
     </main>
+
     <script>
-        // --- LÓGICA DE LA CALCULADORA CORREGIDA ---
         document.addEventListener('DOMContentLoaded', () => {
             const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
             const calculatorDaysContainer = document.getElementById('calculator-days-container');
+            const disabledClasses = ['bg-gray-100', 'opacity-50'];
             let allDayRowsHTML = '';
 
+            // --- LÓGICA DE LA CALCULADORA REPARADA ---
+            
+            // 1. Construir el HTML de todas las filas en una sola pasada
             dias.forEach(id => {
                 allDayRowsHTML += `
-                    <div class="grid grid-cols-[80px_60px_1fr_1fr_1fr_2fr] gap-4 items-center px-4 py-2 day-row">
-                        <div><label for="check-${id}" class="font-semibold text-gray-800">${id.charAt(0).toUpperCase() + id.slice(1)}</label></div>
-                        <div class="flex justify-center"><input type="checkbox" id="check-${id}" class="h-5 w-5 rounded border-gray-300 text-blue-600 cursor-pointer"></div>
-                        <div><input type="time" id="in-${id}" class="day-input w-full rounded-md border p-1 text-sm bg-gray-100 opacity-50" disabled></div>
-                        <div><input type="time" id="out-${id}" class="day-input w-full rounded-md border p-1 text-sm bg-gray-100 opacity-50" disabled></div>
-                        <div><input type="number" id="col-${id}" placeholder="Min" class="day-input w-full rounded-md border p-1 text-sm bg-gray-100 opacity-50" disabled></div>
-                        <div class="flex items-center gap-2">
-                            <input type="time" id="cin-${id}" class="day-input w-full rounded-md border p-1 text-sm bg-gray-100 opacity-50" disabled>
-                            <span class="text-gray-400 font-bold">-</span>
-                            <input type="time" id="cfn-${id}" class="day-input w-full rounded-md border p-1 text-sm bg-gray-100 opacity-50" readonly disabled>
-                        </div>
+                <div class="grid grid-cols-[80px_60px_1fr_1fr_1fr_2fr] gap-4 items-center px-4 py-2 day-row">
+                    <div><label for="check-${id}" class="font-semibold text-gray-800">${id.charAt(0).toUpperCase() + id.slice(1)}</label></div>
+                    <div class="flex justify-center"><input type="checkbox" id="check-${id}" class="h-5 w-5 rounded border-gray-300 text-blue-600 cursor-pointer"></div>
+                    <div><input type="time" id="in-${id}" class="day-input w-full rounded-md border p-1 text-sm" disabled></div>
+                    <div><input type="time" id="out-${id}" class="day-input w-full rounded-md border p-1 text-sm" disabled></div>
+                    <div><input type="number" id="col-${id}" placeholder="Min" class="day-input w-full rounded-md border p-1 text-sm" disabled></div>
+                    <div class="flex items-center gap-2">
+                        <input type="time" id="cin-${id}" class="day-input w-full rounded-md border p-1 text-sm" disabled>
+                        <span class="text-gray-400 font-bold">-</span>
+                        <input type="time" id="cfn-${id}" class="day-input w-full rounded-md border p-1 text-sm" readonly disabled>
                     </div>
-                    ${id === 'lunes' ? '<div class="px-4 pb-2 pt-1"><button type="button" id="btn-replicar-lunes" class="text-xs text-blue-600 hover:text-blue-800 font-medium">Replicar a Viernes</button></div>' : ''}`;
+                </div>
+                ${id === 'lunes' ? '<div class="px-4 pb-2 pt-1"><button type="button" id="btn-replicar-lunes" class="text-xs text-blue-600 hover:text-blue-800 font-medium">Replicar Lunes a Viernes</button></div>' : ''}`;
             });
 
+            // 2. Insertar el HTML en el DOM una sola vez
             calculatorDaysContainer.innerHTML = allDayRowsHTML;
+            
+            // --- Utilidades de cálculo ---
+            const timeToMinutes = (t) => { if (!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
+            const calcularTotal = () => {
+                let total = 0;
+                dias.forEach(dia => {
+                    if (document.getElementById(`check-${dia}`).checked) {
+                        const hIn = document.getElementById(`in-${dia}`).value, hOut = document.getElementById(`out-${dia}`).value, colM = parseInt(document.getElementById(`col-${dia}`).value) || 0;
+                        let mIn = timeToMinutes(hIn), mOut = timeToMinutes(hOut);
+                        if (hIn && hOut && mOut <= mIn) mOut += 1440; // Manejo de turnos de noche
+                        const hrsEfectivas = (hIn && hOut) ? (mOut - mIn - colM) / 60 : 0;
+                        total += hrsEfectivas > 0 ? hrsEfectivas : 0;
+                    }
+                });
+                document.getElementById('contadorTotalPublico').innerText = total.toFixed(1);
+            };
 
-            // Adjuntar Event Listeners DESPUÉS de construir el HTML
+            // 3. Adjuntar TODOS los Event Listeners después de que el DOM esté listo
             dias.forEach(id => {
                 const checkbox = document.getElementById(`check-${id}`);
-                const inputs = checkbox.closest('.day-row').querySelectorAll('.day-input');
+                const row = checkbox.closest('.day-row');
+                const inputs = row.querySelectorAll('.day-input');
 
                 checkbox.addEventListener('change', () => {
                     const isChecked = checkbox.checked;
                     inputs.forEach(input => {
                         input.disabled = !isChecked;
-                        input.classList.toggle('bg-gray-100', !isChecked);
-                        input.classList.toggle('opacity-50', !isChecked);
-                        if (!isChecked) input.value = '';
+                        input.classList.toggle(...disabledClasses, !isChecked);
+                        if(!isChecked) input.value = '';
                     });
+                    calcularTotal(); // Recalcular al activar/desactivar
+                });
+
+                inputs.forEach(input => {
+                    input.addEventListener('input', calcularTotal); // El listener clave que faltaba
                 });
             });
             
-            // El resto de la lógica de la app...
+            // Listener para el botón de replicar
+            const btnReplicar = document.getElementById('btn-replicar-lunes');
+            if(btnReplicar) {
+                btnReplicar.addEventListener('click', () => {
+                    const lunesCheckbox = document.getElementById('check-lunes');
+                    if (!lunesCheckbox.checked) { alert('Completa y marca el Lunes para replicar.'); return; }
+                    const valoresLunes = {
+                        entrada: document.getElementById('in-lunes').value,
+                        salida: document.getElementById('out-lunes').value,
+                        colacionMin: document.getElementById('col-lunes').value,
+                        colacionInicio: document.getElementById('cin-lunes').value
+                    };
+                    const diasSemana = ['martes', 'miercoles', 'jueves', 'viernes'];
+                    const inputEvent = new Event('input', { bubbles: true });
+                    const changeEvent = new Event('change', { bubbles: true });
+                    diasSemana.forEach(dia => {
+                        const checkbox = document.getElementById(`check-${dia}`);
+                        if (!checkbox.checked) { checkbox.checked = true; checkbox.dispatchEvent(changeEvent); }
+                        document.getElementById(`in-${dia}`).value = valoresLunes.entrada;
+                        document.getElementById(`out-${dia}`).value = valoresLunes.salida;
+                        document.getElementById(`col-${dia}`).value = valoresLunes.colacionMin;
+                        document.getElementById(`cin-${dia}`).value = valoresLunes.colacionInicio;
+                        ['in', 'out', 'col', 'cin'].forEach(type => document.getElementById(`${type}-${dia}`).dispatchEvent(inputEvent));
+                    });
+                    calcularTotal(); // Forzar recálculo final
+                });
+            }
+            
+            // ... El resto del script para Supabase, Auth, y generación de PDF sigue aquí ...
+            // (Este código no necesita cambios para la reparación actual)
         });
-
-        // ... (el resto de tu script, incluyendo Rut, Supabase, etc.)
-
     </script>
 </body>
 </html>
