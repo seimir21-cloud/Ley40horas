@@ -43,14 +43,14 @@
                 </div>
                 <div class="mt-8 flex flex-col md:flex-row items-center justify-between gap-6">
                     <div class="w-full md:w-auto order-2 md:order-1">
-                        <div id="mensajeAlertaPublico" class="p-4 rounded-lg border hidden"></div>
+                        <div id="mensajeAlertaPublico" class="p-4 rounded-lg border text-sm font-medium"></div>
                         <div class="flex items-center gap-4 mt-2">
                            <span class="font-bold text-navy">Total Semanal:</span>
                            <span id="contadorTotalPublico" class="text-3xl font-black text-navy">0.0</span>
                            <span class="text-slate-500">horas</span>
                         </div>
                     </div>
-                    <button type="button" id="btn-validar" class="w-full md:w-auto order-1 md:order-2 bg-premium text-white font-bold py-4 px-8 rounded-lg shadow-lg">Validar y Obtener PDF ➔</button>
+                    <button type="button" id="btn-validar" disabled class="w-full md:w-auto order-1 md:order-2 bg-premium text-white font-bold py-4 px-8 rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">Validar y Obtener PDF ➔</button>
                 </div>
             </form>
         </div>
@@ -74,36 +74,45 @@
             dias.forEach(id => {
                 allDayRowsHTML += `
                 <div class="grid grid-cols-[80px_60px_1fr_1fr_1fr_2fr] gap-4 items-center px-4 py-2 day-row">
-                    <div><label for="check-${id}">${id.charAt(0).toUpperCase() + id.slice(1)}</label></div>
-                    <div class="flex justify-center"><input type="checkbox" id="check-${id}" class="h-5 w-5 rounded border-gray-300 text-blue-600"></div>
-                    <div><input type="time" id="in-${id}" class="day-input w-full rounded-md border p-1 text-sm" disabled></div>
-                    <div><input type="time" id="out-${id}" class="day-input w-full rounded-md border p-1 text-sm" disabled></div>
-                    <div><input type="number" id="col-${id}" placeholder="Min" class="day-input w-full rounded-md border p-1 text-sm" disabled></div>
+                    <div><label for="check-${id}" class="font-semibold">${id.charAt(0).toUpperCase() + id.slice(1)}</label></div>
+                    <div class="flex justify-center"><input type="checkbox" id="check-${id}" class="h-5 w-5 rounded border-gray-300 text-blue-600 cursor-pointer"></div>
+                    <div><input type="time" id="in-${id}" class="day-input w-full rounded-md border p-1 text-sm bg-gray-100 opacity-50" disabled></div>
+                    <div><input type="time" id="out-${id}" class="day-input w-full rounded-md border p-1 text-sm bg-gray-100 opacity-50" disabled></div>
+                    <div><input type="number" id="col-${id}" placeholder="Min" class="day-input w-full rounded-md border p-1 text-sm bg-gray-100 opacity-50" disabled></div>
                     <div class="flex items-center gap-2">
-                        <input type="time" id="cin-${id}" class="day-input w-full rounded-md border p-1 text-sm" disabled>
+                        <input type="time" id="cin-${id}" class="day-input w-full rounded-md border p-1 text-sm bg-gray-100 opacity-50" disabled>
                         <span class="text-gray-400 font-bold">-</span>
-                        <input type="time" id="cfn-${id}" class="day-input w-full rounded-md border p-1 text-sm" readonly disabled>
+                        <input type="time" id="cfn-${id}" class="day-input w-full rounded-md border p-1 text-sm bg-gray-100 opacity-50" readonly disabled>
                     </div>
                 </div>
-                ${id === 'lunes' ? '<div class="px-4 pb-2 pt-1"><button type="button" id="btn-replicar-lunes" class="text-xs text-blue-600">Replicar Lunes a Viernes</button></div>' : ''}`;
+                ${id === 'lunes' ? '<div class="px-4 pb-2 pt-1"><button type="button" id="btn-replicar-lunes" class="text-xs text-blue-600 hover:text-blue-800 font-medium">Replicar Lunes a Viernes</button></div>' : ''}`;
             });
             calculatorDaysContainer.innerHTML = allDayRowsHTML;
 
             const timeToMinutes = (t) => { if (!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; };
             
-            const updateAlerts = () => {
+            // 2. LÓGICA DE VALIDACIÓN LEGAL (CHILE)
+            const updateAlertsAndButton = () => {
                 const total = parseFloat(document.getElementById('contadorTotalPublico').innerText);
                 const alertBox = document.getElementById('mensajeAlertaPublico');
-                alertBox.classList.remove('hidden', 'bg-red-50', 'border-danger', 'text-danger', 'bg-green-50', 'border-success', 'text-success', 'bg-amber-50', 'border-premium', 'text-amber-800');
+                const validarBtn = document.getElementById('btn-validar');
+                alertBox.className = 'p-4 rounded-lg border text-sm font-medium'; // Reset classes
 
                 if (total > 42) {
-                    alertBox.classList.add('bg-amber-50', 'border-premium', 'text-amber-800');
-                    alertBox.innerHTML = "<strong>Advertencia:</strong> Este horario supera el límite legal vigente de 42 horas.";
-                } else if (total > 0 && total <= 40) {
+                    alertBox.classList.add('bg-red-50', 'border-danger', 'text-danger');
+                    alertBox.innerHTML = "<strong>Atención:</strong> La jornada supera el máximo legal permitido (42 horas).";
+                    validarBtn.disabled = true;
+                } else if (total >= 30) {
                     alertBox.classList.add('bg-green-50', 'border-success', 'text-success');
-                    alertBox.innerHTML = "<strong>¡Correcto!</strong> El horario cumple la normativa.";
+                    alertBox.innerHTML = "<strong>¡Correcto!</strong> Cumple con la normativa de Jornada Ordinaria.";
+                    validarBtn.disabled = false;
+                } else if (total > 0) {
+                    alertBox.classList.add('bg-green-50', 'border-success', 'text-success');
+                    alertBox.innerHTML = "<strong>¡Correcto!</strong> Jornada Parcial (Part-time).";
+                    validarBtn.disabled = false;
                 } else {
                     alertBox.classList.add('hidden');
+                    validarBtn.disabled = true;
                 }
             };
 
@@ -119,19 +128,15 @@
                     }
                 });
                 document.getElementById('contadorTotalPublico').innerText = total.toFixed(1);
-                updateAlerts(); // Actualizar las alertas después de cada cálculo
+                updateAlertsAndButton();
             };
 
             const calcularFinColacion = (dia) => {
                 const duracionInput = document.getElementById(`col-${dia}`), inicioInput = document.getElementById(`cin-${dia}`), finInput = document.getElementById(`cfn-${dia}`);
-                const duracionMins = parseInt(duracionInput.value, 10);
-                const horaInicio = inicioInput.value;
-                if (!isNaN(duracionMins) && horaInicio) {
-                    const [horas, minutos] = horaInicio.split(':').map(Number);
-                    const fechaFin = new Date(new Date().setHours(horas, minutos) + duracionMins * 60000);
-                    finInput.value = `${String(fechaFin.getHours()).padStart(2, '0')}:${String(fechaFin.getMinutes()).padStart(2, '0')}`;
-                } else {
-                    finInput.value = '';
+                if (duracionInput.value && inicioInput.value) {
+                    const [h, m] = inicioInput.value.split(':').map(Number);
+                    const totalMinutos = h * 60 + m + parseInt(duracionInput.value, 10);
+                    finInput.value = `${String(Math.floor(totalMinutos / 60) % 24).padStart(2, '0')}:${String(totalMinutos % 60).padStart(2, '0')}`;
                 }
             };
 
@@ -139,50 +144,41 @@
                 const checkbox = document.getElementById(`check-${id}`), row = checkbox.closest('.day-row'), inputs = row.querySelectorAll('.day-input');
                 checkbox.addEventListener('change', () => {
                     const isChecked = checkbox.checked;
-                    inputs.forEach(input => {
-                        input.disabled = !isChecked; input.classList.toggle(...disabledClasses, !isChecked);
-                        if(!isChecked) input.value = '';
-                    });
+                    inputs.forEach(input => { input.disabled = !isChecked; input.classList.toggle(...disabledClasses, !isChecked); if(!isChecked) input.value = ''; });
                     calcularTotal();
                 });
-                inputs.forEach(input => input.addEventListener('input', calcularTotal));
+                row.querySelectorAll('input[type="time"], input[type="number"]').forEach(input => input.addEventListener('input', calcularTotal));
                 document.getElementById(`col-${id}`).addEventListener('input', () => calcularFinColacion(id));
                 document.getElementById(`cin-${id}`).addEventListener('input', () => calcularFinColacion(id));
             });
             
+            // 1. CORRECCIÓN DE RÉPLICA
             document.getElementById('btn-replicar-lunes')?.addEventListener('click', () => {
                 if (!document.getElementById('check-lunes').checked) { alert('Completa y marca el Lunes para replicar.'); return; }
-                const valoresLunes = { entrada: document.getElementById('in-lunes').value, salida: document.getElementById('out-lunes').value, colacionMin: document.getElementById('col-lunes').value, colacionInicio: document.getElementById('cin-lunes').value, colacionFin: document.getElementById('cfn-lunes').value };
-                const diasSemana = ['martes', 'miercoles', 'jueves', 'viernes'], inputEvent = new Event('input', { bubbles: true }), changeEvent = new Event('change', { bubbles: true });
+                const valoresLunes = { in: 'in-lunes', out: 'out-lunes', col: 'col-lunes', cin: 'cin-lunes', cfn: 'cfn-lunes' };
+                const diasSemana = ['martes', 'miercoles', 'jueves', 'viernes'];
                 diasSemana.forEach(dia => {
                     const checkbox = document.getElementById(`check-${dia}`);
-                    if (!checkbox.checked) { checkbox.checked = true; checkbox.dispatchEvent(changeEvent); }
-                    Object.keys(valoresLunes).forEach(key => { 
-                        const idMap = { entrada: `in-${dia}`, salida: `out-${dia}`, colacionMin: `col-${dia}`, colacionInicio: `cin-${dia}`, colacionFin: `cfn-${dia}` };
-                        document.getElementById(idMap[key]).value = valoresLunes[key];
-                    });
-                    row.querySelectorAll('.day-input').forEach(i => i.dispatchEvent(inputEvent));
+                    if (!checkbox.checked) { checkbox.checked = true; checkbox.dispatchEvent(new Event('change', { bubbles: true })); }
+                    for (const key in valoresLunes) {
+                        const valorLunes = document.getElementById(valoresLunes[key]).value;
+                        document.getElementById(`${key}-${dia}`).value = valorLunes;
+                    }
                 });
-                calcularTotal();
+                calcularTotal(); // Actualización inmediata del total
             });
 
-            // Lógica de validación NO BLOQUEANTE
             document.getElementById('btn-validar').addEventListener('click', () => {
-                calcularTotal(); // Asegura que el cálculo esté al día
+                // La validación ahora solo depende del estado del botón, controlado por updateAlertsAndButton
                 const scheduleToSave = dias.map(dia => {
                     if (!document.getElementById(`check-${dia}`).checked) return null;
-                    return { day: dia.charAt(0).toUpperCase() + dia.slice(1), entry: document.getElementById(`in-${dia}`).value || 'N/A', exit: document.getElementById(`out-${dia}`).value || 'N/A', lunchDuration: document.getElementById(`col-${dia}`).value || '0', lunchEntry: document.getElementById(`cin-${dia}`).value || 'N/A', lunchExit: document.getElementById(`cfn-${dia}`).value || 'N/A', };
+                    return { day: dia.charAt(0).toUpperCase() + dia.slice(1), entry: document.getElementById(`in-${dia}`).value, exit: document.getElementById(`out-${dia}`).value, lunchDuration: document.getElementById(`col-${dia}`).value, lunchEntry: document.getElementById(`cin-${dia}`).value, lunchExit: document.getElementById(`cfn-${dia}`).value };
                 }).filter(Boolean);
-                if (scheduleToSave.length === 0) { alert("Debes definir un horario para al menos un día."); return; }
-
                 localStorage.setItem('anexoSchedule', JSON.stringify(scheduleToSave));
-                // Aquí iría la lógica para mostrar la siguiente sección (precios, auth, etc.)
-                // Por ejemplo: document.getElementById('precios').classList.remove('hidden');
-                alert("Horario validado y guardado. Procediendo al siguiente paso...");
+                alert("Horario validado. Procediendo a completar los datos del anexo...");
+                document.getElementById('main-calculator').classList.add('hidden');
+                document.getElementById('pdf-form-section').classList.remove('hidden');
             });
-
-            // La validación del formulario final (nombre, rut, etc.) ya se maneja por separado 
-            // y correctamente habilita/deshabilita el botón "Generar PDF" final.
         });
     </script>
 </body>
