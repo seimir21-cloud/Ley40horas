@@ -46,7 +46,6 @@ Deno.serve(async (req) => {
     const margin = 50;
 
     // ----- SOLUCIÓN: FUNCIÓN DE WORD-WRAP -----
-    // Esta función divide el texto para que no exceda el ancho máximo.
     const wrapText = (text: string, f: typeof font, size: number, maxWidth: number): string[] => {
         const words = text.split(' ');
         let line = '';
@@ -66,8 +65,8 @@ Deno.serve(async (req) => {
         return lines;
     };
 
-    // ----- SOLUCIÓN: GESTIÓN DE CURSOR 'y' DINÁMICO -----
-    let y = height - margin; // Empezar desde el margen superior
+    // ----- GESTIÓN DE CURSOR 'y' DINÁMICO -----
+    let y = height - margin;
 
     // Título
     page.drawText('ANEXO DE CONTRATO DE TRABAJO', {
@@ -76,22 +75,22 @@ Deno.serve(async (req) => {
       font: boldFont,
       size: 14,
     });
-    y -= 40; // Espacio después del título
+    y -= 40;
 
     // Párrafo introductorio con Word-Wrap
     const today = new Date();
     const formattedDate = `${today.getDate()} de ${today.toLocaleString('es-CL', { month: 'long' })} de ${today.getFullYear()}`;
     const introText = `En ${employerAddress}, a ${formattedDate}, entre ${employerName}, RUT ${employerRut}, representada legalmente por ${employerRepName}, RUT ${employerRepRut}, ambos con domicilio en ${employerAddress}, en adelante "el empleador"; y don(a) ${employeeName}, RUT ${employeeRut}, en adelante "el trabajador", se ha convenido el siguiente anexo al contrato de trabajo:`;
 
-    const maxWidth = width - margin * 2; // Ancho máximo respetando márgenes
+    const maxWidth = width - margin * 2;
     const wrappedIntro = wrapText(introText, font, fontSize, maxWidth);
 
     for (const line of wrappedIntro) {
       page.drawText(line, { x: margin, y, font, size: fontSize });
-      y -= (fontSize + 4); // Decrementar 'y' para la siguiente línea (interlineado normal)
+      y -= (fontSize + 4);
     }
 
-    y -= 25; // Espacio profesional entre párrafos
+    y -= 25;
 
     // Párrafo de acuerdo
     const agreementText = `Las partes acuerdan modificar la cláusula de jornada de trabajo, la cual quedará establecida de la siguiente manera, en conformidad con la Ley N°21.561:`;
@@ -102,26 +101,21 @@ Deno.serve(async (req) => {
       y -= (fontSize + 4);
     }
     
-    y -= 30; // Más espacio antes de la tabla
+    y -= 30;
 
-    // Lógica para la tabla (sin cambios, pero usando 'y' dinámico)
-    // ... aquí iría el código para dibujar la tabla del horario,
-    // actualizando 'y' después de cada fila dibujada.
-    // Por simplicidad, se omite la tabla compleja y se añade un marcador.
-    
+    // Variable no usada, pero con la sintaxis corregida para evitar el error de deploy.
     const scheduleText = schedule.map(d => 
       `${d.day}: ${d.entry} - ${d.exit} (Colación: ${d.lunchDuration || 'N/A'} min)`
-    ).join(''''\n'''');
+    ).join('\n');
     
-    // Ejemplo de cómo dibujarías las líneas del horario
+    // Dibujo de la tabla del horario
     let totalHoras = 0;
     for(const day of schedule) {
-      // Simulación de cálculo de horas para el total
       if(day.entry && day.exit) {
         const [h1, m1] = day.entry.split(':').map(Number);
         const [h2, m2] = day.exit.split(':').map(Number);
         let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
-        if(diff < 0) diff += 24 * 60; // Cruce de medianoche
+        if(diff < 0) diff += 24 * 60;
         diff -= (Number(day.lunchDuration) || 0);
         totalHoras += diff / 60;
       }
@@ -136,10 +130,6 @@ Deno.serve(async (req) => {
         font: boldFont,
         size: fontSize,
     });
-    
-
-    // ... aquí iría el resto de las cláusulas y las firmas,
-    // siempre usando la variable 'y' y decrementándola.
     
     const pdfBytes = await pdfDoc.save();
 
