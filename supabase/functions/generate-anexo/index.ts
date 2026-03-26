@@ -177,6 +177,10 @@ Deno.serve(async (req) => {
         font,
         size: signatureFontSize,
     });
+
+    // INSERCIÓN DE CÓDIGO PARA DUPLICAR PÁGINA
+    const [copiedPage] = await pdfDoc.copyPages(pdfDoc, [0]);
+    pdfDoc.addPage(copiedPage);
     
     const pdfBytes = await pdfDoc.save();
 
