@@ -119,46 +119,63 @@ Deno.serve(async (req) => {
         size: fontSize,
     });
 
-    // ==================================
-    // BLOQUE DE FIRMAS - POSICIÓN FIJA
-    // ==================================
-    const signatureY = 120;
+    // ===============================================
+    // BLOQUE DE FIRMAS PROFESIONAL - POSICIÓN FIJA
+    // ===============================================
+    const Y_BASE = 120;
     const signatureFontSize = 10;
-    const signatureLineLength = 200;
-    const signatureLineY = signatureY + 20;
+    const lineLength = 200;
+    const lineY = Y_BASE + 20;
+    const lineThickness = 1;
+    const lineColor = rgb(0, 0, 0);
 
-    const employerSignatureX = 50;
+    // --- COLUMNA IZQUIERDA (EMPLEADOR) ---
+    const employerX = 50;
     page.drawLine({
-      start: { x: employerSignatureX, y: signatureLineY },
-      end: { x: employerSignatureX + signatureLineLength, y: signatureLineY },
-      thickness: 1,
-      color: rgb(0, 0, 0),
+        start: { x: employerX, y: lineY },
+        end: { x: employerX + lineLength, y: lineY },
+        thickness: lineThickness,
+        color: lineColor,
     });
-    page.drawText(employerName, {
-      x: employerSignatureX,
-      y: signatureY,
-      font,
-      size: signatureFontSize,
+    page.drawText(`${employerName.toUpperCase()} R.P.`, {
+        x: employerX,
+        y: Y_BASE - 15,
+        font,
+        size: signatureFontSize,
     });
-    page.drawText(`p.p. ${employerRepName}`, {
-      x: employerSignatureX,
-      y: signatureY - (signatureFontSize + 2),
-      font,
-      size: signatureFontSize,
+    page.drawText(`p.p. ${employerRepName.toUpperCase()}`,
+     {
+        x: employerX,
+        y: Y_BASE - 30,
+        font,
+        size: signatureFontSize,
+    });
+    page.drawText(`RUT: ${employerRepRut.toUpperCase()}`, {
+        x: employerX,
+        y: Y_BASE - 45,
+        font,
+        size: signatureFontSize,
     });
 
-    const employeeSignatureX = 350;
+    // --- COLUMNA DERECHA (TRABAJADOR) ---
+    const employeeX = 350;
     page.drawLine({
-      start: { x: employeeSignatureX, y: signatureLineY },
-      end: { x: employeeSignatureX + signatureLineLength, y: signatureLineY },
-      thickness: 1,
-      color: rgb(0, 0, 0),
+        start: { x: employeeX, y: lineY },
+        end: { x: employeeX + lineLength, y: lineY },
+        thickness: lineThickness,
+        color: lineColor,
     });
-    page.drawText(employeeName, {
-      x: employeeSignatureX,
-      y: signatureY,
-      font,
-      size: signatureFontSize,
+    page.drawText(`${employeeName.toUpperCase()}`, {
+        x: employeeX,
+        y: Y_BASE - 15,
+        font,
+        size: signatureFontSize,
+    });
+    page.drawText(`RUT: ${employeeRut.toUpperCase()}`, {
+        x: employeeX,
+        y: Y_BASE - 30,
+        font,
+        size: signatureFontSize,
     });
     
     const pdfBytes = await pdfDoc.save();

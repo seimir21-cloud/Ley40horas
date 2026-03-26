@@ -87,8 +87,8 @@
                             <p id="employer-rep-rut-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
                         <div class="md:col-span-2">
-                            <label for="employer-address" class="block text-sm font-medium text-gray-700">Domicilio (Ciudad)</label>
-                            <input type="text" id="employer-address" required placeholder="Ej: Santiago" class="pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                            <label for="employer-address" class="block text-sm font-medium text-gray-700">Domicilio (Por favor ingresa Calle, Número, Comuna y Ciudad completo)</label>
+                            <input type="text" id="employer-address" required placeholder="Ej: Av. Providencia 123, Providencia, Santiago" class="pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
                             <p id="employer-address-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
                         <div class="md:col-span-2 mt-4 font-bold text-lg text-slate-700">Datos del Trabajador</div>
@@ -142,7 +142,7 @@
                         <input type="time" id="cfn-${id}" class="day-input w-full rounded-md border p-1 text-sm bg-gray-100 opacity-50" readonly disabled>
                     </div>
                 </div>
-                ${id === 'lunes' ? '<div class="px-4 pb-2 pt-1"><button type="button" id="btn-replicar-lunes" class="text-xs text-blue-600 hover:text-blue-800 font-medium">Replicar Lunes a Viernes</button></div>' : ''}`;
+                ${id === 'lunes' ? '<div class="px-4 pb-2 pt-1"><button type="button" id="btn-replicar-lunes" class="text-xs text-blue-600 hover:text-blue-800 font-medium">Replicar Lunes a Viernes</button></div>' : ''}`.trim();
             });
             calculatorDaysContainer.innerHTML = allDayRowsHTML;
             const timeToMinutes = (t) => { if (!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; };
