@@ -32,7 +32,6 @@ Deno.serve(async (req) => {
       employerAddress, employeeName, employeeRut, schedule
     } = payload;
     
-    // Validar datos básicos
     if (!employerName || !employeeName || !schedule) {
       throw new Error("Faltan datos esenciales para generar el anexo.");
     }
@@ -45,7 +44,6 @@ Deno.serve(async (req) => {
     const fontSize = 11;
     const margin = 50;
 
-    // ----- SOLUCIÓN: FUNCIÓN DE WORD-WRAP -----
     const wrapText = (text: string, f: typeof font, size: number, maxWidth: number): string[] => {
         const words = text.split(' ');
         let line = '';
@@ -65,10 +63,8 @@ Deno.serve(async (req) => {
         return lines;
     };
 
-    // ----- GESTIÓN DE CURSOR 'y' DINÁMICO -----
     let y = height - margin;
 
-    // Título
     page.drawText('ANEXO DE CONTRATO DE TRABAJO', {
       x: margin,
       y,
@@ -77,7 +73,6 @@ Deno.serve(async (req) => {
     });
     y -= 40;
 
-    // Párrafo introductorio con Word-Wrap
     const today = new Date();
     const formattedDate = `${today.getDate()} de ${today.toLocaleString('es-CL', { month: 'long' })} de ${today.getFullYear()}`;
     const introText = `En ${employerAddress}, a ${formattedDate}, entre ${employerName}, RUT ${employerRut}, representada legalmente por ${employerRepName}, RUT ${employerRepRut}, ambos con domicilio en ${employerAddress}, en adelante "el empleador"; y don(a) ${employeeName}, RUT ${employeeRut}, en adelante "el trabajador", se ha convenido el siguiente anexo al contrato de trabajo:`;
@@ -92,7 +87,6 @@ Deno.serve(async (req) => {
 
     y -= 25;
 
-    // Párrafo de acuerdo
     const agreementText = `Las partes acuerdan modificar la cláusula de jornada de trabajo, la cual quedará establecida de la siguiente manera, en conformidad con la Ley N°21.561:`;
     const wrappedAgreement = wrapText(agreementText, font, fontSize, maxWidth);
 
@@ -102,13 +96,7 @@ Deno.serve(async (req) => {
     }
     
     y -= 30;
-
-    // Variable no usada, pero con la sintaxis corregida para evitar el error de deploy.
-    const scheduleText = schedule.map(d => 
-      `${d.day}: ${d.entry} - ${d.exit} (Colación: ${d.lunchDuration || 'N/A'} min)`
-    ).join('\n');
     
-    // Dibujo de la tabla del horario
     let totalHoras = 0;
     for(const day of schedule) {
       if(day.entry && day.exit) {
@@ -129,6 +117,48 @@ Deno.serve(async (req) => {
         y,
         font: boldFont,
         size: fontSize,
+    });
+
+    // ==================================
+    // BLOQUE DE FIRMAS - POSICIÓN FIJA
+    // ==================================
+    const signatureY = 120;
+    const signatureFontSize = 10;
+    const signatureLineLength = 200;
+    const signatureLineY = signatureY + 20;
+
+    const employerSignatureX = 50;
+    page.drawLine({
+      start: { x: employerSignatureX, y: signatureLineY },
+      end: { x: employerSignatureX + signatureLineLength, y: signatureLineY },
+      thickness: 1,
+      color: rgb(0, 0, 0),
+    });
+    page.drawText(employerName, {
+      x: employerSignatureX,
+      y: signatureY,
+      font,
+      size: signatureFontSize,
+    });
+    page.drawText(`p.p. ${employerRepName}`, {
+      x: employerSignatureX,
+      y: signatureY - (signatureFontSize + 2),
+      font,
+      size: signatureFontSize,
+    });
+
+    const employeeSignatureX = 350;
+    page.drawLine({
+      start: { x: employeeSignatureX, y: signatureLineY },
+      end: { x: employeeSignatureX + signatureLineLength, y: signatureLineY },
+      thickness: 1,
+      color: rgb(0, 0, 0),
+    });
+    page.drawText(employeeName, {
+      x: employeeSignatureX,
+      y: signatureY,
+      font,
+      size: signatureFontSize,
     });
     
     const pdfBytes = await pdfDoc.save();
