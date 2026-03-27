@@ -119,10 +119,64 @@
           format: (r) => { const c = Rut.clean(r).toUpperCase(); if (c.length < 2) return c; const b = c.slice(0,-1), v = c.slice(-1); return new Intl.NumberFormat('es-CL').format(parseInt(b,10)) + '-' + v },
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const supabaseUrl = 'https://smodjwbmabffobonywad.supabase.co';
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb2Rqd2JtYWJmZm9ib255d2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjYyOTYsImV4cCI6MjA4OTM0MjI5Nn0.7nN75BHnzc7VzzdS9zy0Tvv8D43YjYK6PSLgeOp3uVg';
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+            // --- INICIO: LÓGICA DE REGRESO DE PAGO Y VERIFICACIÓN DE CRÉDITOS ---
+            const handlePageLoadFlow = async () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const paymentStatus = urlParams.get('status');
+                let showPdfForm = false;
+                let userCredits = 0;
+
+                const { data: { session } } = await supabase.auth.getSession();
+
+                if (session) {
+                    try {
+                        const { data, error } = await supabase
+                            .from('profiles')
+                            .select('pdf_credits')
+                            .eq('id', session.user.id)
+                            .single();
+
+                        if (error) console.error('Error fetching user credits:', error.message);
+                        
+                        if (data && data.pdf_credits > 0) {
+                            showPdfForm = true;
+                            userCredits = data.pdf_credits;
+                        }
+                    } catch(e) {
+                        console.error('Database error when fetching credits:', e.message);
+                    }
+                }
+
+                if (!showPdfForm && paymentStatus === 'approved') {
+                    showPdfForm = true;
+                }
+
+                if (showPdfForm) {
+                    document.getElementById('main-calculator').classList.add('hidden');
+                    document.getElementById('precios').classList.add('hidden');
+                    const pdfFormSection = document.getElementById('pdf-form-section');
+                    pdfFormSection.classList.remove('hidden');
+                    
+                    if (userCredits > 0) {
+                        const successBanner = document.getElementById('payment-success-banner');
+                        const creditsSpan = document.getElementById('pdf-credits-remaining');
+                        creditsSpan.textContent = userCredits;
+                        successBanner.classList.remove('hidden');
+                    }
+
+                    pdfFormSection.scrollIntoView({ behavior: 'smooth' });
+
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+            };
+
+            await handlePageLoadFlow();
+            // --- FIN: LÓGICA DE REGRESO DE PAGO ---
 
             const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
             const calculatorDaysContainer = document.getElementById('calculator-days-container');
