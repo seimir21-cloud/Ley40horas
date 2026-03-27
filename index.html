@@ -285,34 +285,60 @@
             renderPlans(); 
 
             preciosContainer.addEventListener('click', async (e) => {
+                // Delegación de eventos: actuar solo si se hizo clic en un botón de compra
                 if (e.target && e.target.classList.contains('buy-button')) {
+                    // 1. Prevenir cualquier acción por defecto
+                    e.preventDefault();
+
                     const button = e.target;
                     const plan = button.dataset.plan;
+
+                    // Deshabilitar botón para evitar clics múltiples
                     button.disabled = true;
                     button.textContent = 'Verificando...';
+
                     try {
+                        // 2. Consultar la sesión del usuario
                         const { data: { session } } = await supabase.auth.getSession();
+
+                        // 3. SI NO HAY SESIÓN:
                         if (!session) {
-                            authContainer.classList.remove('hidden');
-                            authContainer.scrollIntoView({ behavior: 'smooth' });
+                            const authSection = document.getElementById('auth-section');
+                            if (authSection) {
+                                // Mostrar el formulario de login existente
+                                authSection.classList.remove('hidden');
+                                authSection.scrollIntoView({ behavior: 'smooth' });
+                            }
+                            
+                            // Restaurar el botón y detener la ejecución
                             button.disabled = false;
                             button.textContent = 'Comprar y Generar Anexo';
                             return;
                         }
+
+                        // 4. SI SÍ HAY SESIÓN (comportamiento original):
                         button.textContent = 'Redirigiendo al pago...';
                         const response = await fetch(`${supabaseUrl}/functions/v1/create-payment`, {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': supabaseKey },
+                            headers: { 
+                                'Content-Type': 'application/json', 
+                                'Authorization': `Bearer ${session.access_token}`, 
+                                'apikey': supabaseKey 
+                            },
                             body: JSON.stringify({ plan: plan })
                         });
+
                         if (!response.ok) {
                             const errorData = await response.json();
                             throw new Error(errorData.error || 'No se pudo iniciar el proceso de pago.');
                         }
+
                         const { payment_url } = await response.json();
                         window.location.href = payment_url;
+
                     } catch (error) {
                         alert('Error: ' + error.message);
+                        // En caso de error, restaurar el botón
                         button.disabled = false;
                         button.textContent = 'Comprar y Generar Anexo';
                     }
@@ -343,7 +369,7 @@
             document.getElementById('btn-validar').addEventListener('click', () => {
                 const scheduleToSave = dias.map(dia => {
                     if (!document.getElementById(`check-${dia}`).checked) return null;
-                    return { day: dia.charAt(0).toUpperCase() + dia.slice(1), entry: document.getElementById(`in-${dia}`).value, exit: document.getElementById(`out-${dia}`).value, lunchDuration: document.getElementById(`col-${dia}`).value, lunchEntry: document.getElementById(`cin-${dia}`).value, lunchExit: document.getElementById(`cfn-${dia}`).value };
+                    return { day: dia.charAt(0).toUpperCase() + id.slice(1), entry: document.getElementById(`in-${dia}`).value, exit: document.getElementById(`out-${dia}`).value, lunchDuration: document.getElementById(`col-${dia}`).value, lunchEntry: document.getElementById(`cin-${dia}`).value, lunchExit: document.getElementById(`cfn-${dia}`).value };
                 }).filter(Boolean);
                 localStorage.setItem('anexoSchedule', JSON.stringify(scheduleToSave));
                 document.getElementById('precios').classList.remove('hidden');
