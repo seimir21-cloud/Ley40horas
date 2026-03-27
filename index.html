@@ -369,7 +369,7 @@
             document.getElementById('btn-validar').addEventListener('click', () => {
                 const scheduleToSave = dias.map(dia => {
                     if (!document.getElementById(`check-${dia}`).checked) return null;
-                    return { day: dia.charAt(0).toUpperCase() + id.slice(1), entry: document.getElementById(`in-${dia}`).value, exit: document.getElementById(`out-${dia}`).value, lunchDuration: document.getElementById(`col-${dia}`).value, lunchEntry: document.getElementById(`cin-${dia}`).value, lunchExit: document.getElementById(`cfn-${dia}`).value };
+                    return { day: dia.charAt(0).toUpperCase() + dia.slice(1), entry: document.getElementById(`in-${dia}`).value, exit: document.getElementById(`out-${dia}`).value, lunchDuration: document.getElementById(`col-${dia}`).value, lunchEntry: document.getElementById(`cin-${dia}`).value, lunchExit: document.getElementById(`cfn-${dia}`).value };
                 }).filter(Boolean);
                 localStorage.setItem('anexoSchedule', JSON.stringify(scheduleToSave));
                 document.getElementById('precios').classList.remove('hidden');
