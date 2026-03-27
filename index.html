@@ -215,6 +215,77 @@
                 });
                 calcularTotal();
             });
+
+            // --- INICIO: LÓGICA DE PRECIOS Y PAGO ---
+
+            const preciosContainer = document.getElementById('precios');
+            const authContainer = document.getElementById('auth-section');
+
+            const plans = [
+                { id: 'basico', title: 'Anexo PDF Básico', description: 'Generación de 1 Anexo de Contrato PDF.', price: 4990 },
+                { id: 'pack_5', title: 'Paquete 5 Anexos PDF', description: 'Paquete de 5 créditos para generar Anexos de Contrato PDF.', price: 19990 }
+            ];
+
+            function renderPlans() {
+                let plansHTML = `
+                    <h2 class="text-3xl font-bold text-center text-navy mb-10">Elige un Plan Para Continuar</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+                `;
+                plans.forEach(plan => {
+                    plansHTML += `
+                        <div class="bg-white rounded-xl shadow-lg p-8 border-t-4 border-premium flex flex-col">
+                            <h3 class="text-2xl font-bold text-navy">${plan.title}</h3>
+                            <p class="text-slate-600 mt-2 flex-grow">${plan.description}</p>
+                            <div class="my-6 text-center">
+                                <span class="text-5xl font-black text-navy">$${new Intl.NumberFormat('es-CL').format(plan.price)}</span>
+                                <span class="text-slate-500 font-medium"> CLP</span>
+                            </div>
+                            <button data-plan="${plan.id}" class="buy-button w-full bg-navy text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-50">Comprar y Generar Anexo</button>
+                        </div>
+                    `;
+                });
+                plansHTML += `</div>`;
+                preciosContainer.innerHTML = plansHTML;
+            }
+
+            renderPlans(); 
+
+            preciosContainer.addEventListener('click', async (e) => {
+                if (e.target && e.target.classList.contains('buy-button')) {
+                    const button = e.target;
+                    const plan = button.dataset.plan;
+                    button.disabled = true;
+                    button.textContent = 'Verificando...';
+                    try {
+                        const { data: { session } } = await supabase.auth.getSession();
+                        if (!session) {
+                            authContainer.innerHTML = '<div class="max-w-md mx-auto bg-red-50 border-l-4 border-danger text-danger-700 p-6 rounded-lg shadow-md"><h3 class="text-xl font-bold">Inicia Sesión Para Continuar</h3><p class="mt-2">El proceso de pago requiere que estés autenticado. Por favor, implementa la interfaz de usuario de autenticación de Supabase en esta sección para permitir que los usuarios inicien sesión.</p></div>';
+                            authContainer.classList.remove('hidden');
+                            authContainer.scrollIntoView({ behavior: 'smooth' });
+                            button.disabled = false;
+                            button.textContent = 'Comprar y Generar Anexo';
+                            return;
+                        }
+                        button.textContent = 'Redirigiendo al pago...';
+                        const response = await fetch(`${supabaseUrl}/functions/v1/create-payment`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': supabaseKey },
+                            body: JSON.stringify({ plan: plan })
+                        });
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.error || 'No se pudo iniciar el proceso de pago.');
+                        }
+                        const { payment_url } = await response.json();
+                        window.location.href = payment_url;
+                    } catch (error) {
+                        alert('Error: ' + error.message);
+                        button.disabled = false;
+                        button.textContent = 'Comprar y Generar Anexo';
+                    }
+                }
+            });
+
             document.getElementById('btn-validar').addEventListener('click', () => {
                 const scheduleToSave = dias.map(dia => {
                     if (!document.getElementById(`check-${dia}`).checked) return null;
@@ -224,6 +295,8 @@
                 document.getElementById('precios').classList.remove('hidden');
                 document.getElementById('precios').scrollIntoView({ behavior: 'smooth' });
             });
+
+            // --- FIN: LÓGICA DE PRECIOS Y PAGO ---
 
             const pdfForm = document.getElementById('pdf-form');
             if (pdfForm) {
@@ -300,7 +373,6 @@
                         }
                         
                         const blob = await response.blob();
-                        // EL TRUCO PARA IOS: Usar octet-stream engaña a Safari para forzar la descarga directa
                         const fileBlob = new Blob([blob], { type: 'application/octet-stream' });
                         const url = window.URL.createObjectURL(fileBlob);
                         const link = document.createElement('a');
