@@ -137,14 +137,13 @@ Deno.serve(async (req) => {
         thickness: lineThickness,
         color: lineColor,
     });
-    page.drawText(`${employerName.toUpperCase()} R.P.`, {
+    page.drawText(`Empleador: ${employerName.toUpperCase()}`, {
         x: employerX,
         y: Y_BASE - 15,
         font,
         size: signatureFontSize,
     });
-    page.drawText(`p.p. ${employerRepName.toUpperCase()}`,
-     {
+    page.drawText(`Representante: ${employerRepName.toUpperCase()}`, {
         x: employerX,
         y: Y_BASE - 30,
         font,
