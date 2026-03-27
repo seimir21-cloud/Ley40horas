@@ -55,7 +55,18 @@
             </form>
         </div>
         <div id="precios" class="max-w-5xl mx-auto mt-12 p-8 hidden"></div>
-        <div id="auth-section" class="max-w-5xl mx-auto mt-12 p-8 hidden"></div>
+        <div id="auth-section" class="max-w-5xl mx-auto mt-12 p-8 hidden">
+            <div class="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8 border-t-4 border-navy">
+                <h2 class="text-2xl font-bold text-center text-navy mb-2">Inicia Sesión para Continuar</h2>
+                <p class="text-center text-slate-600 mb-6">Te enviaremos un enlace mágico a tu correo para un acceso rápido y seguro.</p>
+                <form id="auth-form">
+                    <label for="email-input" class="block text-sm font-medium text-gray-700">Tu Correo Electrónico</label>
+                    <input type="email" id="email-input" required placeholder="tu@correo.com" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm focus:border-navy focus:ring-navy">
+                    <button type="submit" id="send-magic-link-button" class="mt-4 w-full bg-navy text-white font-bold py-3 px-4 rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-50">Enviar Enlace Mágico</button>
+                </form>
+                 <div id="auth-feedback" class="mt-4 text-center text-sm"></div>
+            </div>
+        </div>
         <div id="pdf-form-section" class="max-w-5xl mx-auto mt-12 p-8 hidden">
             <div id="payment-success-banner" class="hidden bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-lg">
                 <p class="font-bold">¡Bienvenido de vuelta!</p>
@@ -124,59 +135,33 @@
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb2Rqd2JtYWJmZm9ib255d2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjYyOTYsImV4cCI6MjA4OTM0MjI5Nn0.7nN75BHnzc7VzzdS9zy0Tvv8D43YjYK6PSLgeOp3uVg';
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-            // --- INICIO: LÓGICA DE REGRESO DE PAGO Y VERIFICACIÓN DE CRÉDITOS ---
             const handlePageLoadFlow = async () => {
                 const urlParams = new URLSearchParams(window.location.search);
-                const paymentStatus = urlParams.get('status');
-                let showPdfForm = false;
-                let userCredits = 0;
-
+                const paymentStatus = urlParams.get('status';
+                let showPdfForm = false, userCredits = 0;
                 const { data: { session } } = await supabase.auth.getSession();
-
                 if (session) {
                     try {
-                        const { data, error } = await supabase
-                            .from('profiles')
-                            .select('pdf_credits')
-                            .eq('id', session.user.id)
-                            .single();
-
+                        const { data, error } = await supabase.from('profiles').select('pdf_credits').eq('id', session.user.id).single();
                         if (error) console.error('Error fetching user credits:', error.message);
-                        
-                        if (data && data.pdf_credits > 0) {
-                            showPdfForm = true;
-                            userCredits = data.pdf_credits;
-                        }
-                    } catch(e) {
-                        console.error('Database error when fetching credits:', e.message);
-                    }
+                        if (data && data.pdf_credits > 0) { showPdfForm = true; userCredits = data.pdf_credits; }
+                    } catch(e) { console.error('Database error:', e.message); }
                 }
-
-                if (!showPdfForm && paymentStatus === 'approved') {
-                    showPdfForm = true;
-                }
-
+                if (!showPdfForm && paymentStatus === 'approved') showPdfForm = true;
                 if (showPdfForm) {
                     document.getElementById('main-calculator').classList.add('hidden');
                     document.getElementById('precios').classList.add('hidden');
                     const pdfFormSection = document.getElementById('pdf-form-section');
                     pdfFormSection.classList.remove('hidden');
-                    
                     if (userCredits > 0) {
-                        const successBanner = document.getElementById('payment-success-banner');
-                        const creditsSpan = document.getElementById('pdf-credits-remaining');
-                        creditsSpan.textContent = userCredits;
-                        successBanner.classList.remove('hidden');
+                        document.getElementById('pdf-credits-remaining').textContent = userCredits;
+                        document.getElementById('payment-success-banner').classList.remove('hidden');
                     }
-
                     pdfFormSection.scrollIntoView({ behavior: 'smooth' });
-
                     window.history.replaceState({}, document.title, window.location.pathname);
                 }
             };
-
             await handlePageLoadFlow();
-            // --- FIN: LÓGICA DE REGRESO DE PAGO ---
 
             const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
             const calculatorDaysContainer = document.getElementById('calculator-days-container');
@@ -270,16 +255,12 @@
                 calcularTotal();
             });
 
-            // --- INICIO: LÓGICA DE PRECIOS Y PAGO ---
-
             const preciosContainer = document.getElementById('precios');
             const authContainer = document.getElementById('auth-section');
-
             const plans = [
                 { id: 'basico', title: 'Anexo PDF Básico', description: 'Generación de 1 Anexo de Contrato PDF.', price: 4990 },
                 { id: 'pack_5', title: 'Paquete 5 Anexos PDF', description: 'Paquete de 5 créditos para generar Anexos de Contrato PDF.', price: 19990 }
             ];
-
             function renderPlans() {
                 let plansHTML = `
                     <h2 class="text-3xl font-bold text-center text-navy mb-10">Elige un Plan Para Continuar</h2>
@@ -301,7 +282,6 @@
                 plansHTML += `</div>`;
                 preciosContainer.innerHTML = plansHTML;
             }
-
             renderPlans(); 
 
             preciosContainer.addEventListener('click', async (e) => {
@@ -313,7 +293,6 @@
                     try {
                         const { data: { session } } = await supabase.auth.getSession();
                         if (!session) {
-                            authContainer.innerHTML = '<div class="max-w-md mx-auto bg-red-50 border-l-4 border-danger text-danger-700 p-6 rounded-lg shadow-md"><h3 class="text-xl font-bold">Inicia Sesión Para Continuar</h3><p class="mt-2">El proceso de pago requiere que estés autenticado. Por favor, implementa la interfaz de usuario de autenticación de Supabase en esta sección para permitir que los usuarios inicien sesión.</p></div>';
                             authContainer.classList.remove('hidden');
                             authContainer.scrollIntoView({ behavior: 'smooth' });
                             button.disabled = false;
@@ -340,6 +319,27 @@
                 }
             });
 
+             document.getElementById('auth-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email-input').value;
+                const button = document.getElementById('send-magic-link-button');
+                const feedback = document.getElementById('auth-feedback');
+                button.disabled = true;
+                try {
+                    const { error } = await supabase.auth.signInWithOtp({ 
+                        email: email,
+                        options: { emailRedirectTo: window.location.href } 
+                    });
+                    if (error) throw error;
+                    feedback.textContent = '¡Revisa tu correo! Te hemos enviado un enlace para iniciar sesión.';
+                    feedback.className = 'mt-4 text-center text-sm text-green-600';
+                } catch (error) {
+                    feedback.textContent = `Error: ${error.message}`;
+                    feedback.className = 'mt-4 text-center text-sm text-red-600';
+                    button.disabled = false;
+                } 
+            });
+
             document.getElementById('btn-validar').addEventListener('click', () => {
                 const scheduleToSave = dias.map(dia => {
                     if (!document.getElementById(`check-${dia}`).checked) return null;
@@ -349,8 +349,6 @@
                 document.getElementById('precios').classList.remove('hidden');
                 document.getElementById('precios').scrollIntoView({ behavior: 'smooth' });
             });
-
-            // --- FIN: LÓGICA DE PRECIOS Y PAGO ---
 
             const pdfForm = document.getElementById('pdf-form');
             if (pdfForm) {
@@ -393,7 +391,7 @@
                         if (!session) throw new Error('Sesión no encontrada. Por favor, inicie sesión de nuevo.');
 
                         const savedSchedule = localStorage.getItem('anexoSchedule');
-                        if (!savedSchedule) throw new Error('Datos de horario no encontrados en el localStorage.');
+                        if (!savedSchedule) throw new Error('Datos de horario no encontrados.');
 
                         const payload = {
                             employerName: document.getElementById('employer-name').value,
@@ -418,12 +416,7 @@
 
                         if (!response.ok) {
                             const errText = await response.text();
-                            try {
-                                const errJson = JSON.parse(errText);
-                                throw new Error(errJson.error || 'El servidor devolvió una respuesta de error.');
-                            } catch {
-                                throw new Error(errText || 'Error desconocido del servidor.');
-                            }
+                            try { throw new Error(JSON.parse(errText).error || errText); } catch { throw new Error(errText); }
                         }
                         
                         const blob = await response.blob();
@@ -442,7 +435,7 @@
                         alert("¡Anexo PDF generado con éxito!");
 
                     } catch (error) {
-                        alert("Hubo un problema al generar el PDF: " + error.message);
+                        alert("Hubo un problema: " + error.message);
                     } finally {
                         generatePdfButton.disabled = false;
                         generatePdfButton.textContent = 'Generar PDF';
