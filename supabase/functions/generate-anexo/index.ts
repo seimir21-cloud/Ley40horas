@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
 
   try {
     const payload: AnexoPayload = await req.json();
-    const {
+    let {
       employerName, employerRut, employerRepName, employerRepRut,
       employerAddress, employeeName, employeeRut, schedule
     } = payload;
@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
 
     const today = new Date();
     const formattedDate = `${today.getDate()} de ${today.toLocaleString('es-CL', { month: 'long' })} de ${today.getFullYear()}`;
-    const introText = `En ${employerAddress}, a ${formattedDate}, entre ${employerName}, RUT ${employerRut}, representada legalmente por ${employerRepName}, RUT ${employerRepRut}, ambos con domicilio en ${employerAddress}, en adelante "el empleador"; y don(a) ${employeeName}, RUT ${employeeRut}, en adelante "el trabajador", se ha convenido el siguiente anexo al contrato de trabajo:`;
+    const introText = `En ${employerAddress.trim()}, a ${formattedDate}, entre ${employerName.toUpperCase()}, RUT ${employerRut.toUpperCase()}, representada legalmente por ${employerRepName.toUpperCase()}, RUT ${employerRepRut.toUpperCase()}, ambos con domicilio en ${employerAddress.trim()}, en adelante "el empleador"; y don(a) ${employeeName.toUpperCase()}, RUT ${employeeRut.toUpperCase()}, en adelante "el trabajador", se ha convenido el siguiente anexo al contrato de trabajo:`;
 
     const maxWidth = width - margin * 2;
     const wrappedIntro = wrapText(introText, font, fontSize, maxWidth);
@@ -111,13 +111,22 @@ Deno.serve(async (req) => {
        page.drawText(dayText, { x: margin, y, font, size: fontSize });
        y -= (fontSize + 5);
     }
-     y -= 15;
+    y -= 15;
     page.drawText(`Total de horas semanales: ${totalHoras.toFixed(1)} horas.`, {
         x: margin,
         y,
         font: boldFont,
         size: fontSize,
     });
+
+    // INSERCIÓN DE CLÁUSULA DE CIERRE
+    y -= 40; 
+    const closingText = "En comprobante de lo acordado, y en señal de aceptación, las partes ratifican y firman el presente anexo.";
+    const wrappedClosing = wrapText(closingText, font, fontSize, maxWidth);
+    for (const line of wrappedClosing) {
+      page.drawText(line, { x: margin, y, font, size: fontSize });
+      y -= (fontSize + 4);
+    }
 
     // ===============================================
     // BLOQUE DE FIRMAS PROFESIONAL - POSICIÓN FIJA
