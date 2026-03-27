@@ -137,7 +137,7 @@
 
             const handlePageLoadFlow = async () => {
                 const urlParams = new URLSearchParams(window.location.search);
-                const paymentStatus = urlParams.get('status';
+                const paymentStatus = urlParams.get('status');
                 let showPdfForm = false, userCredits = 0;
                 const { data: { session } } = await supabase.auth.getSession();
                 if (session) {
