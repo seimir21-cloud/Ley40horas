@@ -298,16 +298,18 @@
                                 throw new Error(errText || 'Error desconocido del servidor.');
                             }
                         }
-
-                        const pdfBlob = await response.blob();
-                        const blobUrl = URL.createObjectURL(pdfBlob);
+                        
+                        const blob = await response.blob();
+                        // EL TRUCO PARA IOS: Usar octet-stream engaña a Safari para forzar la descarga directa
+                        const fileBlob = new Blob([blob], { type: 'application/octet-stream' });
+                        const url = window.URL.createObjectURL(fileBlob);
                         const link = document.createElement('a');
-                        link.href = blobUrl;
-                        link.download = `Anexo_Contrato_Jornada_Laboral.pdf`;
+                        link.href = url;
+                        link.setAttribute('download', 'Anexo_Ley_40_Horas.pdf');
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
-                        URL.revokeObjectURL(blobUrl);
+                        window.URL.revokeObjectURL(url);
 
                         localStorage.removeItem('anexoSchedule');
 
