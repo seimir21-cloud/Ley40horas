@@ -287,18 +287,18 @@
             preciosContainer.addEventListener('click', async (e) => {
                 // Delegación de eventos: actuar solo si se hizo clic en un botón de compra
                 if (e.target && e.target.classList.contains('buy-button')) {
-                    // 1. Prevenir cualquier acción por defecto
+                    // 1. Prevenir cualquier acción por defecto, como un submit o navegación
                     e.preventDefault();
 
                     const button = e.target;
                     const plan = button.dataset.plan;
 
-                    // Deshabilitar botón para evitar clics múltiples
+                    // Deshabilitar botón para evitar clics múltiples mientras se procesa
                     button.disabled = true;
                     button.textContent = 'Verificando...';
 
                     try {
-                        // 2. Consultar la sesión del usuario
+                        // 2. Consultar la sesión actual del usuario con Supabase
                         const { data: { session } } = await supabase.auth.getSession();
 
                         // 3. SI NO HAY SESIÓN:
@@ -307,12 +307,15 @@
                             if (authSection) {
                                 // Mostrar el formulario de login existente
                                 authSection.classList.remove('hidden');
+                                // Hacer scroll suave hacia el formulario
                                 authSection.scrollIntoView({ behavior: 'smooth' });
                             }
                             
-                            // Restaurar el botón y detener la ejecución
+                            // Reactivar el botón para que el usuario pueda intentarlo de nuevo
                             button.disabled = false;
                             button.textContent = 'Comprar y Generar Anexo';
+
+                            // Detener la ejecución para no proceder al pago
                             return;
                         }
 
@@ -334,11 +337,12 @@
                         }
 
                         const { payment_url } = await response.json();
+                        // Redirigir al usuario a la pasarela de pago
                         window.location.href = payment_url;
 
                     } catch (error) {
                         alert('Error: ' + error.message);
-                        // En caso de error, restaurar el botón
+                        // En caso de cualquier error, restaurar el estado del botón
                         button.disabled = false;
                         button.textContent = 'Comprar y Generar Anexo';
                     }
