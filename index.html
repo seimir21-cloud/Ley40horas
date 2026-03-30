@@ -135,6 +135,28 @@
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb2Rqd2JtYWJmZm9ib255d2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjYyOTYsImV4cCI6MjA4OTM0MjI5Nn0.7nN75BHnzc7VzzdS9zy0Tvv8D43YjYK6PSLgeOp3uVg';
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+            supabase.auth.onAuthStateChange((event, session) => {
+                if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+                    if (session) {
+                        console.log('Sesión capturada globalmente:', session.user.email);
+                        
+                        // Ocultar login si estaba visible
+                        const authSection = document.getElementById('auth-section');
+                        if (authSection) {
+                            authSection.classList.add('hidden');
+                            authSection.style.display = 'none';
+                        }
+                        
+                        // Asegurar que los precios sean visibles
+                        const preciosContainer = document.getElementById('precios');
+                        if (preciosContainer) {
+                            preciosContainer.classList.remove('hidden');
+                            preciosContainer.style.display = 'block';
+                        }
+                    }
+                }
+            });
+
             const handlePageLoadFlow = async () => {
                 const urlParams = new URLSearchParams(window.location.search);
                 const paymentStatus = urlParams.get('status');
