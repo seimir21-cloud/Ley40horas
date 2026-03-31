@@ -129,37 +129,6 @@
           calculateDV: (r) => { let M = 0, S = 1; for (let T = parseInt(r, 10); T; T = Math.floor(T/10)) S = (S + T % 10 * (9 - M++ % 6)) % 11; return S ? String(S - 1) : 'k' },
           format: (r) => { const c = Rut.clean(r).toUpperCase(); if (c.length < 2) return c; const b = c.slice(0,-1), v = c.slice(-1); return new Intl.NumberFormat('es-CL').format(parseInt(b,10)) + '-' + v },
         }
-        
-        window.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const status = urlParams.get('status');
-
-            if (status === 'approved') {
-                console.log('Pago aprobado detectado en la URL');
-                
-                // 1. Ocultar la sección de precios
-                const preciosContainer = document.getElementById('precios');
-                if (preciosContainer) {
-                    preciosContainer.classList.add('hidden');
-                    preciosContainer.style.display = 'none';
-                }
-
-                // 2. Mostrar la sección del formulario del anexo
-                const formSection = document.getElementById('pdf-form-section'); 
-                if (formSection) {
-                    formSection.classList.remove('hidden');
-                    formSection.style.display = 'block';
-                    
-                    // 3. Hacer scroll suave hacia el formulario
-                    setTimeout(() => {
-                        formSection.scrollIntoView({ behavior: 'smooth' });
-                    }, 500);
-                }
-
-                // 4. Limpiar la URL para que no vuelva a dispararse si el usuario recarga la página
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-        });
 
         document.addEventListener('DOMContentLoaded', async () => {
             const supabaseUrl = 'https://smodjwbmabffobonywad.supabase.co';
