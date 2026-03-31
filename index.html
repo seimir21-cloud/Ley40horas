@@ -131,28 +131,23 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
+            let globalSchedule = null;
+
             const supabaseUrl = 'https://smodjwbmabffobonywad.supabase.co';
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb2Rqd2JtYWJmZm9ib255d2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjYyOTYsImV4cCI6MjA4OTM0MjI5Nn0.7nN75BHnzc7VzzdS9zy0Tvv8D43YjYK6PSLgeOp3uVg';
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
             supabase.auth.onAuthStateChange((event, session) => {
-                if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-                    if (session) {
-                        console.log('Sesión capturada globalmente:', session.user.email);
-                        
-                        // Ocultar login si estaba visible
-                        const authSection = document.getElementById('auth-section');
-                        if (authSection) {
-                            authSection.classList.add('hidden');
-                            authSection.style.display = 'none';
-                        }
-                        
-                        // Asegurar que los precios sean visibles
-                        const preciosContainer = document.getElementById('precios');
-                        if (preciosContainer) {
-                            preciosContainer.classList.remove('hidden');
-                            preciosContainer.style.display = 'block';
-                        }
+                if (event === 'SIGNED_IN') {
+                    const authSection = document.getElementById('auth-section');
+                    if (authSection) authSection.classList.add('hidden');
+                    const preciosContainer = document.getElementById('precios');
+                    if (preciosContainer) preciosContainer.classList.remove('hidden');
+                    const pendingPlan = localStorage.getItem('pendingPlan');
+                    if (pendingPlan) {
+                        const buyButton = document.querySelector(`button[data-plan='${pendingPlan}']`);
+                        if (buyButton) buyButton.click();
+                        localStorage.removeItem('pendingPlan');
                     }
                 }
             });
@@ -160,17 +155,25 @@
             const handlePageLoadFlow = async () => {
                 const urlParams = new URLSearchParams(window.location.search);
                 const paymentStatus = urlParams.get('status');
-                let showPdfForm = false, userCredits = 0;
+                if (paymentStatus !== 'approved') return;
+
                 const { data: { session } } = await supabase.auth.getSession();
-                if (session) {
+                if (!session) return;
+
+                console.log('Payment approved. Restoring schedule from Supabase...');
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (user && user.user_metadata && user.user_metadata.anexoSchedule) {
+                    globalSchedule = user.user_metadata.anexoSchedule;
+                    console.log('Schedule restored successfully to in-memory state.', globalSchedule);
+
+                    let userCredits = 0;
                     try {
                         const { data, error } = await supabase.from('profiles').select('pdf_credits').eq('id', session.user.id).single();
-                        if (error) console.error('Error fetching user credits:', error.message);
-                        if (data && data.pdf_credits > 0) { showPdfForm = true; userCredits = data.pdf_credits; }
-                    } catch(e) { console.error('Database error:', e.message); }
-                }
-                if (!showPdfForm && paymentStatus === 'approved') showPdfForm = true;
-                if (showPdfForm) {
+                        if (error) throw error;
+                        if (data) userCredits = data.pdf_credits;
+                    } catch(e) { console.error('Error fetching user credits:', e.message); }
+
                     document.getElementById('main-calculator').classList.add('hidden');
                     document.getElementById('precios').classList.add('hidden');
                     const pdfFormSection = document.getElementById('pdf-form-section');
@@ -181,6 +184,9 @@
                     }
                     pdfFormSection.scrollIntoView({ behavior: 'smooth' });
                     window.history.replaceState({}, document.title, window.location.pathname);
+                } else {
+                    console.error('CRITICAL: Payment approved but failed to restore schedule from Supabase.');
+                    alert('Error crítico: El pago fue aprobado, pero no pudimos recuperar los datos de tu horario. Por favor, contacta a soporte.');
                 }
             };
             await handlePageLoadFlow();
@@ -307,64 +313,55 @@
             renderPlans(); 
 
             preciosContainer.addEventListener('click', async (e) => {
-                // Delegación de eventos: actuar solo si se hizo clic en un botón de compra
                 if (e.target && e.target.classList.contains('buy-button')) {
-                    // 1. Prevenir cualquier acción por defecto, como un submit o navegación
                     e.preventDefault();
-
                     const button = e.target;
                     const plan = button.dataset.plan;
-
-                    // Deshabilitar botón para evitar clics múltiples mientras se procesa
                     button.disabled = true;
                     button.textContent = 'Verificando...';
 
+                    const { data: { session } } = await supabase.auth.getSession();
+
+                    if (!session) {
+                        localStorage.setItem('pendingPlan', plan);
+                        authContainer.classList.remove('hidden');
+                        authContainer.scrollIntoView({ behavior: 'smooth' });
+                        button.disabled = false;
+                        button.textContent = 'Comprar y Generar Anexo';
+                        return;
+                    }
+
+                    if (!globalSchedule) {
+                        alert('Error: Datos de horario no encontrados. Por favor, vuelva a la calculadora y valide el horario.');
+                        button.disabled = false;
+                        button.textContent = 'Comprar y Generar Anexo';
+                        return;
+                    }
+
                     try {
-                        // 2. Consultar la sesión actual del usuario con Supabase
-                        const { data: { session } } = await supabase.auth.getSession();
-
-                        // 3. SI NO HAY SESIÓN:
-                        if (!session) {
-                            const authSection = document.getElementById('auth-section');
-                            if (authSection) {
-                                // Mostrar el formulario de login existente
-                                authSection.classList.remove('hidden');
-                                // Hacer scroll suave hacia el formulario
-                                authSection.scrollIntoView({ behavior: 'smooth' });
-                            }
-                            
-                            // Reactivar el botón para que el usuario pueda intentarlo de nuevo
-                            button.disabled = false;
-                            button.textContent = 'Comprar y Generar Anexo';
-
-                            // Detener la ejecución para no proceder al pago
-                            return;
-                        }
-
-                        // 4. SI SÍ HAY SESIÓN (comportamiento original):
+                        console.log('Saving schedule to Supabase user metadata...');
+                        const { error: updateError } = await supabase.auth.updateUser({ data: { anexoSchedule: globalSchedule } });
+                        if (updateError) throw new Error('No se pudo guardar el horario antes del pago: ' + updateError.message);
+                        
                         button.textContent = 'Redirigiendo al pago...';
                         const response = await fetch(`${supabaseUrl}/functions/v1/create-payment`, {
                             method: 'POST',
                             headers: { 
                                 'Content-Type': 'application/json', 
-                                'Authorization': `Bearer ${session.access_token}`, 
-                                'apikey': supabaseKey 
+                                'Authorization': `Bearer ${session.access_token}`,
+                                'apikey': supabaseKey
                             },
                             body: JSON.stringify({ plan: plan })
                         });
-
                         if (!response.ok) {
                             const errorData = await response.json();
                             throw new Error(errorData.error || 'No se pudo iniciar el proceso de pago.');
                         }
-
                         const { payment_url } = await response.json();
-                        // Redirigir al usuario a la pasarela de pago
                         window.location.href = payment_url;
-
                     } catch (error) {
                         alert('Error: ' + error.message);
-                        // En caso de cualquier error, restaurar el estado del botón
+                        await supabase.auth.updateUser({ data: { anexoSchedule: null } });
                         button.disabled = false;
                         button.textContent = 'Comprar y Generar Anexo';
                     }
@@ -397,7 +394,7 @@
                     if (!document.getElementById(`check-${dia}`).checked) return null;
                     return { day: dia.charAt(0).toUpperCase() + dia.slice(1), entry: document.getElementById(`in-${dia}`).value, exit: document.getElementById(`out-${dia}`).value, lunchDuration: document.getElementById(`col-${dia}`).value, lunchEntry: document.getElementById(`cin-${dia}`).value, lunchExit: document.getElementById(`cfn-${dia}`).value };
                 }).filter(Boolean);
-                localStorage.setItem('anexoSchedule', JSON.stringify(scheduleToSave));
+                globalSchedule = scheduleToSave;
                 document.getElementById('precios').classList.remove('hidden');
                 document.getElementById('precios').scrollIntoView({ behavior: 'smooth' });
             });
@@ -435,15 +432,18 @@
                     e.preventDefault();
                     if (generatePdfButton.disabled) return;
 
+                    const scheduleForPdf = globalSchedule;
+                    if (!scheduleForPdf) {
+                        alert('Hubo un problema: Datos de horario no encontrados.');
+                        return;
+                    }
+
                     generatePdfButton.disabled = true;
                     generatePdfButton.textContent = 'Generando...';
 
                     try {
                         const { data: { session } } = await supabase.auth.getSession();
                         if (!session) throw new Error('Sesión no encontrada. Por favor, inicie sesión de nuevo.');
-
-                        const savedSchedule = localStorage.getItem('anexoSchedule');
-                        if (!savedSchedule) throw new Error('Datos de horario no encontrados.');
 
                         const payload = {
                             employerName: document.getElementById('employer-name').value,
@@ -453,7 +453,7 @@
                             employerAddress: document.getElementById('employer-address').value,
                             employeeName: document.getElementById('employee-name').value,
                             employeeRut: document.getElementById('employee-rut').value,
-                            schedule: JSON.parse(savedSchedule),
+                            schedule: scheduleForPdf,
                         };
 
                         const response = await fetch(`${supabaseUrl}/functions/v1/generate-anexo`, {
@@ -482,7 +482,8 @@
                         document.body.removeChild(link);
                         window.URL.revokeObjectURL(url);
 
-                        localStorage.removeItem('anexoSchedule');
+                        globalSchedule = null;
+                        await supabase.auth.updateUser({ data: { anexoSchedule: null } });
 
                         alert("¡Anexo PDF generado con éxito!");
 
