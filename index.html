@@ -144,56 +144,112 @@
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb2Rqd2JtYWJmZm9ib255d2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjYyOTYsImV4cCI6MjA4OTM0MjI5Nn0.7nN75BHnzc7VzzdS9zy0Tvv8D43YjYK6PSLgeOp3uVg';
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-            supabase.auth.onAuthStateChange((event, session) => {
+            supabase.auth.onAuthStateChange(async (event, session) => {
                 if (event === 'SIGNED_IN') {
-                    const authSection = document.getElementById('auth-section');
-                    if (authSection) authSection.classList.add('hidden');
-                    const preciosContainer = document.getElementById('precios');
-                    if (preciosContainer) preciosContainer.classList.remove('hidden');
-                    const pendingPlan = localStorage.getItem('pendingPlan');
-                    if (pendingPlan) {
-                        const buyButton = document.querySelector(`button[data-plan='${pendingPlan}']`);
-                        if (buyButton) buyButton.click();
-                        localStorage.removeItem('pendingPlan');
+                    document.getElementById('auth-section').classList.add('hidden');
+
+                    try {
+                        const { data, error } = await supabase
+                            .from('perfiles_empresas')
+                            .select('creditos_disponibles')
+                            .eq('id', session.user.id)
+                            .single();
+
+                        if (error && error.code !== 'PGRST116') {
+                            throw error;
+                        }
+
+                        if (data && data.creditos_disponibles > 0) {
+                            document.getElementById('main-calculator').classList.add('hidden');
+                            document.getElementById('precios').classList.add('hidden');
+                            const pdfFormSection = document.getElementById('pdf-form-section');
+                            pdfFormSection.classList.remove('hidden');
+                            document.getElementById('pdf-credits-remaining').textContent = data.creditos_disponibles;
+                            document.getElementById('payment-success-banner').classList.remove('hidden');
+                            pdfFormSection.scrollIntoView({ behavior: 'smooth' });
+                        } else {
+                            const preciosContainer = document.getElementById('precios');
+                            if (preciosContainer) preciosContainer.classList.remove('hidden');
+                            const pendingPlan = localStorage.getItem('pendingPlan');
+                            if (pendingPlan) {
+                                const buyButton = document.querySelector(`button[data-plan='${pendingPlan}']`);
+                                if (buyButton) buyButton.click();
+                                localStorage.removeItem('pendingPlan');
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Error checking credits on sign in:", e.message);
+                        const preciosContainer = document.getElementById('precios');
+                        if (preciosContainer) preciosContainer.classList.remove('hidden');
                     }
                 }
             });
 
             const handlePageLoadFlow = async () => {
+                const { data: { session } } = await supabase.auth.getSession();
                 const urlParams = new URLSearchParams(window.location.search);
                 const paymentStatus = urlParams.get('status');
-                if (paymentStatus !== 'approved') return;
 
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) return;
-
-                console.log('Payment approved. Restoring schedule from Supabase...');
-                const { data: { user } } = await supabase.auth.getUser();
-                
-                if (user && user.user_metadata && user.user_metadata.anexoSchedule) {
-                    globalSchedule = user.user_metadata.anexoSchedule;
-                    console.log('Schedule restored successfully to in-memory state.', globalSchedule);
-
-                    let userCredits = 0;
+                if (session) {
                     try {
-                        const { data, error } = await supabase.from('profiles').select('pdf_credits').eq('id', session.user.id).single();
-                        if (error) throw error;
-                        if (data) userCredits = data.pdf_credits;
-                    } catch(e) { console.error('Error fetching user credits:', e.message); }
+                        const { data, error } = await supabase
+                            .from('perfiles_empresas')
+                            .select('creditos_disponibles')
+                            .eq('id', session.user.id)
+                            .single();
 
-                    document.getElementById('main-calculator').classList.add('hidden');
-                    document.getElementById('precios').classList.add('hidden');
-                    const pdfFormSection = document.getElementById('pdf-form-section');
-                    pdfFormSection.classList.remove('hidden');
-                    if (userCredits > 0) {
-                        document.getElementById('pdf-credits-remaining').textContent = userCredits;
-                        document.getElementById('payment-success-banner').classList.remove('hidden');
+                        if (error && error.code !== 'PGRST116') throw error;
+
+                        if (data && data.creditos_disponibles > 0) {
+                            document.getElementById('main-calculator').classList.add('hidden');
+                            document.getElementById('precios').classList.add('hidden');
+                            const pdfFormSection = document.getElementById('pdf-form-section');
+                            pdfFormSection.classList.remove('hidden');
+                            document.getElementById('pdf-credits-remaining').textContent = data.creditos_disponibles;
+                            document.getElementById('payment-success-banner').classList.remove('hidden');
+                            pdfFormSection.scrollIntoView({ behavior: 'smooth' });
+
+                            if (paymentStatus === 'approved') {
+                                window.history.replaceState({}, document.title, window.location.pathname);
+                            }
+                            return;
+                        }
+                    } catch (e) {
+                        console.error("Error checking credits on page load:", e.message);
                     }
-                    pdfFormSection.scrollIntoView({ behavior: 'smooth' });
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                } else {
-                    console.error('CRITICAL: Payment approved but failed to restore schedule from Supabase.');
-                    alert('Error crítico: El pago fue aprobado, pero no pudimos recuperar los datos de tu horario. Por favor, contacta a soporte.');
+                }
+
+                if (paymentStatus === 'approved' && session) {
+                    console.log('Payment approved. Restoring schedule from Supabase...');
+                    const { data: { user } } = await supabase.auth.getUser();
+                    
+                    if (user && user.user_metadata && user.user_metadata.anexoSchedule) {
+                        globalSchedule = user.user_metadata.anexoSchedule;
+                        console.log('Schedule restored successfully to in-memory state.', globalSchedule);
+
+                        let userCredits = 0;
+                        try {
+                            const { data, error } = await supabase.from('perfiles_empresas').select('creditos_disponibles').eq('id', session.user.id).single();
+                            if (error && error.code !== 'PGRST116') throw error;
+                            if (data) userCredits = data.creditos_disponibles;
+                        } catch(e) {
+                            console.error('Error fetching user credits post-payment:', e.message);
+                        }
+
+                        document.getElementById('main-calculator').classList.add('hidden');
+                        document.getElementById('precios').classList.add('hidden');
+                        const pdfFormSection = document.getElementById('pdf-form-section');
+                        pdfFormSection.classList.remove('hidden');
+                        if (userCredits > 0) {
+                            document.getElementById('pdf-credits-remaining').textContent = userCredits;
+                            document.getElementById('payment-success-banner').classList.remove('hidden');
+                        }
+                        pdfFormSection.scrollIntoView({ behavior: 'smooth' });
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    } else if (paymentStatus === 'approved') {
+                        console.error('CRITICAL: Payment approved but schedule/user data missing.');
+                        alert('Error crítico: El pago fue aprobado, pero no pudimos recuperar los datos de tu horario. Por favor, contacta a soporte.');
+                    }
                 }
             };
             await handlePageLoadFlow();
@@ -335,6 +391,31 @@
                         button.disabled = false;
                         button.textContent = 'Comprar y Generar Anexo';
                         return;
+                    }
+
+                    try {
+                        const { data, error } = await supabase
+                            .from('perfiles_empresas')
+                            .select('creditos_disponibles')
+                            .eq('id', session.user.id)
+                            .single();
+                        
+                        if (error && error.code !== 'PGRST116') throw error;
+
+                        if (data && data.creditos_disponibles > 0) {
+                            alert('Ya tienes créditos disponibles. Puedes generar tu anexo directamente.');
+                            document.getElementById('precios').classList.add('hidden');
+                            const pdfFormSection = document.getElementById('pdf-form-section');
+                            pdfFormSection.classList.remove('hidden');
+                            document.getElementById('pdf-credits-remaining').textContent = data.creditos_disponibles;
+                            document.getElementById('payment-success-banner').classList.remove('hidden');
+                            pdfFormSection.scrollIntoView({ behavior: 'smooth' });
+                            button.disabled = false;
+                            button.textContent = 'Comprar y Generar Anexo';
+                            return;
+                        }
+                    } catch (err) {
+                        console.error("Error checking credits before purchase:", err.message);
                     }
 
                     if (!globalSchedule) {
