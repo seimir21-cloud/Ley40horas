@@ -286,13 +286,12 @@
             const preciosContainer = document.getElementById('precios');
             const authContainer = document.getElementById('auth-section');
             const plans = [
-                { id: 'basico', title: 'Anexo PDF Básico', description: 'Generación de 1 Anexo de Contrato PDF.', price: 4990 },
-                { id: 'pack_5', title: 'Paquete 5 Anexos PDF', description: 'Paquete de 5 créditos para generar Anexos de Contrato PDF.', price: 19990 }
+                { id: 'basico', title: 'Anexo PDF Básico', description: 'Generación de 1 Anexo de Contrato PDF.', price: 4990 }
             ];
             function renderPlans() {
                 let plansHTML = `
-                    <h2 class="text-3xl font-bold text-center text-navy mb-10">Elige un Plan Para Continuar</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+                    <h2 class="text-3xl font-bold text-center text-navy mb-10">Generar Anexo PDF</h2>
+                    <div class="max-w-md mx-auto">
                 `;
                 plans.forEach(plan => {
                     plansHTML += `
