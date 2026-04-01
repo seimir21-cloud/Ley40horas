@@ -132,6 +132,13 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             let globalSchedule = null;
+            const savedTempSchedule = localStorage.getItem('tempSchedule');
+            if (savedTempSchedule) {
+                try { 
+                    globalSchedule = JSON.parse(savedTempSchedule); 
+                    console.log('Horario rescatado de la memoria');
+                } catch (e) {}
+            }
 
             const supabaseUrl = 'https://smodjwbmabffobonywad.supabase.co';
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb2Rqd2JtYWJmZm9ib255d2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjYyOTYsImV4cCI6MjA4OTM0MjI5Nn0.7nN75BHnzc7VzzdS9zy0Tvv8D43YjYK6PSLgeOp3uVg';
@@ -465,7 +472,7 @@
 
                         const response = await fetch(`${supabaseUrl}/functions/v1/generate-anexo`, {
                             method: 'POST',
-                            headers: {
+                            headers: { 
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${session.access_token}`,
                                 'apikey': supabaseKey
