@@ -45,7 +45,7 @@
                 </div>
                 <div class="mt-8 flex flex-col md:flex-row items-center justify-between gap-6">
                     <div class="w-full md:w-auto order-2 md:order-1">
-                        <div id="mensajeAlertaPublico" class="p-4 rounded-lg border text-sm font-medium"></div>
+                        <div id="mensajeAlertaPublico" class="hidden p-4 rounded-lg border text-sm font-medium"></div>
                         <div class="flex items-center gap-4 mt-2">
                            <span class="font-bold text-navy">Total Semanal:</span>
                            <span id="contadorTotalPublico" class="text-3xl font-black text-navy">0.0</span>
@@ -167,11 +167,10 @@
           format: (r) => { const c = Rut.clean(r).toUpperCase(); if (c.length < 2) return c; const b = c.slice(0,-1), v = c.slice(-1); return new Intl.NumberFormat('es-CL').format(parseInt(b,10)) + '-' + v },
         }
 
-        const supabaseUrl = 'https://smodjwbmabffobonywad.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb2Rqd2JtYWJmZm9ib255d2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjYyOTYsImV4cCI6MjA4OTM0MjI5Nn0.7nN75BHnzc7VzzdS9zy0Tvv8D43YjYK6PSLgeOp3uVg';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
         document.addEventListener('DOMContentLoaded', async () => {
+            const supabaseUrl = 'https://smodjwbmabffobonywad.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb2Rqd2JtYWJmZm9ib255d2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjYyOTYsImV4cCI6MjA4OTM0MjI5Nn0.7nN75BHnzc7VzzdS9zy0Tvv8D43YjYK6PSLgeOp3uVg';
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
             let globalSchedule = null;
 
             // Utilities para persistencia
