@@ -12,6 +12,7 @@ interface AnexoPayload {
   employerAddress: string;
   employeeName: string;
   employeeRut: string;
+  contactEmail?: string;
   schedule: Array<{
     day: string;
     entry: string;
@@ -29,7 +30,7 @@ Deno.serve(async (req) => {
     const payload: AnexoPayload = await req.json();
     let {
       employerName, employerRut, employerRepName, employerRepRut,
-      employerAddress, employeeName, employeeRut, schedule
+      employerAddress, employeeName, employeeRut, contactEmail, schedule
     } = payload;
     
     if (!employerName || !employeeName || !schedule) {
@@ -191,6 +192,60 @@ Deno.serve(async (req) => {
     pdfDoc.addPage(copiedPage);
     
     const pdfBytes = await pdfDoc.save();
+
+    // Helper para convertir el PDF a Base64 de forma segura
+    const arrayBufferToBase64 = (buffer: Uint8Array) => {
+        let binary = '';
+        for (let i = 0; i < buffer.byteLength; i++) {
+            binary += String.fromCharCode(buffer[i]);
+        }
+        return btoa(binary);
+    };
+
+    // ENVÍO DE CORREO DE RESPALDO VÍA RESEND (Opcional si existe la API KEY)
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+    if (resendApiKey && contactEmail) {
+        try {
+            const base64Pdf = arrayBufferToBase64(pdfBytes);
+            console.log(`Enviando email de respaldo a: ${contactEmail}`);
+            
+            const resendReq = await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${resendApiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    from: 'Portal 40 Horas <anexos@portal40horas.cl>', // NOTA: Este dominio debe estar verificado en Resend
+                    to: [contactEmail],
+                    subject: 'Tu Anexo de Contrato Oficial - Portal 40 Horas',
+                    html: `
+                        <h2>¡Aquí tienes tu anexo!</h2>
+                        <p>Hola,</p>
+                        <p>Adjuntamos el anexo de contrato que acabas de generar en <strong>Portal 40 Horas</strong>. Te lo enviamos por este medio para que quede como respaldo seguro en tus archivos.</p>
+                        <p>Si encuentras algún problema, por favor responde a este correo.</p>
+                        <br>
+                        <p>Atentamente,</p>
+                        <p>El equipo de Portal 40 Horas</p>
+                    `,
+                    attachments: [
+                        {
+                            filename: 'Anexo_Ley_40_Horas.pdf',
+                            content: base64Pdf
+                        }
+                    ]
+                })
+            });
+
+            if (!resendReq.ok) {
+                console.error("Resend Error:", await resendReq.text());
+            } else {
+                console.log("Email enviado exitosamente vía Resend.");
+            }
+        } catch (emailErr) {
+            console.error("Excepción al intentar enviar correo:", emailErr);
+        }
+    }
 
     return new Response(pdfBytes, {
       headers: {

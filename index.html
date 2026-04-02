@@ -249,7 +249,12 @@
             const checkAndGeneratePdf = async (session) => {
                 try {
                     const { data } = await supabase.from('perfiles_empresas').select('creditos_disponibles').eq('id', session.user.id).single();
-                    if (data && data.creditos_disponibles > 0) {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const pendingStep = localStorage.getItem('checkoutStep');
+                    
+                    // Solo interceptamos y mostramos la pantalla de "Descargar PDF" automáticamente si el usuario acaba de volver del pago.
+                    // Si ya pagó y descargó antes (tiene saldo), lo mandamos a la calculadora primero para que pueda generar OTRO anexo distinto.
+                    if (data && data.creditos_disponibles > 0 && pendingStep === 'awaiting_payment') {
                         const { data: { user } } = await supabase.auth.getUser();
                         if (user.user_metadata?.anexoSchedule) globalSchedule = user.user_metadata.anexoSchedule;
                         if (user.user_metadata?.anexoForm) {
@@ -260,11 +265,10 @@
                         switchView(['main-calculator', 'holding-screen', 'processing-screen'], 'pdf-form-section');
                         document.getElementById('payment-success-banner').classList.remove('hidden');
                         document.getElementById('generate-pdf-button').textContent = 'Descargar PDF';
-                        document.getElementById('generate-pdf-button').classList.remove('bg-premium');
-                        document.getElementById('generate-pdf-button').classList.add('bg-success');
+                        document.getElementById('generate-pdf-button').classList.remove('bg-premium', 'hover:bg-amber-600');
+                        document.getElementById('generate-pdf-button').classList.add('bg-success', 'hover:bg-green-700');
 
-                        const urlParams = new URLSearchParams(window.location.search);
-                        if (urlParams.get('status') === 'approved' && localStorage.getItem('checkoutStep') === 'awaiting_payment') {
+                        if (urlParams.get('status') === 'approved') {
                              localStorage.removeItem('checkoutStep');
                              window.history.replaceState({}, document.title, window.location.pathname);
                         }
@@ -504,6 +508,7 @@
                             employerAddress: document.getElementById('employer-address').value,
                             employeeName: document.getElementById('employee-name').value,
                             employeeRut: document.getElementById('employee-rut').value,
+                            contactEmail: document.getElementById('contact-email').value,
                             schedule: globalSchedule,
                         };
 
@@ -533,8 +538,27 @@
                         localStorage.removeItem('tempSchedule');
                         await supabase.auth.updateUser({ data: { anexoSchedule: null } });
 
-                        alert("¡Anexo PDF generado con éxito!");
-                        window.location.reload();
+                        // Consumir el crédito para que la base de datos se mantenga coherente
+                        await supabase.rpc('consumir_credito');
+
+                        // Transformar el botón para que permita crear un nuevo anexo y no de error al presionarlo de nuevo
+                        document.getElementById('payment-success-banner').innerHTML = `<p class="font-bold text-lg">¡Anexo Generado Exitosamente! ✅</p><p>Revisa tu carpeta de descargas.</p>`;
+                        document.getElementById('payment-success-banner').classList.replace('border-green-500', 'border-blue-500');
+                        document.getElementById('payment-success-banner').classList.replace('text-green-700', 'text-blue-700');
+                        document.getElementById('payment-success-banner').classList.replace('bg-green-100', 'bg-blue-100');
+                        
+                        generatePdfButton.disabled = false;
+                        generatePdfButton.innerText = 'Hacer Nuevo Anexo';
+                        generatePdfButton.className = 'w-full md:w-2/3 mx-auto text-xl bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg shadow-lg transition-all hover:scale-105';
+                        
+                        // Remover el ID o cambiar su comportamiento para que obligue el reload
+                        generatePdfButton.id = 'reset-button';
+                        generatePdfButton.onclick = (e) => {
+                            e.preventDefault();
+                            window.location.href = window.location.pathname; // Recargar visualmente limpia todo
+                        };
+
+                        alert("¡Anexo PDF generado y descargado con éxito!");
 
                     } catch (error) {
                         alert("Hubo un problema: " + error.message);
