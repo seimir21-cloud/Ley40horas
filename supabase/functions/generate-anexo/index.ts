@@ -216,7 +216,7 @@ Deno.serve(async (req) => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    from: 'Portal 40 Horas <anexos@portal40horas.cl>', // NOTA: Este dominio debe estar verificado en Resend
+                    from: 'Portal 40 Horas <hola@portal40horas.cl>',
                     to: [contactEmail],
                     subject: 'Tu Anexo de Contrato Oficial - Portal 40 Horas',
                     html: `
