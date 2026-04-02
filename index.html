@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -20,15 +19,18 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
-    <header class="bg-navy text-white py-12 px-4 text-center">
+    <header class="bg-navy text-white py-12 px-4 text-center shadow-md z-10 relative">
         <h1 class="text-3xl md:text-4xl font-bold mb-4">Calculadora Ley 40 Horas Chile</h1>
-        <p class="text-lg text-slate-300">Configura tu horario detallado y verifica el cumplimiento de la ley.</p>
+        <p class="text-lg text-slate-300 max-w-2xl mx-auto">Configura tu horario detallado, verifica el cumplimiento de la ley y genera automáticamente el Anexo de Contrato Oficial.</p>
     </header>
     <main class="flex-grow p-4">
-        <div id="main-calculator" class="max-w-5xl mx-auto bg-white rounded-xl shadow-lg p-8">
+        <div id="main-calculator" class="max-w-5xl mx-auto bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
             <form id="calcForm" class="space-y-6" onsubmit="event.preventDefault();">
-                <h2 class="text-2xl font-bold text-slate-800">Ingresa el Horario Semanal</h2>
-                <div class="overflow-x-auto rounded-lg border border-gray-200">
+                <h2 class="text-2xl font-bold text-navy flex items-center gap-3">
+                    <span class="bg-blue-100 text-blue-700 rounded-full w-8 h-8 flex items-center justify-center text-lg">1</span>
+                    Ingresa el Horario Semanal
+                </h2>
+                <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
                     <div class="min-w-full">
                         <div class="grid grid-cols-[80px_60px_1fr_1fr_1fr_2fr] gap-4 items-center px-4 py-3 bg-gray-50">
                             <div class="text-xs font-semibold text-gray-500 uppercase">Día</div>
@@ -50,76 +52,111 @@
                            <span class="text-slate-500">horas</span>
                         </div>
                     </div>
-                    <button type="button" id="btn-validar" disabled class="w-full md:w-auto order-1 md:order-2 bg-premium text-white font-bold py-4 px-8 rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">Validar y Obtener PDF ➔</button>
+                    <button type="button" id="btn-validar" disabled class="w-full md:w-auto order-1 md:order-2 bg-navy text-white font-bold py-4 px-8 rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-800 transition-all text-lg flex items-center gap-2 justify-center">
+                        Continuar <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
                 </div>
             </form>
         </div>
-        <div id="precios" class="max-w-5xl mx-auto mt-12 p-8 hidden"></div>
-        <div id="auth-section" class="max-w-5xl mx-auto mt-12 p-8 hidden">
-            <div class="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8 border-t-4 border-navy">
-                <h2 class="text-2xl font-bold text-center text-navy mb-2">Inicia Sesión para Continuar</h2>
-                <p class="text-center text-slate-600 mb-6">Te enviaremos un enlace mágico a tu correo para un acceso rápido y seguro.</p>
-                <form id="auth-form">
-                    <label for="email-input" class="block text-sm font-medium text-gray-700">Tu Correo Electrónico</label>
-                    <input type="email" id="email-input" required placeholder="tu@correo.com" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm focus:border-navy focus:ring-navy">
-                    <button type="submit" id="send-magic-link-button" class="mt-4 w-full bg-navy text-white font-bold py-3 px-4 rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-50">Enviar Enlace Mágico</button>
-                </form>
-                 <div id="auth-feedback" class="mt-4 text-center text-sm"></div>
+
+        <div id="pdf-form-section" class="max-w-5xl mx-auto mt-12 p-8 hidden opacity-0 transition-opacity duration-500">
+            <div id="payment-success-banner" class="hidden bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-lg text-center">
+                <p class="font-bold text-lg">¡Pago Confirmado! 🎉</p>
+                <p>Haz clic en "Descargar PDF" para obtener tu anexo.</p>
             </div>
-        </div>
-        <div id="pdf-form-section" class="max-w-5xl mx-auto mt-12 p-8 hidden">
-            <div id="payment-success-banner" class="hidden bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-lg">
-                <p class="font-bold">¡Bienvenido de vuelta!</p>
-                <p>Tienes <span id="pdf-credits-remaining" class="font-bold"></span> crédito(s) para generar tu anexo.</p>
-            </div>
-            <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8 border-t-4 border-navy">
-                <h2 class="text-2xl font-bold text-center text-navy mb-6">Completa los Datos para el Anexo</h2>
+            <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-8 border-t-4 border-premium">
+                <h2 class="text-2xl font-bold text-navy mb-6 flex items-center gap-3">
+                    <span class="bg-amber-100 text-amber-700 rounded-full w-8 h-8 flex items-center justify-center text-lg">2</span>
+                    Completa los Datos para tu Anexo
+                </h2>
                 <form id="pdf-form">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="md:col-span-2 font-bold text-lg text-slate-700">Datos del Empleador</div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-lg border border-slate-100 mb-6">
+                        <div class="md:col-span-2 font-bold text-lg text-navy border-b pb-2">Datos del Empleador (Empresa)</div>
                         <div>
                             <label for="employer-name" class="block text-sm font-medium text-gray-700">Nombre o Razón Social</label>
-                            <input type="text" id="employer-name" required class="pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                            <input type="text" id="employer-name" required class="pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm focus:border-premium focus:ring-premium">
                             <p id="employer-name-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
                         <div>
                             <label for="employer-rut" class="block text-sm font-medium text-gray-700">RUT Empresa</label>
-                            <input type="text" id="employer-rut" required class="rut-input pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                            <input type="text" id="employer-rut" required class="rut-input pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm focus:border-premium focus:ring-premium">
                             <p id="employer-rut-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
                         <div>
                             <label for="employer-rep-name" class="block text-sm font-medium text-gray-700">Nombre Representante Legal</label>
-                            <input type="text" id="employer-rep-name" required placeholder="Ej: Juan Pérez Soto" class="pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                            <input type="text" id="employer-rep-name" required placeholder="Ej: Juan Pérez Soto" class="pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm focus:border-premium focus:ring-premium">
                             <p id="employer-rep-name-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
                         <div>
                             <label for="employer-rep-rut" class="block text-sm font-medium text-gray-700">RUT Representante Legal</label>
-                            <input type="text" id="employer-rep-rut" required class="rut-input pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                            <input type="text" id="employer-rep-rut" required class="rut-input pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm focus:border-premium focus:ring-premium">
                             <p id="employer-rep-rut-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
                         <div class="md:col-span-2">
-                            <label for="employer-address" class="block text-sm font-medium text-gray-700">Domicilio (Por favor ingresa Calle, Número, Comuna y Ciudad completo)</label>
-                            <input type="text" id="employer-address" required placeholder="Ej: Av. Providencia 123, Providencia, Santiago" class="pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                            <label for="employer-address" class="block text-sm font-medium text-gray-700">Domicilio Completo</label>
+                            <input type="text" id="employer-address" required placeholder="Ej: Av. Providencia 123, Providencia, Santiago" class="pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm focus:border-premium focus:ring-premium">
                             <p id="employer-address-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
-                        <div class="md:col-span-2 mt-4 font-bold text-lg text-slate-700">Datos del Trabajador</div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-lg border border-slate-100 mb-8">
+                        <div class="md:col-span-2 font-bold text-lg text-navy border-b pb-2">Datos del Trabajador</div>
                         <div>
                             <label for="employee-name" class="block text-sm font-medium text-gray-700">Nombre Completo</label>
-                            <input type="text" id="employee-name" required class="pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                            <input type="text" id="employee-name" required class="pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm focus:border-premium focus:ring-premium">
                             <p id="employee-name-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
                         <div>
-                            <label for="employee-rut" class="block text-sm font-medium text-gray-700">RUT</label>
-                            <input type="text" id="employee-rut" required class="rut-input pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                            <label for="employee-rut" class="block text-sm font-medium text-gray-700">RUT Trabajador</label>
+                            <input type="text" id="employee-rut" required class="rut-input pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm focus:border-premium focus:ring-premium">
                             <p id="employee-rut-error" class="text-danger text-xs mt-1 h-4"></p>
                         </div>
+
+                        <div class="md:col-span-2 mt-2 font-bold text-lg text-navy border-b pb-2">Datos de Envío</div>
+                        <div class="md:col-span-2">
+                            <label for="contact-email" class="block text-sm font-medium text-gray-700">Correo Electrónico (Fundamental para respaldar y enviar tu documento)</label>
+                            <input type="email" id="contact-email" required placeholder="tu@correo.com" class="pdf-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm focus:border-premium focus:ring-premium bg-blue-50">
+                            <p id="contact-email-error" class="text-danger text-xs mt-1 h-4"></p>
+                        </div>
                     </div>
-                    <div class="mt-8 text-center">
-                        <button type="submit" id="generate-pdf-button" class="w-full md:w-auto bg-premium text-white font-bold py-3 px-12 rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">Generar PDF</button>
+
+                    <div class="mt-8 text-center bg-gray-50 border p-6 rounded-lg">
+                        <div class="flex items-center justify-center gap-2 mb-4 text-slate-600">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                            Transacción 100% segura mediante Mercado Pago
+                        </div>
+                        <button type="submit" id="generate-pdf-button" class="w-full md:w-2/3 mx-auto text-xl bg-premium hover:bg-amber-600 text-white font-bold py-4 px-8 rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105">
+                            Pagar $4.990 y Descargar PDF
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
+
+        <div id="holding-screen" class="max-w-5xl mx-auto mt-12 p-8 hidden">
+            <div class="bg-white rounded-xl shadow-lg p-10 border-t-4 border-blue-500 max-w-lg mx-auto text-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-blue-50 opacity-50 pointer-events-none"></div>
+                <div class="relative z-10">
+                    <svg class="w-20 h-20 text-blue-500 mx-auto mb-6 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    <h2 class="text-2xl font-bold text-navy mb-4">¡Paso de Seguridad Requerido!</h2>
+                    <p class="text-slate-700 text-lg mb-6 leading-relaxed">
+                        Revisa la bandeja de entrada de <strong><span id="holding-email" class="text-blue-700 border-b border-blue-300 pb-1"></span></strong>.<br><br>
+                        Te hemos enviado un enlace único. <strong>Haz clic en el botón de ese correo para proceder automáticamente al Check-Out.</strong>
+                    </p>
+                    <div class="text-sm text-slate-500 border border-slate-200 bg-slate-50 p-4 rounded-lg">
+                        Tus datos ya están guardados. Esta pantalla se actualizará sola cuando hagas clic.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="processing-screen" class="max-w-5xl mx-auto mt-24 p-8 hidden">
+             <div class="bg-white rounded-xl shadow-xl p-12 max-w-sm mx-auto text-center">
+                 <svg class="animate-spin h-12 w-12 text-premium mx-auto mb-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                 <h2 id="processing-title" class="text-2xl font-bold text-navy">Cargando...</h2>
+                 <p class="text-slate-500 mt-2">Por favor no cierres la ventana.</p>
+             </div>
+         </div>
     </main>
 
     <script>
@@ -130,129 +167,127 @@
           format: (r) => { const c = Rut.clean(r).toUpperCase(); if (c.length < 2) return c; const b = c.slice(0,-1), v = c.slice(-1); return new Intl.NumberFormat('es-CL').format(parseInt(b,10)) + '-' + v },
         }
 
+        const supabaseUrl = 'https://smodjwbmabffobonywad.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb2Rqd2JtYWJmZm9ib255d2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjYyOTYsImV4cCI6MjA4OTM0MjI5Nn0.7nN75BHnzc7VzzdS9zy0Tvv8D43YjYK6PSLgeOp3uVg';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
         document.addEventListener('DOMContentLoaded', async () => {
             let globalSchedule = null;
+
+            // Utilities para persistencia
+            const saveFormData = () => {
+                const formInputs = document.querySelectorAll('.pdf-input');
+                const data = {};
+                formInputs.forEach(input => data[input.id] = input.value);
+                localStorage.setItem('tempFormData', JSON.stringify(data));
+            };
+            const loadFormData = () => {
+                try {
+                    const data = JSON.parse(localStorage.getItem('tempFormData'));
+                    if (data) Object.keys(data).forEach(id => {
+                        const input = document.getElementById(id);
+                        if (input) input.value = data[id];
+                    });
+                } catch(e) {}
+            };
+
             const savedTempSchedule = localStorage.getItem('tempSchedule');
             if (savedTempSchedule) {
                 try { 
                     globalSchedule = JSON.parse(savedTempSchedule); 
-                    console.log('Horario rescatado de la memoria');
                 } catch (e) {}
             }
+            loadFormData();
 
-            const supabaseUrl = 'https://smodjwbmabffobonywad.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb2Rqd2JtYWJmZm9ib255d2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjYyOTYsImV4cCI6MjA4OTM0MjI5Nn0.7nN75BHnzc7VzzdS9zy0Tvv8D43YjYK6PSLgeOp3uVg';
-            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-            supabase.auth.onAuthStateChange(async (event, session) => {
-                if (event === 'SIGNED_IN') {
-                    document.getElementById('auth-section').classList.add('hidden');
-
-                    try {
-                        const { data, error } = await supabase
-                            .from('perfiles_empresas')
-                            .select('creditos_disponibles')
-                            .eq('id', session.user.id)
-                            .single();
-
-                        if (error && error.code !== 'PGRST116') {
-                            throw error;
-                        }
-
-                        if (data && data.creditos_disponibles > 0) {
-                            document.getElementById('main-calculator').classList.add('hidden');
-                            document.getElementById('precios').classList.add('hidden');
-                            const pdfFormSection = document.getElementById('pdf-form-section');
-                            pdfFormSection.classList.remove('hidden');
-                            document.getElementById('pdf-credits-remaining').textContent = data.creditos_disponibles;
-                            document.getElementById('payment-success-banner').classList.remove('hidden');
-                            pdfFormSection.scrollIntoView({ behavior: 'smooth' });
-                        } else {
-                            const preciosContainer = document.getElementById('precios');
-                            if (preciosContainer) preciosContainer.classList.remove('hidden');
-                            const pendingPlan = localStorage.getItem('pendingPlan');
-                            if (pendingPlan) {
-                                const buyButton = document.querySelector(`button[data-plan='${pendingPlan}']`);
-                                if (buyButton) buyButton.click();
-                                localStorage.removeItem('pendingPlan');
-                            }
-                        }
-                    } catch (e) {
-                        console.error("Error checking credits on sign in:", e.message);
-                        const preciosContainer = document.getElementById('precios');
-                        if (preciosContainer) preciosContainer.classList.remove('hidden');
-                    }
+            const switchView = (hideIds, showId) => {
+                hideIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) { el.classList.add('hidden'); el.classList.remove('opacity-100'); }
+                });
+                const elToShow = document.getElementById(showId);
+                if(elToShow) {
+                    elToShow.classList.remove('hidden');
+                    setTimeout(() => elToShow.classList.add('opacity-100'), 50);
+                    elToShow.scrollIntoView({ behavior: 'smooth' });
                 }
-            });
+            };
+
+            const autoProcessCheckout = async (session) => {
+                const pendingStep = localStorage.getItem('checkoutStep');
+                if (!pendingStep) return false;
+
+                if (pendingStep === 'awaiting_magic_link') {
+                    // Volvió del login. Procesar MP Inmediatamente.
+                    switchView(['main-calculator', 'pdf-form-section', 'holding-screen'], 'processing-screen');
+                    document.getElementById('processing-title').textContent = 'Redirigiendo a pago seguro...';
+                    
+                    try {
+                        let formData = JSON.parse(localStorage.getItem('tempFormData') || '{}');
+                        let schedData = JSON.parse(localStorage.getItem('tempSchedule') || '[]');
+                        await supabase.auth.updateUser({ data: { anexoSchedule: schedData, anexoForm: formData } });
+
+                        const response = await fetch(`${supabaseUrl}/functions/v1/create-payment`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': supabaseKey },
+                            body: JSON.stringify({ plan: 'basico' })
+                        });
+                        
+                        if (!response.ok) throw new Error('No se pudo iniciar el proceso de pago.');
+                        
+                        localStorage.setItem('checkoutStep', 'awaiting_payment');
+                        const { payment_url } = await response.json();
+                        window.location.href = payment_url;
+                    } catch (e) {
+                        alert("Error al iniciar el pago: " + e.message);
+                        localStorage.removeItem('checkoutStep');
+                        window.location.reload();
+                    }
+                    return true;
+                }
+                return false;
+            };
+
+            const checkAndGeneratePdf = async (session) => {
+                try {
+                    const { data } = await supabase.from('perfiles_empresas').select('creditos_disponibles').eq('id', session.user.id).single();
+                    if (data && data.creditos_disponibles > 0) {
+                        const { data: { user } } = await supabase.auth.getUser();
+                        if (user.user_metadata?.anexoSchedule) globalSchedule = user.user_metadata.anexoSchedule;
+                        if (user.user_metadata?.anexoForm) {
+                            localStorage.setItem('tempFormData', JSON.stringify(user.user_metadata.anexoForm));
+                            loadFormData();
+                        }
+
+                        switchView(['main-calculator', 'holding-screen', 'processing-screen'], 'pdf-form-section');
+                        document.getElementById('payment-success-banner').classList.remove('hidden');
+                        document.getElementById('generate-pdf-button').textContent = 'Descargar PDF';
+                        document.getElementById('generate-pdf-button').classList.remove('bg-premium');
+                        document.getElementById('generate-pdf-button').classList.add('bg-success');
+
+                        const urlParams = new URLSearchParams(window.location.search);
+                        if (urlParams.get('status') === 'approved' && localStorage.getItem('checkoutStep') === 'awaiting_payment') {
+                             localStorage.removeItem('checkoutStep');
+                             window.history.replaceState({}, document.title, window.location.pathname);
+                        }
+                        return true;
+                    }
+                } catch(e) {}
+                return false;
+            }
 
             const handlePageLoadFlow = async () => {
                 const { data: { session } } = await supabase.auth.getSession();
-                const urlParams = new URLSearchParams(window.location.search);
-                const paymentStatus = urlParams.get('status');
-
                 if (session) {
-                    try {
-                        const { data, error } = await supabase
-                            .from('perfiles_empresas')
-                            .select('creditos_disponibles')
-                            .eq('id', session.user.id)
-                            .single();
-
-                        if (error && error.code !== 'PGRST116') throw error;
-
-                        if (data && data.creditos_disponibles > 0) {
-                            document.getElementById('main-calculator').classList.add('hidden');
-                            document.getElementById('precios').classList.add('hidden');
-                            const pdfFormSection = document.getElementById('pdf-form-section');
-                            pdfFormSection.classList.remove('hidden');
-                            document.getElementById('pdf-credits-remaining').textContent = data.creditos_disponibles;
-                            document.getElementById('payment-success-banner').classList.remove('hidden');
-                            pdfFormSection.scrollIntoView({ behavior: 'smooth' });
-
-                            if (paymentStatus === 'approved') {
-                                window.history.replaceState({}, document.title, window.location.pathname);
-                            }
-                            return;
-                        }
-                    } catch (e) {
-                        console.error("Error checking credits on page load:", e.message);
-                    }
-                }
-
-                if (paymentStatus === 'approved' && session) {
-                    console.log('Payment approved. Restoring schedule from Supabase...');
-                    const { data: { user } } = await supabase.auth.getUser();
-                    
-                    if (user && user.user_metadata && user.user_metadata.anexoSchedule) {
-                        globalSchedule = user.user_metadata.anexoSchedule;
-                        console.log('Schedule restored successfully to in-memory state.', globalSchedule);
-
-                        let userCredits = 0;
-                        try {
-                            const { data, error } = await supabase.from('perfiles_empresas').select('creditos_disponibles').eq('id', session.user.id).single();
-                            if (error && error.code !== 'PGRST116') throw error;
-                            if (data) userCredits = data.creditos_disponibles;
-                        } catch(e) {
-                            console.error('Error fetching user credits post-payment:', e.message);
-                        }
-
-                        document.getElementById('main-calculator').classList.add('hidden');
-                        document.getElementById('precios').classList.add('hidden');
-                        const pdfFormSection = document.getElementById('pdf-form-section');
-                        pdfFormSection.classList.remove('hidden');
-                        if (userCredits > 0) {
-                            document.getElementById('pdf-credits-remaining').textContent = userCredits;
-                            document.getElementById('payment-success-banner').classList.remove('hidden');
-                        }
-                        pdfFormSection.scrollIntoView({ behavior: 'smooth' });
-                        window.history.replaceState({}, document.title, window.location.pathname);
-                    } else if (paymentStatus === 'approved') {
-                        console.error('CRITICAL: Payment approved but schedule/user data missing.');
-                        alert('Error crítico: El pago fue aprobado, pero no pudimos recuperar los datos de tu horario. Por favor, contacta a soporte.');
-                    }
+                    const autoRedirected = await autoProcessCheckout(session);
+                    if (autoRedirected) return;
+                    await checkAndGeneratePdf(session);
                 }
             };
-            await handlePageLoadFlow();
+            
+            // Listeners globales para persistencia on-change
+            document.addEventListener('input', (e) => {
+                if(e.target.classList.contains('pdf-input')) saveFormData();
+            });
 
             const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
             const calculatorDaysContainer = document.getElementById('calculator-days-container');
@@ -260,21 +295,22 @@
             let allDayRowsHTML = '';
             dias.forEach(id => {
                 allDayRowsHTML += `
-                <div class="grid grid-cols-[80px_60px_1fr_1fr_1fr_2fr] gap-4 items-center px-4 py-2 day-row">
-                    <div><label for="check-${id}" class="font-semibold">${id.charAt(0).toUpperCase() + id.slice(1)}</label></div>
-                    <div class="flex justify-center"><input type="checkbox" id="check-${id}" class="h-5 w-5 rounded border-gray-300 text-blue-600 cursor-pointer"></div>
-                    <div><input type="time" id="in-${id}" class="day-input w-full rounded-md border p-1 text-sm bg-gray-100 opacity-50" disabled></div>
-                    <div><input type="time" id="out-${id}" class="day-input w-full rounded-md border p-1 text-sm bg-gray-100 opacity-50" disabled></div>
-                    <div><input type="number" id="col-${id}" placeholder="Min" class="day-input w-full rounded-md border p-1 text-sm bg-gray-100 opacity-50" disabled></div>
+                <div class="grid grid-cols-[80px_60px_1fr_1fr_1fr_2fr] gap-4 items-center px-4 py-2 day-row border-b last:border-0 border-gray-50">
+                    <div><label for="check-${id}" class="font-semibold text-slate-700">${id.charAt(0).toUpperCase() + id.slice(1)}</label></div>
+                    <div class="flex justify-center"><input type="checkbox" id="check-${id}" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"></div>
+                    <div><input type="time" id="in-${id}" class="day-input w-full rounded-md border-gray-300 shadow-sm p-2 text-sm bg-gray-100 opacity-50" disabled></div>
+                    <div><input type="time" id="out-${id}" class="day-input w-full rounded-md border-gray-300 shadow-sm p-2 text-sm bg-gray-100 opacity-50" disabled></div>
+                    <div><input type="number" id="col-${id}" placeholder="Min" class="day-input w-full rounded-md border-gray-300 shadow-sm p-2 text-sm bg-gray-100 opacity-50" disabled></div>
                     <div class="flex items-center gap-2">
-                        <input type="time" id="cin-${id}" class="day-input w-full rounded-md border p-1 text-sm bg-gray-100 opacity-50" disabled>
+                        <input type="time" id="cin-${id}" class="day-input w-full rounded-md border-gray-300 shadow-sm p-2 text-sm bg-gray-100 opacity-50" disabled>
                         <span class="text-gray-400 font-bold">-</span>
-                        <input type="time" id="cfn-${id}" class="day-input w-full rounded-md border p-1 text-sm bg-gray-100 opacity-50" readonly disabled>
+                        <input type="time" id="cfn-${id}" class="day-input w-full rounded-md border-gray-300 shadow-sm p-2 text-sm bg-gray-100 opacity-50" readonly disabled>
                     </div>
                 </div>
-                ${id === 'lunes' ? '<div class="px-4 pb-2 pt-1"><button type="button" id="btn-replicar-lunes" class="text-xs text-blue-600 hover:text-blue-800 font-medium">Replicar Lunes a Viernes</button></div>' : ''}`.trim();
+                ${id === 'lunes' ? '<div class="px-4 pb-3 pt-2 bg-slate-50 border-b border-gray-200"><button type="button" id="btn-replicar-lunes" class="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-md hover:bg-blue-200 font-medium transition-colors">Copiar Lunes a Viernes</button></div>' : ''}`.trim();
             });
             calculatorDaysContainer.innerHTML = allDayRowsHTML;
+            
             const timeToMinutes = (t) => { if (!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; };
             const updateAlertsAndButton = () => {
                 const total = parseFloat(document.getElementById('contadorTotalPublico').innerText);
@@ -346,135 +382,6 @@
                 calcularTotal();
             });
 
-            const preciosContainer = document.getElementById('precios');
-            const authContainer = document.getElementById('auth-section');
-            const plans = [
-                { id: 'basico', title: 'Anexo PDF Básico', description: 'Generación de 1 Anexo de Contrato PDF.', price: 4990 }
-            ];
-            function renderPlans() {
-                let plansHTML = `
-                    <h2 class="text-3xl font-bold text-center text-navy mb-10">Generar Anexo PDF</h2>
-                    <div class="max-w-md mx-auto">
-                `;
-                plans.forEach(plan => {
-                    plansHTML += `
-                        <div class="bg-white rounded-xl shadow-lg p-8 border-t-4 border-premium flex flex-col">
-                            <h3 class="text-2xl font-bold text-navy">${plan.title}</h3>
-                            <p class="text-slate-600 mt-2 flex-grow">${plan.description}</p>
-                            <div class="my-6 text-center">
-                                <span class="text-5xl font-black text-navy">$${new Intl.NumberFormat('es-CL').format(plan.price)}</span>
-                                <span class="text-slate-500 font-medium"> CLP</span>
-                            </div>
-                            <button data-plan="${plan.id}" class="buy-button w-full bg-navy text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-50">Comprar y Generar Anexo</button>
-                        </div>
-                    `;
-                });
-                plansHTML += `</div>`;
-                preciosContainer.innerHTML = plansHTML;
-            }
-            renderPlans(); 
-
-            preciosContainer.addEventListener('click', async (e) => {
-    if (e.target && e.target.classList.contains('buy-button')) {
-        e.preventDefault();
-        const button = e.target;
-        const plan = button.dataset.plan;
-        button.disabled = true;
-        button.textContent = 'Verificando...';
-
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (!session) {
-            localStorage.setItem('pendingPlan', plan);
-            if (globalSchedule) localStorage.setItem('tempSchedule', JSON.stringify(globalSchedule));
-            document.getElementById('auth-section').classList.remove('hidden');
-            document.getElementById('auth-section').scrollIntoView({ behavior: 'smooth' });
-            button.disabled = false;
-            button.textContent = 'Comprar y Generar Anexo';
-            return;
-        }
-
-        if (!globalSchedule) {
-            const saved = localStorage.getItem('tempSchedule');
-            if (saved) globalSchedule = JSON.parse(saved);
-        }
-
-        if (!globalSchedule) {
-            alert('Error: Datos de horario no encontrados. Por favor, vuelva a la calculadora y valide el horario.');
-            button.disabled = false;
-            button.textContent = 'Comprar y Generar Anexo';
-            return;
-        }
-
-        try {
-            const { data: profileData } = await supabase
-                .from('perfiles_empresas')
-                .select('creditos_disponibles')
-                .eq('id', session.user.id)
-                .maybeSingle();
-            
-            const creditos = profileData ? profileData.creditos_disponibles : 0;
-
-            if (creditos > 0) {
-                document.getElementById('main-calculator').classList.add('hidden');
-                document.getElementById('precios').classList.add('hidden');
-                const pdfSection = document.getElementById('pdf-form-section');
-                pdfSection.classList.remove('hidden');
-                document.getElementById('pdf-credits-remaining').textContent = creditos;
-                document.getElementById('payment-success-banner').classList.remove('hidden');
-                pdfSection.scrollIntoView({ behavior: 'smooth' });
-                
-                button.disabled = false;
-                button.textContent = 'Comprar y Generar Anexo';
-                return;
-            }
-
-            await supabase.auth.updateUser({ data: { anexoSchedule: globalSchedule } });
-            button.textContent = 'Redirigiendo al pago...';
-            
-            const response = await fetch(`${supabaseUrl}/functions/v1/create-payment`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'Authorization': `Bearer ${session.access_token}`,
-                    'apikey': supabaseKey
-                },
-                body: JSON.stringify({ plan: plan })
-            });
-
-            if (!response.ok) throw new Error('No se pudo iniciar el proceso de pago.');
-            const { payment_url } = await response.json();
-            window.location.href = payment_url;
-
-        } catch (error) {
-            alert('Error: ' + error.message);
-            button.disabled = false;
-            button.textContent = 'Comprar y Generar Anexo';
-        }
-    }
-});
-
-             document.getElementById('auth-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = document.getElementById('email-input').value;
-                const button = document.getElementById('send-magic-link-button');
-                const feedback = document.getElementById('auth-feedback');
-                button.disabled = true;
-                try {
-                    const { error } = await supabase.auth.signInWithOtp({ 
-                        email: email,
-                        options: { emailRedirectTo: window.location.href } 
-                    });
-                    if (error) throw error;
-                    feedback.textContent = '¡Revisa tu correo! Te hemos enviado un enlace para iniciar sesión.';
-                    feedback.className = 'mt-4 text-center text-sm text-green-600';
-                } catch (error) {
-                    feedback.textContent = `Error: ${error.message}`;
-                    feedback.className = 'mt-4 text-center text-sm text-red-600';
-                    button.disabled = false;
-                } 
-            });
-
             document.getElementById('btn-validar').addEventListener('click', () => {
                 const scheduleToSave = dias.map(dia => {
                     if (!document.getElementById(`check-${dia}`).checked) return null;
@@ -482,17 +389,27 @@
                 }).filter(Boolean);
                 globalSchedule = scheduleToSave;
                 localStorage.setItem('tempSchedule', JSON.stringify(globalSchedule));
-                document.getElementById('precios').classList.remove('hidden');
-                document.getElementById('precios').scrollIntoView({ behavior: 'smooth' });
+                
+                switchView(['main-calculator'], 'pdf-form-section');
+            });
+
+            // Restoring state listener (supabase auth event)
+            supabase.auth.onAuthStateChange(async (event, session) => {
+                if (event === 'SIGNED_IN') {
+                    if (localStorage.getItem('checkoutStep') === 'awaiting_magic_link') {
+                        autoProcessCheckout(session);
+                    }
+                }
             });
 
             const pdfForm = document.getElementById('pdf-form');
             if (pdfForm) {
-                const allPdfInputs = pdfForm.querySelectorAll('input[required]');
+                const allPdfInputs = pdfForm.querySelectorAll('.pdf-input');
                 const generatePdfButton = document.getElementById('generate-pdf-button');
                 const validateForm = () => {
                     let isFormValid = true;
                     allPdfInputs.forEach(input => {
+                        if(!input.hasAttribute('required')) return;
                         const errorElement = document.getElementById(`${input.id}-error`);
                         const value = input.value.trim();
                         let isValid = true, errorMessage = '';
@@ -514,24 +431,72 @@
                     });
                 });
                 validateForm();
+                
+                await handlePageLoadFlow();
 
                 pdfForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     if (generatePdfButton.disabled) return;
 
-                    const scheduleForPdf = globalSchedule;
-                    if (!scheduleForPdf) {
-                        alert('Hubo un problema: Datos de horario no encontrados.');
-                        return;
+                    if (!globalSchedule) {
+                        const saved = localStorage.getItem('tempSchedule');
+                        if (saved) globalSchedule = JSON.parse(saved);
+                        else {
+                            alert('Hubo un problema: Datos de horario no encontrados. Vuelve a la calculadora.');
+                            return;
+                        }
                     }
 
+                    const originalBtnText = generatePdfButton.innerText;
                     generatePdfButton.disabled = true;
-                    generatePdfButton.textContent = 'Generando...';
+                    generatePdfButton.innerText = 'Procesando...';
 
                     try {
                         const { data: { session } } = await supabase.auth.getSession();
-                        if (!session) throw new Error('Sesión no encontrada. Por favor, inicie sesión de nuevo.');
+                        saveFormData();
 
+                        if (!session) {
+                            // Flujo 1: No logueado. Disparar OTP y mostrar holding screen.
+                            const email = document.getElementById('contact-email').value;
+                            localStorage.setItem('checkoutStep', 'awaiting_magic_link');
+                            
+                            const { error } = await supabase.auth.signInWithOtp({ 
+                                email: email,
+                                options: { emailRedirectTo: window.location.href } 
+                            });
+                            
+                            if (error) throw error;
+
+                            document.getElementById('holding-email').textContent = email;
+                            switchView(['pdf-form-section'], 'holding-screen');
+                            return;
+                        }
+
+                        // Comprobar si ya tiene créditos
+                        const { data: profile } = await supabase.from('perfiles_empresas').select('creditos_disponibles').eq('id', session.user.id).maybeSingle();
+                        
+                        if (!profile || profile.creditos_disponibles === 0) {
+                            // Logueado pero sin créditos -> Proceder a MP
+                            localStorage.setItem('checkoutStep', 'awaiting_payment');
+                            
+                            let formDataObj = JSON.parse(localStorage.getItem('tempFormData') || '{}');
+                            await supabase.auth.updateUser({ data: { anexoSchedule: globalSchedule, anexoForm: formDataObj } });
+
+                            switchView(['pdf-form-section'], 'processing-screen');
+                            document.getElementById('processing-title').textContent = 'Redirigiendo a pago seguro...';
+                            
+                            const response = await fetch(`${supabaseUrl}/functions/v1/create-payment`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': supabaseKey },
+                                body: JSON.stringify({ plan: 'basico' })
+                            });
+                            if (!response.ok) throw new Error('No se pudo iniciar el proceso de pago.');
+                            const { payment_url } = await response.json();
+                            window.location.href = payment_url;
+                            return;
+                        }
+
+                        // Logueado y con créditos -> Descargar PDF
                         const payload = {
                             employerName: document.getElementById('employer-name').value,
                             employerRut: document.getElementById('employer-rut').value,
@@ -540,16 +505,12 @@
                             employerAddress: document.getElementById('employer-address').value,
                             employeeName: document.getElementById('employee-name').value,
                             employeeRut: document.getElementById('employee-rut').value,
-                            schedule: scheduleForPdf,
+                            schedule: globalSchedule,
                         };
 
                         const response = await fetch(`${supabaseUrl}/functions/v1/generate-anexo`, {
                             method: 'POST',
-                            headers: { 
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${session.access_token}`,
-                                'apikey': supabaseKey
-                            },
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': supabaseKey },
                             body: JSON.stringify(payload)
                         });
 
@@ -574,12 +535,13 @@
                         await supabase.auth.updateUser({ data: { anexoSchedule: null } });
 
                         alert("¡Anexo PDF generado con éxito!");
+                        window.location.reload();
 
                     } catch (error) {
                         alert("Hubo un problema: " + error.message);
-                    } finally {
                         generatePdfButton.disabled = false;
-                        generatePdfButton.textContent = 'Generar PDF';
+                        generatePdfButton.innerText = originalBtnText;
+                        switchView(['processing-screen', 'holding-screen'], 'pdf-form-section');
                     }
                 });
             }
