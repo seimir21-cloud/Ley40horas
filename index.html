@@ -493,7 +493,13 @@
                                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': supabaseKey },
                                 body: JSON.stringify({ plan: 'basico' })
                             });
-                            if (!response.ok) throw new Error('No se pudo iniciar el proceso de pago.');
+                            if (!response.ok) {
+                                const errText = await response.text();
+                                if (response.status === 401 || errText.includes('Invalid JWT')) {
+                                    throw new Error("AUTH_EXPIRED");
+                                }
+                                throw new Error('No se pudo iniciar el proceso de pago. Inténtalo de nuevo.');
+                            }
                             const { payment_url } = await response.json();
                             window.location.href = payment_url;
                             return;
@@ -520,7 +526,15 @@
 
                         if (!response.ok) {
                             const errText = await response.text();
-                            try { throw new Error(JSON.parse(errText).error || errText); } catch { throw new Error(errText); }
+                            if (response.status === 401 || errText.includes('Invalid JWT')) {
+                                throw new Error("AUTH_EXPIRED");
+                            }
+                            try { 
+                                const parsed = JSON.parse(errText);
+                                throw new Error(parsed.error || parsed.message || errText); 
+                            } catch { 
+                                throw new Error(errText); 
+                            }
                         }
                         
                         const blob = await response.blob();
@@ -536,7 +550,8 @@
 
                         globalSchedule = null;
                         localStorage.removeItem('tempSchedule');
-                        await supabase.auth.updateUser({ data: { anexoSchedule: null } });
+                        localStorage.removeItem('tempFormData'); // Limpiamos los datos antiguos
+                        await supabase.auth.updateUser({ data: { anexoSchedule: null, anexoForm: null } });
 
                         // Consumir el crédito para que la base de datos se mantenga coherente
                         await supabase.rpc('consumir_credito');
@@ -561,6 +576,13 @@
                         alert("¡Anexo PDF generado y descargado con éxito!");
 
                     } catch (error) {
+                        if (error.message === "AUTH_EXPIRED" || error.message.includes("JWT")) {
+                            await supabase.auth.signOut();
+                            alert("Tu sesión de seguridad espiró por inactividad. Iniciaremos el proceso de nuevo para proteger tus datos.");
+                            window.location.reload();
+                            return;
+                        }
+                        
                         alert("Hubo un problema: " + error.message);
                         generatePdfButton.disabled = false;
                         generatePdfButton.innerText = originalBtnText;
