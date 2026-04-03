@@ -53,8 +53,9 @@
                         </div>
                     </div>
                     <button type="button" id="btn-validar" disabled class="w-full md:w-auto order-1 md:order-2 bg-navy text-white font-bold py-4 px-8 rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-800 transition-all text-lg flex items-center gap-2 justify-center">
-                        Continuar <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        Generar Anexo Legal <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                     </button>
+                    <p class="w-full text-center text-xs text-slate-500 mt-2 order-3">Paso previo seguro (Sin cobro automático)</p>
                 </div>
             </form>
         </div>
@@ -69,6 +70,14 @@
                     <span class="bg-amber-100 text-amber-700 rounded-full w-8 h-8 flex items-center justify-center text-lg">2</span>
                     Completa los Datos para tu Anexo
                 </h2>
+
+                <div class="bg-amber-50 border-l-4 border-amber-500 text-amber-800 p-4 mb-6 rounded-md">
+                    <p class="font-bold flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        Importante: Revise la exactitud de sus datos
+                    </p>
+                    <p class="text-sm mt-1">El anexo en PDF y el consumo de 1 crédito se realizan de forma inmediata e irreversible tras el pago. Asegúrese de que los nombres y RUTs estén escritos sin errores antes de proceder, ya que <strong>no se pueden modificar</strong> una vez emitido el archivo.</p>
+                </div>
                 <form id="pdf-form">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-lg border border-slate-100 mb-6">
                         <div class="md:col-span-2 font-bold text-lg text-navy border-b pb-2">Datos del Empleador (Empresa)</div>
