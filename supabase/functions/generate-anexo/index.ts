@@ -39,6 +39,17 @@ Deno.serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) throw new Error("Acceso denegado. Invalid JWT interno.");
 
+    // BARRERA DE SEGURIDAD (BACKEND): Verificar saldo disponible en base de datos antes de hacer el trabajo
+    const { data: profile, error: dbErr } = await supabase
+        .from('perfiles_empresas')
+        .select('creditos_disponibles')
+        .eq('id', user.id)
+        .single();
+        
+    if (dbErr || !profile || profile.creditos_disponibles < 1) {
+        throw new Error("Intento bloqueado: Saldo insuficiente. Generación de PDF denegada por el servidor.");
+    }
+
     const payload: AnexoPayload = await req.json();
     let {
       employerName, employerRut, employerRepName, employerRepRut,

@@ -54,13 +54,10 @@ ON public.perfiles_empresas
 FOR INSERT 
 WITH CHECK (auth.uid() = id);
 
--- Permitir al usuario ACTUALIZAR su propio perfil (Nombres, Ruts, etc)
--- NOTA CRÍTICA: En un escenario real, el frontend NO debería poder modificar los 'creditos_disponibles'. 
--- Esa modificación suele hacerse mediante Webhooks del servidor cuando se recibe el pago, saltándose el RLS con la Service Role Key.
-CREATE POLICY "Permitir UPDATE propio en perfiles_empresas" 
-ON public.perfiles_empresas 
-FOR UPDATE 
-USING (auth.uid() = id);
+-- [ELIMINADA POR SEGURIDAD] Permitir UPDATE propio en perfiles_empresas
+-- NOTA CRÍTICA: El frontend NO debe poder modificar 'creditos_disponibles' bajo ninguna circunstancia.
+-- Esa modificación se hace únicamente mediante Webhooks del servidor (Service Role Key) o RPC seguro (consumir_credito).
+-- CREATE POLICY "Permitir UPDATE propio en perfiles_empresas" ON public.perfiles_empresas FOR UPDATE USING (auth.uid() = id);
 
 -- -------------------------------------------------------------------------
 -- POLÍTICAS PARA: transacciones_pagos

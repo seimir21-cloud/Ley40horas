@@ -76,6 +76,18 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // BARRERA DE SEGURIDAD 1 (IDEMPOTENCIA): Verificar si esta transacción ya fue pagada y procesada
+    const { data: existingTx } = await supabaseAdmin
+        .from('transacciones_pagos')
+        .select('id')
+        .eq('id_pago_pasarela', paymentId)
+        .single();
+        
+    if (existingTx) {
+       console.log(`INFO: El pago ${paymentId} YA FUE PROCESADO con anterioridad. Ignorando para evitar duplicidad de créditos.`);
+       return new Response(JSON.stringify({ success: true, message: "Pago ya procesado anteriormente. Ok." }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }});
+    }
+
     const { data: profile, error: fetchError } = await supabaseAdmin
       .from('perfiles_empresas')
       .select('creditos_disponibles')
@@ -97,6 +109,21 @@ serve(async (req) => {
       throw new Error(`Fallo al actualizar los créditos para el usuario ${userId}. Error: ${updateError.message}`);
     }
     
+    // REGISTRO DE SEGURIDAD 2: Guardar en el historial que ya procesamos este ID de Mercado Pago
+    const { error: insertTxError } = await supabaseAdmin
+        .from('transacciones_pagos')
+        .insert({
+            empresa_id: userId,
+            id_pago_pasarela: paymentId.toString(),
+            plan_comprado: plan,
+            monto: paymentInfo.transaction_amount || 0,
+            estado: 'aprobado'
+        });
+
+    if (insertTxError) {
+        console.error(`ERROR CRÍTICO SECUNDARIO: Créditos entregados, pero falló el registro en transacciones_pagos para ${paymentId}:`, insertTxError);
+    }
+
     console.log(`SUCCESS: Créditos actualizados para el usuario ${userId}. Nuevo total: ${newCreditCount}.`);
 
     return new Response(JSON.stringify({ success: true, message: "Créditos agregados." }), {
